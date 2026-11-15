@@ -1,0 +1,399 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { classroomStore } from './data/classroomStore.js';
+import { generateQuestionsWithBitOne, analyzeResultsWithBitOne } from './services/bitoneService.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+
+app.use(cors());
+app.use(express.json({ limit: '15mb' })); // Support high-res photo uploads from mobile camera
+
+// Read lesson knowledge for fallback
+let lessonKnowledge = null;
+let conversationScripts = null;
+
+try {
+  const knowledgePath = path.join(__dirname, '../src/data/lessonKnowledge.json');
+  const scriptsPath = path.join(__dirname, '../src/data/conversationScripts.json');
+  if (fs.existsSync(knowledgePath)) {
+    lessonKnowledge = JSON.parse(fs.readFileSync(knowledgePath, 'utf-8'));
+  }
+  if (fs.existsSync(scriptsPath)) {
+    conversationScripts = JSON.parse(fs.readFileSync(scriptsPath, 'utf-8'));
+  }
+} catch (err) {
+  console.warn('Warning: Could not load local knowledge files in server:', err.message);
+}
+
+// System Instruction for WEBBY AI
+const SYSTEM_INSTRUCTION = `
+Bạn là WEBBY, một người bạn AI thông minh, đáng yêu đến từ thế giới Mạng thông tin toàn cầu (World Wide Web).
+Bạn đang trò chuyện giọng nói liên tục hai chiều với các bạn học sinh lớp 6 tại Việt Nam trong tiết thao giảng môn Tin học - Bài 6: Mạng thông tin toàn cầu.
+
+TÍNH CÁCH:
+- Thân thiện, vui vẻ, thông minh, tò mò, hóm hỉnh vừa phải, ấm áp như một người bạn đồng trang lứa hiểu biết.
+- Luôn khuyến khích học sinh suy nghĩ, tự tin phát biểu, không phán xét.
+
+QUY TẮC BẮT BUỘC VỀ NỘI DUNG & PHONG CÁCH:
+1. Luôn sử dụng tiếng Việt tự nhiên, phù hợp với học sinh 11-12 tuổi.
+2. Xưng hô là "mình" và gọi học sinh là "các bạn" hoặc "bạn".
+3. TRẢ LỜI NGẮN GỌN (1 đến 3 câu). Tuyệt đối không đọc như sách giáo khoa hay thuyết trình dài dòng.
+4. GHI NHỚ NGỮ CẢNH: Để ý câu nói trước đó của học sinh trong lịch sử trò chuyện để phản hồi liền mạch.
+5. PHÂN BIỆT RÕ RÀNG KIẾN THỨC BÀI 6 (TUYỆT ĐỐI KHÔNG NHẦM LẪN):
+   - Internet: Mạng liên kết các mạng máy tính trên phạm vi toàn cầu (hạ tầng mạng).
+   - Mạng thông tin toàn cầu (World Wide Web - WWW): Là một DỊCH VỤ hoạt động TRÊN nền Internet, bao gồm các trang web liên kết với nhau. (Internet và WWW KHÔNG PHẢI là một!).
+   - Website: Tập hợp gồm một hoặc nhiều trang web liên quan được lưu dưới một địa chỉ chung.
+   - Trang web (Web page): Từng trang tài liệu đa phương tiện trong website (như một trang trong cuốn sách).
+   - Trang chủ (Homepage): Trang web đầu tiên mở ra khi truy cập vào một website.
+   - Siêu liên kết (Hyperlink): Cánh cửa chuyển tiếp – đoạn chữ hoặc hình ảnh có thể bấm chuột vào để chuyển đến trang web khác.
+   - Trình duyệt web: Phần mềm giúp con người truy cập và xem trang web (như Chrome, Edge, Cốc Cốc...).
+6. ĐIỀU TIẾT HỘI THOẠI:
+   - Nếu câu hỏi đơn giản: trả lời ngay trong 1-2 câu ngắn, tự nhiên.
+   - Không máy móc bắt buộc phải hỏi lại sau mỗi câu; chỉ gợi ý câu hỏi khi muốn kích thích học sinh khám phá tiếp.
+   - Nếu học sinh nói câu ngoài chủ đề: trả lời lịch sự, ngắn gọn trong 1 câu rồi dẫn khéo về bài học mạng và trang web.
+7. ĐẦU RA THUẦN VĂN BẢN TIẾNG VIỆT: Không dùng ký tự markdown hay ký hiệu đặc biệt để Text-to-Speech đọc mượt mà.
+`;
+
+// Helper: Intelligent local offline fallback response matcher
+function getLocalFallbackResponse(query, history = []) {
+  if (!query || typeof query !== 'string') {
+    return {
+      text: "Xin chào bạn! Mình là WEBBY. Bạn có thắc mắc gì về thế giới Mạng thông tin toàn cầu không nào?",
+      emotion: "GREETING",
+      source: "local-fallback"
+    };
+  }
+
+  const clean = query.toLowerCase().trim();
+
+  // Who are you / Identity
+  if (/^(bạn là ai|bạn tên là gì|cậu là ai|webby là ai|giới thiệu|ai tạo ra bạn)/i.test(clean)) {
+    return {
+      text: "Mình là WEBBY, đại sứ AI đến từ thế giới Mạng thông tin toàn cầu! Mình rất thích đồng hành cùng các bạn học sinh lớp 6 khám phá Internet và các trang web kỳ diệu!",
+      emotion: "HAPPY",
+      source: "local-identity"
+    };
+  }
+
+  // Greetings
+  if (/^(xin chào|chào|hello|hi|webby ơi|ê webby|chào bạn)/i.test(clean) && clean.length < 25) {
+    return {
+      text: "Xin chào bạn! Mình là WEBBY đây. Rất vui được gặp các bạn học sinh lớp 6 thông minh! Bạn muốn hỏi mình điều gì về thế giới Internet hôm nay nào?",
+      emotion: "HAPPY",
+      source: "local-greeting"
+    };
+  }
+
+  // Ready response
+  if (/(sẵn sàng|rồi|sẵn sàng rồi|ok|yes|dạ)/i.test(clean) && clean.length < 25) {
+    return {
+      text: "Tuyệt vời! Tinh thần lớp mình thật hào hứng! Các bạn muốn hỏi mình điều gì đầu tiên về thế giới Web nào?",
+      emotion: "HAPPY",
+      source: "local-rule"
+    };
+  }
+
+  // Internet vs Web difference
+  if ((clean.includes('khác nhau') || clean.includes('phân biệt') || clean.includes('giống nhau')) &&
+      (clean.includes('internet') || clean.includes('mạng')) &&
+      (clean.includes('web') || clean.includes('www'))) {
+    return {
+      text: "Internet và WWW không phải là một đâu nhé! Internet là hạ tầng mạng lưới toàn cầu kết nối các máy tính, giống như đường cao tốc. Còn WWW là dịch vụ thông tin chứa các trang web chạy trên con đường Internet đó!",
+      emotion: "SPEAKING",
+      source: "knowledge-internet-vs-web"
+    };
+  }
+
+  // Common student answers during conversation: e.g. "xem phim", "xem video", "học bài", "chơi game"
+  if (/^(xem video|xem phim|xem youtube|học tập|tìm bài tập|học bài|tra cứu|nghe nhạc)/i.test(clean)) {
+    return {
+      text: "Thật tuyệt vời! Internet giúp chúng ta học tập và giải trí mọi lúc mọi nơi. Vậy bạn có biết làm thế nào để máy tính tìm được đúng video hay bài học đó trên mạng không?",
+      emotion: "HAPPY",
+      source: "local-followup"
+    };
+  }
+
+  // Match in FAQ
+  if (lessonKnowledge && lessonKnowledge.faq) {
+    for (const item of lessonKnowledge.faq) {
+      const qWords = item.question.toLowerCase().replace(/[?.,]/g, '').split(' ');
+      const matchCount = qWords.filter(w => w.length > 2 && clean.includes(w)).length;
+      if (matchCount >= 2 || clean.includes(item.question.toLowerCase().slice(0, 15))) {
+        return {
+          text: `${item.answer} ${item.followup}`,
+          emotion: "SPEAKING",
+          source: "knowledge-base"
+        };
+      }
+    }
+  }
+
+  // Match topics keywords
+  if (lessonKnowledge && lessonKnowledge.topics) {
+    for (const topic of lessonKnowledge.topics) {
+      for (const kw of topic.keywords) {
+        if (clean.includes(kw)) {
+          return {
+            text: `${topic.dialogue} Bạn thấy khái niệm này có dễ hiểu không?`,
+            emotion: "SPEAKING",
+            source: "knowledge-topic"
+          };
+        }
+      }
+    }
+  }
+
+  // Off-topic generic friendly redirection
+  return {
+    text: "Đó là một câu hỏi rất thú vị! Nhưng hôm nay mình đến đây để cùng các bạn khám phá thế giới Mạng thông tin toàn cầu. Bạn có thắc mắc gì về Website, Trình duyệt hay Internet không?",
+    emotion: "THINKING",
+    source: "local-fallback"
+  };
+}
+
+// Status endpoint
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'online',
+    hasApiKey: !!GEMINI_API_KEY,
+    model: GEMINI_MODEL,
+    serverTime: new Date().toISOString()
+  });
+});
+
+// Chat endpoint
+app.post('/api/chat', async (req, res) => {
+  const { message, history = [] } = req.body;
+
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ error: 'Nội dung tin nhắn không hợp lệ' });
+  }
+
+  // If no Gemini API key, use intelligent local fallback directly
+  if (!GEMINI_API_KEY) {
+    const fallback = getLocalFallbackResponse(message);
+    return res.json({
+      reply: fallback.text,
+      emotion: fallback.emotion,
+      mode: 'offline-rule-based'
+    });
+  }
+
+  // If API key is present, call Gemini API
+  try {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    
+    // Build Gemini contents payload with history
+    const contents = [
+      {
+        role: 'user',
+        parts: [{ text: `[HƯỚNG DẪN HỆ THỐNG]: ${SYSTEM_INSTRUCTION}` }]
+      },
+      {
+        role: 'model',
+        parts: [{ text: 'Tôi đã hiểu rõ vai trò WEBBY - Đại sứ Mạng thông tin toàn cầu cho học sinh lớp 6. Tôi sẽ luôn nói ngắn gọn, thân thiện bằng tiếng Việt, giải thích dễ hiểu và bám sát Bài 6.' }]
+      }
+    ];
+
+    // Add conversation history
+    if (Array.isArray(history)) {
+      for (const h of history.slice(-6)) {
+        if (h.sender === 'user') {
+          contents.push({ role: 'user', parts: [{ text: h.text }] });
+        } else if (h.sender === 'webby') {
+          contents.push({ role: 'model', parts: [{ text: h.text }] });
+        }
+      }
+    }
+
+    // Add current user prompt
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 250,
+          topP: 0.9
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`Gemini API error status: ${response.status}: ${errText}`);
+      // Gracefully fall back to local rule-based response
+      const fallback = getLocalFallbackResponse(message);
+      return res.json({
+        reply: fallback.text,
+        emotion: fallback.emotion,
+        mode: 'fallback-after-api-error',
+        warning: `Gemini API returned status ${response.status}`
+      });
+    }
+
+    const data = await response.json();
+    const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!candidate) {
+      const fallback = getLocalFallbackResponse(message);
+      return res.json({
+        reply: fallback.text,
+        emotion: fallback.emotion,
+        mode: 'fallback-empty-candidate'
+      });
+    }
+
+    // Determine emotion based on reply content
+    let emotion = 'SPEAKING';
+    const textLower = candidate.toLowerCase();
+    if (textLower.includes('chính xác') || textLower.includes('tuyệt vời') || textLower.includes('xuất sắc') || textLower.includes('giỏi quá')) {
+      emotion = 'HAPPY';
+    } else if (textLower.includes('gần đúng') || textLower.includes('cố lên') || textLower.includes('suy nghĩ thêm')) {
+      emotion = 'ENCOURAGING';
+    } else if (textLower.includes('đố các bạn') || textLower.includes('thử nghĩ xem')) {
+      emotion = 'THINKING';
+    } else if (textLower.includes('xin chào') || textLower.includes('chào các bạn')) {
+      emotion = 'GREETING';
+    }
+
+    return res.json({
+      reply: candidate.trim(),
+      emotion,
+      mode: 'online-gemini'
+    });
+  } catch (error) {
+    console.error('Error contacting Gemini API:', error.message);
+    const fallback = getLocalFallbackResponse(message);
+    return res.json({
+      reply: fallback.text,
+      emotion: fallback.emotion,
+      mode: 'fallback-exception'
+    });
+  }
+});
+
+// ==========================================
+// CLASSROOM & STUDENT MANAGEMENT APIS
+// ==========================================
+app.get('/api/classroom/classes', (req, res) => {
+  res.json({ classes: classroomStore.getClasses() });
+});
+
+app.get('/api/classroom/classes/:classId/students', (req, res) => {
+  const students = classroomStore.getStudents(req.params.classId);
+  res.json({ students });
+});
+
+app.get('/api/classroom/rooms/:code', (req, res) => {
+  const room = classroomStore.getRoom(req.params.code);
+  res.json({ room });
+});
+
+app.post('/api/classroom/rooms', (req, res) => {
+  const { roomCode = 'WB-601', classId = 'CLASS_6A' } = req.body;
+  const room = classroomStore.createRoom(roomCode, classId);
+  res.json({ room });
+});
+
+// Real-time SSE Stream for Instant Room Sync
+app.get('/api/classroom/rooms/:code/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  classroomStore.subscribe(req.params.code, res);
+});
+
+// Teacher sets active question
+app.post('/api/classroom/rooms/:code/question/set', (req, res) => {
+  const { question, state = 'COLLECTING' } = req.body;
+  const room = classroomStore.setQuestion(req.params.code, question, state);
+  res.json({ room });
+});
+
+// Teacher locks question
+app.post('/api/classroom/rooms/:code/question/lock', (req, res) => {
+  const room = classroomStore.lockQuestion(req.params.code);
+  res.json({ room });
+});
+
+// Teacher reveals correct answer
+app.post('/api/classroom/rooms/:code/question/reveal', (req, res) => {
+  const room = classroomStore.revealAnswer(req.params.code);
+  res.json({ room });
+});
+
+// Mobile QR Scanner submits student answers (single or batch)
+app.post('/api/classroom/rooms/:code/responses', (req, res) => {
+  const { responses = [] } = req.body;
+  const result = classroomStore.submitResponses(req.params.code, responses);
+  res.json(result);
+});
+
+// Mobile uploads A3/A4 group paper poster photo
+app.post('/api/classroom/rooms/:code/groups/upload', (req, res) => {
+  const { groupNumber, imageUrl, caption = '' } = req.body;
+  if (!groupNumber || !imageUrl) {
+    return res.status(400).json({ error: 'Missing groupNumber or imageUrl' });
+  }
+  const result = classroomStore.submitGroupWork(req.params.code, { groupNumber, imageUrl, caption });
+  res.json(result);
+});
+
+// Real-time Class Analytics
+app.get('/api/classroom/rooms/:code/analytics', (req, res) => {
+  const analytics = classroomStore.calculateAnalytics(req.params.code);
+  res.json({ analytics });
+});
+
+// ==========================================
+// BITONE AI QUESTION & ANALYTICS APIS
+// ==========================================
+app.post('/api/bitone/generate-questions', async (req, res) => {
+  try {
+    const params = req.body || {};
+    const result = await generateQuestionsWithBitOne(params);
+    res.json(result);
+  } catch (err) {
+    console.error('Error generating questions with BitOne AI:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/bitone/analyze-results', async (req, res) => {
+  try {
+    const analytics = req.body || {};
+    const analysis = await analyzeResultsWithBitOne(analytics);
+    res.json({ analysis });
+  } catch (err) {
+    console.error('Error analyzing results with BitOne AI:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 WEBBY AI Backend running on http://localhost:${PORT}`);
+  console.log(`📡 Gemini API Key: ${GEMINI_API_KEY ? 'Configured ✅' : 'Not configured (Running in Smart Offline Mode 🛡️)'}`);
+});
+

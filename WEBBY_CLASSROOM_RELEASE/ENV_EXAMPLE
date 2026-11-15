@@ -1,0 +1,34 @@
+# ==============================================================================
+# WEBBY CLASSROOM - ENVIRONMENT CONFIGURATION TEMPLATE
+# ==============================================================================
+
+# Server Network Configuration
+PORT=3001
+HOST=0.0.0.0
+NODE_ENV=production
+
+# ------------------------------------------------------------------------------
+# 1. BITONE AI INTEGRATION CONFIGURATION
+# ------------------------------------------------------------------------------
+# BitOne AI API Base URL (Standard Beeknoee AI Gateway format)
+BITONE_BASE_URL=https://platform.beeknoee.com/api/v1
+# BitOne / Beeknoee API Key (Bearer Token format)
+BITONE_API_KEY=your_bitone_api_key_here
+BEE_API_KEY=your_bitone_api_key_here
+# Preferred BitOne Model: gemini-3.1-flash-lite, gemini-2.5-flash, etc.
+BITONE_MODEL=gemini-3.1-flash-lite
+
+# ------------------------------------------------------------------------------
+# 2. GOOGLE GEMINI AI CONFIGURATION (Secondary Backup Provider)
+# ------------------------------------------------------------------------------
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-1.5-flash
+
+# ------------------------------------------------------------------------------
+# 3. CLASSROOM & ROOM SETTINGS
+# ------------------------------------------------------------------------------
+DEFAULT_ROOM_CODE=WB-601
+DEFAULT_CLASS_ID=CLASS_6A
+DEFAULT_SCHOOL_NAME="THCS Đắk Trôi"
+DEFAULT_TEACHER_NAME="Thầy Trần Đức Tình"
+

@@ -1,0 +1,379 @@
+{
+  "classes": [
+    {
+      "id": "CLASS_6A",
+      "code": "6A",
+      "name": "Lớp 6A",
+      "school": "THCS Đắk Trôi",
+      "teacher": "Thầy Trần Đức Tình",
+      "totalStudents": 32,
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    }
+  ],
+  "students": [
+    {
+      "id": "STU_01",
+      "studentCode": "HS6A01",
+      "fullName": "Nguyễn Hoàng An",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0001",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.390Z"
+    },
+    {
+      "id": "STU_02",
+      "studentCode": "HS6A02",
+      "fullName": "Trần Quốc Bảo",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0002",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_03",
+      "studentCode": "HS6A03",
+      "fullName": "Lê Thị Ngọc Bích",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0003",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_04",
+      "studentCode": "HS6A04",
+      "fullName": "Phạm Minh Cường",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0004",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_05",
+      "studentCode": "HS6A05",
+      "fullName": "Đỗ Diệu Châu",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0005",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_06",
+      "studentCode": "HS6A06",
+      "fullName": "Vũ Tiến Dũng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0006",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_07",
+      "studentCode": "HS6A07",
+      "fullName": "Hoàng Thùy Dương",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0007",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_08",
+      "studentCode": "HS6A08",
+      "fullName": "Bùi Đức Đạt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0008",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_09",
+      "studentCode": "HS6A09",
+      "fullName": "Đặng Hương Giang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0009",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_10",
+      "studentCode": "HS6A10",
+      "fullName": "Ngô Gia Huy",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0010",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_11",
+      "studentCode": "HS6A11",
+      "fullName": "Dương Thu Hà",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0011",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_12",
+      "studentCode": "HS6A12",
+      "fullName": "Lý Thanh Hải",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0012",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_13",
+      "studentCode": "HS6A13",
+      "fullName": "Mai Đức Hiếu",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0013",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_14",
+      "studentCode": "HS6A14",
+      "fullName": "Trịnh Thúy Hằng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0014",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_15",
+      "studentCode": "HS6A15",
+      "fullName": "Phan Nhật Khánh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0015",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_16",
+      "studentCode": "HS6A16",
+      "fullName": "Hồ Gia Linh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0016",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_17",
+      "studentCode": "HS6A17",
+      "fullName": "Đinh Tuấn Kiệt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0017",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_18",
+      "studentCode": "HS6A18",
+      "fullName": "Lương Phương Mai",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0018",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_19",
+      "studentCode": "HS6A19",
+      "fullName": "Võ Hải Nam",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0019",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_20",
+      "studentCode": "HS6A20",
+      "fullName": "Tạ Bích Ngọc",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0020",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_21",
+      "studentCode": "HS6A21",
+      "fullName": "Nguyễn Minh Quân",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0021",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_22",
+      "studentCode": "HS6A22",
+      "fullName": "Trần Như Quỳnh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0022",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_23",
+      "studentCode": "HS6A23",
+      "fullName": "Lê Văn Sang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0023",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_24",
+      "studentCode": "HS6A24",
+      "fullName": "Phạm Thu Thảo",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0024",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_25",
+      "studentCode": "HS6A25",
+      "fullName": "Đỗ Đức Thắng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0025",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_26",
+      "studentCode": "HS6A26",
+      "fullName": "Vũ Mai Trang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0026",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_27",
+      "studentCode": "HS6A27",
+      "fullName": "Hoàng Trọng Tín",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0027",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_28",
+      "studentCode": "HS6A28",
+      "fullName": "Bùi Thanh Trúc",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0028",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_29",
+      "studentCode": "HS6A29",
+      "fullName": "Đặng Quốc Việt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0029",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_30",
+      "studentCode": "HS6A30",
+      "fullName": "Ngô Tuệ Mẫn",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0030",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_31",
+      "studentCode": "HS6A31",
+      "fullName": "Dương Khắc Vượng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0031",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    },
+    {
+      "id": "STU_32",
+      "studentCode": "HS6A32",
+      "fullName": "Lê Cẩm Yến",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0032",
+      "status": "active",
+      "createdAt": "2026-11-15T23:28:46.405Z"
+    }
+  ],
+  "questionBanks": [],
+  "activeRooms": {
+    "WB-601": {
+      "roomCode": "WB-601",
+      "classId": "CLASS_6A",
+      "school": "THCS Đắk Trôi",
+      "currentQuestion": {
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+        "options": {
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
+        },
+        "correctAnswer": "B",
+        "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
+      },
+      "questionState": "COLLECTING",
+      "activeQuestionIndex": 0,
+      "totalStudents": 32,
+      "studentResponses": {},
+      "groupSubmissions": {
+        "group_1": {
+          "groupNumber": 1,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+          "caption": "Poster Tin học 6 - Nhóm 1",
+          "timestamp": "2026-11-15T23:35:46.681Z"
+        }
+      },
+      "history": [],
+      "createdAt": "2026-11-15T23:34:38.786Z",
+      "responses": {},
+      "groupWorks": {
+        "1": {
+          "groupNumber": 1,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+          "caption": "Poster Tin học 6 - Nhóm 1",
+          "timestamp": "2026-11-15T23:35:46.681Z"
+        }
+      },
+      "analytics": {
+        "roomCode": "WB-601",
+        "questionText": "",
+        "totalStudents": 32,
+        "totalAnswered": 29,
+        "totalUnanswered": 3,
+        "totalCorrect": 0,
+        "totalIncorrect": 0,
+        "percentageCorrectOnAnswered": 0,
+        "percentageCorrectOnTotal": 0,
+        "choiceDistribution": {
+          "A": 6,
+          "B": 19,
+          "C": 4,
+          "D": 0
+        }
+      },
+      "activeQuestion": {
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+        "options": {
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
+        },
+        "correctAnswer": "B",
+        "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
+      }
+    }
+  }
+}

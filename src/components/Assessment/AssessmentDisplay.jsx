@@ -1,0 +1,451 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  CheckCircle2, XCircle, Lock, Unlock, Eye, Sparkles, Clock, 
+  BarChart3, Users, ChevronLeft, ChevronRight, RotateCcw, AlertCircle
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { classroomService } from '../../services/classroomService';
+
+export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion = null }) {
+  const [activeQuestion, setActiveQuestion] = useState(currentQuestion || {
+    id: 'Q_01',
+    questionText: 'Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?',
+    options: {
+      A: 'Là một mạng máy tính kết nối bằng cáp ngầm dưới biển',
+      B: 'Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet',
+      C: 'Là một phần mềm dùng để soạn thảo văn bản',
+      D: 'Là chiếc máy tính chủ của Google đặt tại Mỹ'
+    },
+    correctAnswer: 'B',
+    explanation: 'WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.',
+    bloomLevel: 'Nhận biết',
+    difficulty: 'Dễ'
+  });
+
+  const [questionState, setQuestionState] = useState('COLLECTING'); // 'COLLECTING' | 'LOCKED' | 'REVEALED'
+  const [students, setStudents] = useState([]);
+  const [responses, setResponses] = useState({});
+  const [analytics, setAnalytics] = useState(null);
+  const [timerSeconds, setTimerSeconds] = useState(60);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [bitoneAiAnalysis, setBitoneAiAnalysis] = useState(null);
+  const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
+
+  // Load students & Room state
+  useEffect(() => {
+    classroomService.getStudents('CLASS_6A').then(setStudents);
+
+    classroomService.getRoom(roomCode).then((room) => {
+      if (room) {
+        if (room.activeQuestion) setActiveQuestion(room.activeQuestion);
+        if (room.questionState) setQuestionState(room.questionState);
+        if (room.responses) setResponses(room.responses);
+        if (room.analytics) setAnalytics(room.analytics);
+      }
+    });
+
+    // Subscribe to SSE
+    const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
+      if (event.type === 'QUESTION_UPDATED') {
+        setActiveQuestion(event.payload.activeQuestion);
+        setQuestionState(event.payload.questionState);
+      } else if (event.type === 'RESPONSES_UPDATED') {
+        setResponses(event.payload.responses || {});
+        setAnalytics(event.payload.analytics);
+      } else if (event.type === 'QUESTION_LOCKED') {
+        setQuestionState('LOCKED');
+      } else if (event.type === 'ANSWER_REVEALED') {
+        setQuestionState('REVEALED');
+        triggerConfetti();
+      } else if (event.type === 'ROOM_STATE') {
+        if (event.payload.activeQuestion) setActiveQuestion(event.payload.activeQuestion);
+        if (event.payload.questionState) setQuestionState(event.payload.questionState);
+        if (event.payload.responses) setResponses(event.payload.responses);
+        if (event.payload.analytics) setAnalytics(event.payload.analytics);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomCode]);
+
+  // Sync external question selection if changed from Question Bank
+  useEffect(() => {
+    if (currentQuestion) {
+      setActiveQuestion(currentQuestion);
+      handleSetQuestion(currentQuestion);
+    }
+  }, [currentQuestion]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    let interval = null;
+    if (isTimerRunning && timerSeconds > 0) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => {
+          if (prev <= 1) {
+            setIsTimerRunning(false);
+            handleLockQuestion();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timerSeconds]);
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
+
+  const handleSetQuestion = async (q) => {
+    try {
+      await classroomService.setQuestion(roomCode, q, 'COLLECTING');
+      setQuestionState('COLLECTING');
+      setResponses({});
+      setBitoneAiAnalysis(null);
+      setTimerSeconds(60);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLockQuestion = async () => {
+    try {
+      await classroomService.lockQuestion(roomCode);
+      setQuestionState('LOCKED');
+      setIsTimerRunning(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRevealAnswer = async () => {
+    try {
+      await classroomService.revealAnswer(roomCode);
+      setQuestionState('REVEALED');
+      setIsTimerRunning(false);
+      triggerConfetti();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleResetQuestion = () => {
+    handleSetQuestion(activeQuestion);
+  };
+
+  // Run BitOne AI Pedagogical Analysis
+  const handleAnalyzeWithBitOne = async () => {
+    setIsAnalyzingAi(true);
+    try {
+      const data = await classroomService.getAnalytics(roomCode);
+      const res = await classroomService.analyzeResults({
+        analytics: data,
+        question: activeQuestion
+      });
+      setBitoneAiAnalysis(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAnalyzingAi(false);
+    }
+  };
+
+  const totalStudents = students.length || 32;
+  const answeredCount = Object.keys(responses).length;
+  const answeredPercentage = Math.round((answeredCount / totalStudents) * 100);
+
+  // Distribution counts
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+  Object.values(responses).forEach(r => {
+    if (r.answer && counts[r.answer] !== undefined) {
+      counts[r.answer]++;
+    }
+  });
+
+  const correctCount = counts[activeQuestion.correctAnswer] || 0;
+  const accuracyOnAnswered = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+  const accuracyOnTotal = Math.round((correctCount / totalStudents) * 100);
+
+  return (
+    <div className="w-full h-full flex flex-col bg-slate-950 text-white overflow-hidden p-3 sm:p-5">
+      {/* Top Header & Projector Status Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <BarChart3 className="w-5 h-5 text-slate-950" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-emerald-300 font-['Orbitron',sans-serif]">
+                ĐÁNH GIÁ QR THẺ GIẤY
+              </h2>
+              {/* Question State Badge */}
+              {questionState === 'COLLECTING' && (
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 flex items-center gap-1 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span> ĐANG THU BÀI
+                </span>
+              )}
+              {questionState === 'LOCKED' && (
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-500/20 text-amber-300 border border-amber-400/50 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> ĐÃ KHÓA
+                </span>
+              )}
+              {questionState === 'REVEALED' && (
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> ĐÃ CÔNG BỐ ĐÁP ÁN
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400">
+              Phòng: <span className="text-cyan-400 font-mono font-bold">{roomCode}</span> • Lớp 6A (THCS Đắk Trôi)
+            </p>
+          </div>
+        </div>
+
+        {/* Action Controls for Teacher */}
+        <div className="flex items-center gap-2">
+          {/* Timer pill */}
+          <button
+            onClick={() => setIsTimerRunning(!isTimerRunning)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-all ${
+              timerSeconds <= 10 && isTimerRunning
+                ? 'bg-red-500/20 text-red-300 border-red-500 animate-pulse'
+                : 'bg-slate-900 border-slate-800 text-slate-300'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            {timerSeconds}s {isTimerRunning ? '(Đang chạy)' : '(Tạm dừng)'}
+          </button>
+
+          {questionState === 'COLLECTING' && (
+            <button
+              onClick={handleLockQuestion}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all shadow-md shadow-amber-500/20"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Khóa nộp bài
+            </button>
+          )}
+
+          {questionState !== 'REVEALED' && (
+            <button
+              onClick={handleRevealAnswer}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Công bố đáp án
+            </button>
+          )}
+
+          <button
+            onClick={handleResetQuestion}
+            className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+            title="Làm lại câu hỏi này"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Split: Question & Options (7 cols) vs 32-Student Grid & Analytics (5 cols) */}
+      <div className="flex-1 min-h-0 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
+        {/* Left Column: Big Projector Question Display & 4 Options (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col justify-between bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 overflow-y-auto space-y-4">
+          {/* Question Header & Content */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-black text-xs border border-cyan-400/40">
+                CÂU HỎI
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-xs border border-indigo-400/30">
+                {activeQuestion.bloomLevel || 'Nhận biết'}
+              </span>
+            </div>
+
+            <h3 className="text-lg sm:text-2xl font-bold text-white leading-relaxed">
+              {activeQuestion.questionText}
+            </h3>
+          </div>
+
+          {/* 4 Big High-Contrast Option Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {['A', 'B', 'C', 'D'].map((optKey) => {
+              const text = activeQuestion.options?.[optKey];
+              const isCorrect = activeQuestion.correctAnswer === optKey;
+              const count = counts[optKey] || 0;
+              const percent = answeredCount > 0 ? Math.round((count / answeredCount) * 100) : 0;
+
+              let cardStyle = "bg-slate-950/80 border-slate-800 text-slate-200";
+              let badgeStyle = "bg-slate-800 text-slate-300";
+
+              if (questionState === 'REVEALED') {
+                if (isCorrect) {
+                  cardStyle = "bg-emerald-950/60 border-emerald-400 text-white shadow-xl shadow-emerald-500/20 ring-2 ring-emerald-400/50";
+                  badgeStyle = "bg-emerald-400 text-slate-950 font-black";
+                } else {
+                  cardStyle = "bg-slate-950/50 border-slate-800 text-slate-400 opacity-60";
+                  badgeStyle = "bg-slate-800 text-slate-400";
+                }
+              }
+
+              return (
+                <div
+                  key={optKey}
+                  className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between min-h-[90px] relative overflow-hidden ${cardStyle}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0 ${badgeStyle}`}>
+                      {optKey}
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold leading-snug flex-1">
+                      {text}
+                    </span>
+                  </div>
+
+                  {/* Percentage bar if Revealed */}
+                  {questionState === 'REVEALED' && (
+                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold">
+                      <div className="flex items-center gap-1.5">
+                        {isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                        <span className={isCorrect ? "text-emerald-400" : "text-slate-400"}>
+                          {count} học sinh ({percent}%)
+                        </span>
+                      </div>
+                      <div className="w-24 bg-slate-900 h-2 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${isCorrect ? 'bg-emerald-400' : 'bg-slate-600'}`} 
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Explanation Box on Reveal */}
+          {questionState === 'REVEALED' && (
+            <div className="bg-slate-950/90 border border-emerald-500/40 rounded-xl p-3.5 space-y-1.5 animate-fadeIn">
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <Sparkles className="w-4 h-4" />
+                GIẢI THÍCH CHI TIẾT CÂU HỎI
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                {activeQuestion.explanation}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Live 32-Student Response Matrix & Analytics (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden p-3.5">
+          {/* Header Stats Strip */}
+          <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-cyan-400" />
+              <h4 className="font-bold text-xs sm:text-sm text-slate-200">
+                TIẾN ĐỘ THU BÀI: {answeredCount} / {totalStudents} HS
+              </h4>
+            </div>
+            <span className="text-xs font-mono font-bold text-cyan-300">
+              {answeredPercentage}%
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden my-2">
+            <div 
+              className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300"
+              style={{ width: `${answeredPercentage}%` }}
+            />
+          </div>
+
+          {/* 32 Student Live Grid */}
+          <div className="flex-1 min-h-0 overflow-y-auto py-2 pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              {students.map((stu) => {
+                const res = responses[stu.cardId];
+                const hasAnswered = !!res;
+                const isCorrect = hasAnswered && res.answer === activeQuestion.correctAnswer;
+
+                let cellClass = "bg-slate-950 border-slate-800 text-slate-400";
+                if (hasAnswered) {
+                  if (questionState === 'REVEALED') {
+                    cellClass = isCorrect 
+                      ? "bg-emerald-950/80 border-emerald-500 text-emerald-300 font-bold" 
+                      : "bg-red-950/80 border-red-500/80 text-red-300";
+                  } else {
+                    // Answered but not revealed: Show green glowing card WITHOUT showing answer!
+                    cellClass = "bg-cyan-950/60 border-cyan-400/80 text-cyan-300 font-bold shadow-sm shadow-cyan-500/20";
+                  }
+                }
+
+                return (
+                  <div
+                    key={stu.id}
+                    className={`p-1.5 rounded-lg border text-[11px] flex items-center justify-between transition-all ${cellClass}`}
+                    title={stu.fullName}
+                  >
+                    <span className="truncate pr-1">
+                      {stu.fullName.split(' ').slice(-1)[0]}
+                    </span>
+                    {hasAnswered ? (
+                      questionState === 'REVEALED' ? (
+                        <span className="text-[10px] font-black">{res.answer}</span>
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      )
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0"></span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Realtime Accuracy Strip & BitOne AI Button if Revealed */}
+          {questionState === 'REVEALED' && (
+            <div className="pt-2 border-t border-slate-800 shrink-0 space-y-2">
+              <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 text-[10px] block">Đúng / Đã nộp</span>
+                  <span className="text-sm font-black text-emerald-400">{accuracyOnAnswered}%</span>
+                </div>
+                <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 text-[10px] block">Đúng / Toàn lớp (32 HS)</span>
+                  <span className="text-sm font-black text-cyan-400">{accuracyOnTotal}%</span>
+                </div>
+              </div>
+
+              {/* BitOne AI Qualitative Analysis Trigger */}
+              <button
+                onClick={handleAnalyzeWithBitOne}
+                disabled={isAnalyzingAi}
+                className="w-full py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {isAnalyzingAi ? 'BitOne AI đang phân tích...' : 'Nhận xét sư phạm với BitOne AI'}
+              </button>
+
+              {bitoneAiAnalysis && (
+                <div className="bg-indigo-950/50 border border-indigo-500/40 rounded-xl p-2.5 text-[11px] text-slate-200 max-h-32 overflow-y-auto space-y-1">
+                  <span className="font-bold text-indigo-300 block">💡 Nhận xét từ BitOne AI:</span>
+                  <p className="leading-relaxed">{bitoneAiAnalysis.summary || bitoneAiAnalysis}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

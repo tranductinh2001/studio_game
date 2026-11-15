@@ -1,0 +1,127 @@
+{
+  "lesson": {
+    "title": "BÀI 6: MẠNG THÔNG TIN TOÀN CẦU",
+    "grade": 6,
+    "subject": "Tin học",
+    "target": "Giúp học sinh hiểu về World Wide Web, website, trang web, siêu văn bản, siêu liên kết và trình duyệt web"
+  },
+  "topics": [
+    {
+      "id": "internet_vs_web",
+      "title": "Internet và Mạng thông tin toàn cầu",
+      "keywords": ["internet", "mạng là gì", "mạng thông tin toàn cầu", "www", "world wide web", "khác nhau", "phân biệt"],
+      "summary": "Internet là mạng lưới máy tính khổng lồ kết nối khắp toàn cầu. Còn Mạng thông tin toàn cầu (WWW) là dịch vụ thông tin chạy trên nền Internet, cho phép xem các trang web.",
+      "dialogue": "Internet giống như hệ thống đường cao tốc toàn cầu, còn Mạng thông tin toàn cầu (WWW) chính là những chuyến xe chở đầy tin tức, hình ảnh và video chạy trên con đường đó!"
+    },
+    {
+      "id": "website_vs_webpage",
+      "title": "Website và Trang web",
+      "keywords": ["website", "trang web", "khác nhau giữa website và trang web", "trang chủ", "homepage"],
+      "summary": "Website là một tập hợp các trang web liên quan được lưu dưới một địa chỉ chung. Còn trang web là một trang cụ thể (như một trang trong quyển sách). Trang đầu tiên mở ra khi vào website gọi là Trang chủ.",
+      "dialogue": "Các bạn tưởng tượng nhé: Một Website giống như một cuốn sách giáo khoa hoàn chỉnh, còn Trang web (Web page) chính là từng trang bên trong cuốn sách đó. Trang đầu tiên mở ra được gọi là Trang chủ!"
+    },
+    {
+      "id": "hyperlink",
+      "title": "Siêu văn bản và Siêu liên kết",
+      "keywords": ["siêu văn bản", "siêu liên kết", "hyperlink", "hypertext", "liên kết", "nhấp chuột chuyển trang"],
+      "summary": "Siêu văn bản là văn bản tích hợp chữ, hình ảnh, âm thanh, video và chứa siêu liên kết. Siêu liên kết là đoạn chữ hoặc hình ảnh mà khi nhấn vào sẽ đưa chúng ta đến một trang web khác.",
+      "dialogue": "Siêu liên kết (Hyperlink) giống như một cánh cửa thần kỳ Doraemon! Chỉ cần nháy chuột vào một chữ có gạch chân hoặc hình ảnh, các bạn sẽ bay ngay tới một trang thông tin mới toanh!"
+    },
+    {
+      "id": "browser",
+      "title": "Trình duyệt web",
+      "keywords": ["trình duyệt", "browser", "cốc cốc", "chrome", "google chrome", "edge", "microsoft edge", "firefox", "safari"],
+      "summary": "Trình duyệt web là phần mềm giúp con người truy cập, xem và tương tác với các trang web trên Mạng thông tin toàn cầu.",
+      "dialogue": "Trình duyệt web là người bạn trung gian đắc lực giúp chúng ta lướt web. Ví dụ quen thuộc là Google Chrome, Microsoft Edge, Cốc Cốc hay Safari đó các bạn!"
+    },
+    {
+      "id": "history",
+      "title": "Ai phát minh ra World Wide Web?",
+      "keywords": ["ai phát minh", "người tạo ra", "tim berners-lee", "lịch sử web", "năm nào", "1989"],
+      "summary": "Nhà khoa học người Anh Tim Berners-Lee đã phát minh ra World Wide Web vào năm 1989 tại viện nghiên cứu CERN.",
+      "dialogue": "World Wide Web được phát minh vào năm 1989 bởi một nhà khoa học người Anh tuyệt vời tên là Tim Berners-Lee. Nhờ bác ấy mà hôm nay lớp chúng mình mới được lướt web dễ dàng như thế này!"
+    },
+    {
+      "id": "safe_surfing",
+      "title": "Chọn lọc thông tin trên Internet",
+      "keywords": ["tin cậy", "thông tin giả", "an toàn", "tin tưởng", "có nên tin hết"],
+      "summary": "Không phải thông tin nào trên Internet cũng đúng. Cần chọn lọc nguồn chính thống, hỏi thầy cô hoặc cha mẹ khi chưa chắc chắn.",
+      "dialogue": "Internet có rất nhiều điều bổ ích nhưng cũng có những thông tin chưa chính xác. Khi đọc tin tức, các bạn hãy nhờ thầy cô hoặc bố mẹ kiểm chứng nguồn tin uy tín nhé!"
+    }
+  ],
+  "faq": [
+    {
+      "id": 1,
+      "question": "Internet là gì?",
+      "answer": "Internet là một mạng lưới máy tính khổng lồ kết nối hàng triệu máy tính trên khắp thế giới với nhau, giúp chúng ta chia sẻ thông tin mọi lúc mọi nơi!",
+      "followup": "Đố các bạn, nhà bạn nào đã từng dùng Internet để gọi video cho người thân ở xa rồi?"
+    },
+    {
+      "id": 2,
+      "question": "Internet có thể giúp chúng ta làm những việc gì?",
+      "answer": "Internet giúp chúng ta học tập trực tuyến, tìm tài liệu, xem phim khoa học, nghe nhạc, gửi thư điện tử và kết nối với bạn bè năm châu bốn biển!",
+      "followup": "Các bạn thường dùng Internet vào việc gì nhất trong học tập?"
+    },
+    {
+      "id": 3,
+      "question": "Mạng thông tin toàn cầu là gì?",
+      "answer": "Mạng thông tin toàn cầu (World Wide Web) là một không gian thông tin khổng lồ chứa hàng triệu trang web được kết nối với nhau qua Internet!",
+      "followup": "Các bạn có biết 3 chữ viết tắt WWW trong địa chỉ web nghĩa là gì không?"
+    },
+    {
+      "id": 4,
+      "question": "WWW có nghĩa là gì?",
+      "answer": "WWW là viết tắt của World Wide Web, tiếng Việt gọi là Mạng thông tin toàn cầu!",
+      "followup": "Các bạn hãy để ý trước các địa chỉ web thường có chữ www đấy nhé!"
+    },
+    {
+      "id": 5,
+      "question": "Website là gì?",
+      "answer": "Website là một tập hợp gồm nhiều trang web liên quan đến nhau, được đặt chung dưới một địa chỉ truy cập trên Internet!",
+      "followup": "Bạn nào có thể kể tên một website mà các bạn hay truy cập không?"
+    },
+    {
+      "id": 6,
+      "question": "Một website có thể chứa những gì?",
+      "answer": "Một website có thể chứa văn bản, hình ảnh sống động, âm thanh, video clip và các siêu liên kết để dẫn sang trang khác!",
+      "followup": "Khi mở một website, trang đầu tiên hiện ra gọi là gì nhỉ?"
+    },
+    {
+      "id": 7,
+      "question": "Trang web có giống website không?",
+      "answer": "Không hoàn toàn giống nhau nhé! Website là cả một cuốn sách lớn, còn trang web (webpage) là từng trang riêng lẻ trong cuốn sách đó!",
+      "followup": "Vậy trang đầu tiên mà chúng mình nhìn thấy khi vào website có tên là gì?"
+    },
+    {
+      "id": 8,
+      "question": "Trình duyệt web dùng để làm gì?",
+      "answer": "Trình duyệt web là phần mềm giúp chúng ta mở và xem các trang web trên Mạng thông tin toàn cầu, như Google Chrome, Microsoft Edge hay Cốc Cốc!",
+      "followup": "Trên máy tính ở phòng thực hành của trường mình đang cài trình duyệt nào vậy các bạn?"
+    },
+    {
+      "id": 9,
+      "question": "Siêu liên kết có tác dụng gì?",
+      "answer": "Siêu liên kết giúp chúng ta nhảy ngay từ vị trí này sang vị trí khác hoặc mở một trang web mới chỉ bằng một cú nháy chuột!",
+      "followup": "Đố các bạn biết con trỏ chuột thường biến thành hình gì khi chỉ vào một siêu liên kết?"
+    },
+    {
+      "id": 10,
+      "question": "Làm thế nào để truy cập một website?",
+      "answer": "Để truy cập một website, các bạn mở trình duyệt web lên, gõ chính xác địa chỉ website vào thanh địa chỉ rồi nhấn phím Enter!",
+      "followup": "Các bạn đã thử tự tay gõ địa chỉ website trên máy tính bao giờ chưa?"
+    },
+    {
+      "id": 11,
+      "question": "Nếu không có Internet, việc tìm kiếm thông tin sẽ gặp khó khăn gì?",
+      "answer": "Nếu không có Internet, chúng ta sẽ phải đến tận thư viện tìm từng cuốn sách, gửi thư bưu điện mất nhiều ngày và khó biết ngay tin tức thế giới!",
+      "followup": "Các bạn thấy Internet có làm cuộc sống của chúng ta tiện lợi hơn nhiều không?"
+    },
+    {
+      "id": 12,
+      "question": "Chúng ta có nên tin tất cả thông tin trên Internet không?",
+      "answer": "Tuyệt đối không nên tin tất cả nhé! Trên mạng có cả thông tin sai lệch, các bạn cần kiểm tra nguồn tin uy tín và hỏi thầy cô hoặc bố mẹ!",
+      "followup": "Một lời khuyên thông minh: Hãy luôn là những công dân nhí lướt mạng an toàn và tỉnh táo nhé!"
+    }
+  ]
+}
+

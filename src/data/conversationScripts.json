@@ -1,0 +1,58 @@
+{
+  "warmupSteps": [
+    {
+      "step": 1,
+      "id": "greeting",
+      "speaker": "WEBBY",
+      "emotion": "GREETING",
+      "text": "Xin chào các bạn học sinh lớp 6! Xin chào thầy cô giáo! Mình là WEBBY, đại sứ đến từ thế giới Mạng thông tin toàn cầu. Mình nghe nói lớp mình có rất nhiều bạn thông minh và ham khám phá. Hôm nay mình muốn thử thách các bạn một chút. Các bạn đã sẵn sàng chưa nào?",
+      "action": "WAIT_FOR_RESPONSE",
+      "expectedContext": "ready"
+    },
+    {
+      "step": 2,
+      "id": "question_letter",
+      "speaker": "WEBBY",
+      "emotion": "SPEAKING",
+      "text": "Tuyệt vời! Câu hỏi đầu tiên dành cho các bạn: Theo các bạn, nếu muốn gửi một bức thư đến một người bạn đang sống ở một quốc gia rất xa xôi, các bạn sẽ phải làm thế nào để thông tin đến được với người đó thật nhanh?",
+      "action": "LISTEN",
+      "feedbackCorrect": "Chính xác luôn! Các bạn thật thông minh! Chúng ta có thể dùng thư điện tử email, tin nhắn qua mạng xã hội như Zalo, Facebook... Thông tin sẽ bay vèo qua nửa vòng Trái Đất chỉ trong một cái chớp mắt nhờ Internet!",
+      "feedbackGeneric": "Một câu trả lời rất hay! Đúng rồi, chúng ta có thể dùng email, mạng xã hội, ứng dụng nhắn tin... Nhờ có Internet mà thông tin được truyền đi trong nháy mắt!"
+    },
+    {
+      "step": 3,
+      "id": "question_media",
+      "speaker": "WEBBY",
+      "emotion": "THINKING",
+      "text": "Thế nếu các bạn muốn xem hình ảnh về một đất nước, đọc một bài viết khoa học hoặc xem một video ở một nơi cách chúng ta hàng nghìn cây số, chúng ta có thể làm điều đó bằng cách nào?",
+      "action": "LISTEN",
+      "feedbackCorrect": "Tuyệt cú mèo! Các bạn chỉ cần mở trình duyệt web lên, gõ tìm kiếm trên Google, xem video trên YouTube hoặc vào các trang báo điện tử!",
+      "feedbackGeneric": "Rất chuẩn xác! Chúng ta chỉ cần lướt web, mở trình duyệt và truy cập các website để tìm kiếm mọi hình ảnh, tin tức và video!"
+    },
+    {
+      "step": 4,
+      "id": "conclusion_transition",
+      "speaker": "WEBBY",
+      "emotion": "HAPPY",
+      "text": "Các bạn thấy không, nhờ Internet, chúng ta có thể kết nối và tiếp cận một thế giới thông tin vô cùng rộng lớn! Nhưng các bạn có biết những thông tin đó được tổ chức như thế nào không? Website là gì? Các trang web kết nối với nhau ra sao? Mình rất muốn cùng các bạn khám phá những điều thú vị đó! Và bây giờ, xin kính mời thầy cô đưa các bạn đến với bài học: Mạng thông tin toàn cầu!",
+      "action": "TRANSITION_LESSON",
+      "triggerBanner": true
+    }
+  ],
+  "offTopicResponses": [
+    "Đó là một câu hỏi rất thú vị! Nhưng hôm nay mình đến đây để cùng các bạn khám phá thế giới Mạng thông tin toàn cầu. Chúng ta quay lại chủ đề bài học nhé!",
+    "Câu hỏi hay quá! Tuy nhiên, nhiệm vụ chính của WEBBY hôm nay là cùng lớp mình tìm hiểu về Internet và các trang web. Chúng mình cùng tập trung vào bài học nhé!",
+    "Ồ, WEBBY rất thích sự tò mò của bạn! Nhưng bây giờ chúng mình hãy cùng tập trung khám phá xem Mạng thông tin toàn cầu kỳ diệu như thế nào đã nhé!"
+  ],
+  "encourageResponses": [
+    "Gần đúng rồi đấy! Bạn suy nghĩ thêm một chút nữa nhé: Khi lên mạng tìm thông tin, chúng ta thường dùng phần mềm gì nào?",
+    "Ý tưởng của bạn rất hay! Thử liên hệ thêm xem chiếc máy tính kết nối mạng giúp chúng mình thế nào nhé!",
+    "Cố lên nào, bạn đang đi đúng hướng rồi đấy!"
+  ],
+  "praiseResponses": [
+    "Xuất sắc! Một câu trả lời cực kỳ chính xác và thông minh!",
+    "Tuyệt vời ông mặt trời! Lớp 6 chúng mình giỏi quá đi thôi!",
+    "Quá chuẩn luôn! Đúng là các chuyên gia công nghệ tương lai!"
+  ]
+}
+

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "Q_01",
+    "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+    "options": {
+      "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+      "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+      "C": "Là một phần mềm dùng để soạn thảo văn bản",
+      "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
+    },
+    "correctAnswer": "B",
+    "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+    "bloomLevel": "Nhận biết",
+    "difficulty": "Dễ"
+  },
+  {
+    "id": "Q_02",
+    "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+    "options": {
+      "A": "Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng",
+      "B": "WWW là hạ tầng mạng phần cứng, còn Internet là trang web",
+      "C": "Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet",
+      "D": "Muốn dùng Internet thì nhất thiết phải cài đặt WWW"
+    },
+    "correctAnswer": "C",
+    "explanation": "Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.",
+    "bloomLevel": "Thông hiểu",
+    "difficulty": "Trung bình"
+  },
+  {
+    "id": "Q_03",
+    "questionText": "Trang web đầu tiên mở ra khi bạn truy cập vào một địa chỉ website được gọi là gì?",
+    "options": {
+      "A": "Trang tìm kiếm",
+      "B": "Trang tài liệu",
+      "C": "Trang chủ (Homepage)",
+      "D": "Trang siêu liên kết"
+    },
+    "correctAnswer": "C",
+    "explanation": "Trang chủ (Homepage) là trang web đầu tiên được hiển thị khi truy cập vào một địa chỉ website.",
+    "bloomLevel": "Nhận biết",
+    "difficulty": "Dễ"
+  },
+  {
+    "id": "Q_04",
+    "questionText": "Khi di chuyển con trỏ chuột vào một đoạn chữ hoặc hình ảnh trên trang web, nếu con trỏ biến thành hình bàn tay chỉ ngón thì đó là gì?",
+    "options": {
+      "A": "Trình duyệt web bị đơ",
+      "B": "Một siêu liên kết (Hyperlink)",
+      "C": "Một thông báo lỗi virus",
+      "D": "Một phần mềm máy tính"
+    },
+    "correctAnswer": "B",
+    "explanation": "Khi con trỏ chuột biến thành hình bàn tay, đoạn chữ hoặc hình ảnh đó chứa một siêu liên kết (Hyperlink) dẫn tới vị trí hoặc trang web khác.",
+    "bloomLevel": "Vận dụng",
+    "difficulty": "Trung bình"
+  },
+  {
+    "id": "Q_05",
+    "questionText": "Phần mềm nào sau đây là Trình duyệt web giúp học sinh truy cập các trang web?",
+    "options": {
+      "A": "Google Chrome, Microsoft Edge, Cốc Cốc",
+      "B": "Microsoft Word, Microsoft Excel, PowerPoint",
+      "C": "Unikey, Paint, Windows Media Player",
+      "D": "Kodu Game Lab, Scratch, Pascal"
+    },
+    "correctAnswer": "A",
+    "explanation": "Google Chrome, Microsoft Edge, Mozilla Firefox, Cốc Cốc, Safari... là các phần mềm trình duyệt web phổ biến hiện nay.",
+    "bloomLevel": "Nhận biết",
+    "difficulty": "Dễ"
+  },
+  {
+    "id": "Q_06",
+    "questionText": "Trong các địa chỉ sau đây, địa chỉ nào là địa chỉ của một trang web (URL)?",
+    "options": {
+      "A": "hocsinh@gmail.com",
+      "B": "https://vietnamnet.vn",
+      "C": "C:\\Users\\Desktop\\BaiHoc.docx",
+      "D": "192.168.1.1"
+    },
+    "correctAnswer": "B",
+    "explanation": "https://vietnamnet.vn là một địa chỉ trang web (URL), phân biệt với địa chỉ email (@) và đường dẫn tệp tin nội bộ.",
+    "bloomLevel": "Thông hiểu",
+    "difficulty": "Trung bình"
+  },
+  {
+    "id": "Q_07",
+    "questionText": "Một nhóm bạn muốn tìm tài liệu về danh lam thắng cảnh để làm bài thuyết trình Tin học. Hành động nào sau đây là đúng đắn và an toàn nhất?",
+    "options": {
+      "A": "Bấm vào mọi đường link quảng cáo nhấp nháy xuất hiện trên màn hình",
+      "B": "Mở trình duyệt web, sử dụng công cụ tìm kiếm uy tín và kiểm tra nguồn thông tin đáng tin cậy",
+      "C": "Tải các file lạ có đuôi .exe về máy tính của phòng thực hành",
+      "D": "Nhập mật khẩu Facebook của mình vào bất kỳ trang web nào yêu cầu"
+    },
+    "correctAnswer": "B",
+    "explanation": "Sử dụng công cụ tìm kiếm uy tín và kiểm tra tính xác thực của nguồn thông tin là kỹ năng số cơ bản cần thiết cho học sinh lớp 6.",
+    "bloomLevel": "Vận dụng cao",
+    "difficulty": "Khó"
+  }
+]
+
