@@ -2,10 +2,13 @@ import lessonData from '../data/lessonKnowledge.json';
 
 const getBaseApiUrl = () => {
   if (typeof window !== 'undefined' && window.location) {
-    const hostname = window.location.hostname || 'localhost';
-    return `http://${hostname}:3001/api`;
+    if (window.location.protocol === 'file:') {
+      return 'http://127.0.0.1:3001/api';
+    }
+    // In browser, use same-origin relative /api which Vite proxies seamlessly without cross-origin/PNA blocks
+    return '/api';
   }
-  return '/api';
+  return 'http://127.0.0.1:3001/api';
 };
 
 class AIService {

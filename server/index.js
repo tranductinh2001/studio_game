@@ -19,6 +19,16 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.use(express.json({ limit: '15mb' })); // Support high-res photo uploads from mobile camera
 
 // Read lesson knowledge for fallback
@@ -466,8 +476,8 @@ app.post('/api/bitone/analyze-results', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🌐 WEBBY AI Backend running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🌐 WEBBY AI Backend running on http://0.0.0.0:${PORT}`);
   console.log(`📡 Gemini API Key: ${GEMINI_API_KEY ? 'Configured ✅' : 'Not configured (Running in Smart Offline Mode 🛡️)'}`);
 });
 
