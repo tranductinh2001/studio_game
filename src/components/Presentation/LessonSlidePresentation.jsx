@@ -17,10 +17,11 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   // Slide 20: Hoạt động 4 - Vận dụng về nhà
   const ACTIVITIES = [
     { label: 'Trang Bìa', index: 0, tag: 'Bìa' },
-    { label: 'HĐ1: Khám Phá AI (5p)', index: 1, tag: 'HĐ1' },
-    { label: 'HĐ2: Hình Thành Kiến Thức (20p)', index: 3, tag: 'HĐ2' },
-    { label: 'HĐ3: Đấu Trường Quiz (12p)', index: 6, tag: 'HĐ3' },
-    { label: 'HĐ4: Vận Dụng & Dặn Dò (5p)', index: 20, tag: 'HĐ4' }
+    { label: 'Giao Việc Nhóm', index: 1, tag: '1. Nhóm' },
+    { label: 'Đếm Ngược (8p)', index: 2, tag: '2. Timer' },
+    { label: 'Mục 1: Tổ Chức Web', index: 3, tag: '3. Mục 1' },
+    { label: 'Mục 2: Trình Duyệt', index: 4, tag: '4. Mục 2' },
+    { label: 'Chuẩn Hóa Ghi Vở', index: 5, tag: '5. Ghi Vở' }
   ];
 
   // Send message to slide iframe
@@ -117,11 +118,11 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
           {/* Jump to Live QR Arena */}
           <button
             onClick={() => onSwitchTab && onSwitchTab('qr-assessment')}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-200 transition-all shadow-sm"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 border border-amber-400/50 text-amber-200 transition-all shadow-sm"
             title="Mở Đấu trường Khảo sát thẻ QR / Quizizz"
           >
-            <BarChart3 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Đấu trường QR</span>
+            <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Đấu trường Quizizz / QR</span>
           </button>
 
           {/* Open in dedicated new window */}
@@ -159,3 +160,4 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
     </div>
   );
 }
+
