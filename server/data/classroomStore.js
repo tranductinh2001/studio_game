@@ -6,8 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'classroomDB.json');
 
-// Initial default database with 32 students for Lớp 6A (THCS Đắk Trôi)
-const DEFAULT_STUDENTS = [
+// Default Students for 6A (THCS Đắk Trôi)
+const STUDENTS_6A = [
   "Nguyễn Hoàng An", "Trần Quốc Bảo", "Lê Thị Ngọc Bích", "Phạm Minh Cường",
   "Đỗ Diệu Châu", "Vũ Tiến Dũng", "Hoàng Thùy Dương", "Bùi Đức Đạt",
   "Đặng Hương Giang", "Ngô Gia Huy", "Dương Thu Hà", "Lý Thanh Hải",
@@ -21,10 +21,59 @@ const DEFAULT_STUDENTS = [
   const numStr = num < 10 ? `0${num}` : `${num}`;
   const cardNum = num < 10 ? `000${num}` : `00${num}`;
   return {
-    id: `STU_${numStr}`,
+    id: `STU_6A_${numStr}`,
     studentCode: `HS6A${numStr}`,
     fullName: name,
     classId: 'CLASS_6A',
+    cardId: `CARD_${cardNum}`,
+    status: 'active',
+    createdAt: new Date().toISOString()
+  };
+});
+
+// Default Students for 6B (THCS Đắk Trôi)
+const STUDENTS_6B = [
+  "Trần Văn Bình", "Hoàng Thị Mai", "Phạm Tuấn Kiệt", "Lê Thùy Linh",
+  "Vũ Hải Đăng", "Đỗ Ngọc Hân", "Bùi Minh Trí", "Ngô Phương Anh",
+  "Dương Quốc Khánh", "Đặng Diễm My", "Lý Gia Bảo", "Mai Trúc Linh",
+  "Trịnh Văn Nam", "Phan Kim Ngân", "Hồ Thế Vinh", "Đinh Cẩm Tú",
+  "Lương Hữu Phước", "Võ Thùy Trang", "Tạ Đức Huy", "Nguyễn Yến Nhi",
+  "Trần Bảo Long", "Lê Thanh Thảo", "Phạm Đình Trọng", "Đỗ Thu Uyên",
+  "Vũ Quang Minh", "Hoàng Bảo Ngọc", "Bùi Nhật Tân", "Đặng Thảo Vy",
+  "Ngô Tấn Phát", "Dương Hồng Nhung"
+].map((name, idx) => {
+  const num = idx + 1;
+  const numStr = num < 10 ? `0${num}` : `${num}`;
+  const cardNum = num < 10 ? `000${num}` : `00${num}`;
+  return {
+    id: `STU_6B_${numStr}`,
+    studentCode: `HS6B${numStr}`,
+    fullName: name,
+    classId: 'CLASS_6B',
+    cardId: `CARD_${cardNum}`,
+    status: 'active',
+    createdAt: new Date().toISOString()
+  };
+});
+
+// Default Students for 6C (THCS Đắk Trôi)
+const STUDENTS_6C = [
+  "Lê Thanh Tùng", "Bùi Thu Trang", "Nguyễn Đức Anh", "Trần Mai Hoa",
+  "Phạm Quang Huy", "Đỗ Hải Yến", "Vũ Hoàng Nam", "Hoàng Minh Quân",
+  "Đặng Ngọc Ánh", "Ngô Quốc Thái", "Dương Thúy Kiều", "Lý Tuấn Anh",
+  "Mai Thanh Hương", "Trịnh Bảo Trâm", "Phan Hữu Nghĩa", "Hồ Ngọc Diệp",
+  "Đinh Văn Hùng", "Lương Kim Oanh", "Võ Đình Phúc", "Tạ Thảo Nguyên",
+  "Nguyễn Văn Toàn", "Trần Thùy Chi", "Lê Tấn Sang", "Phạm Bích Thủy",
+  "Đỗ Minh Nhật", "Vũ Khánh Linh", "Hoàng Đức Duy", "Bùi Quỳnh Như"
+].map((name, idx) => {
+  const num = idx + 1;
+  const numStr = num < 10 ? `0${num}` : `${num}`;
+  const cardNum = num < 10 ? `000${num}` : `00${num}`;
+  return {
+    id: `STU_6C_${numStr}`,
+    studentCode: `HS6C${numStr}`,
+    fullName: name,
+    classId: 'CLASS_6C',
     cardId: `CARD_${cardNum}`,
     status: 'active',
     createdAt: new Date().toISOString()
@@ -56,9 +105,27 @@ const DEFAULT_DB = {
       teacher: 'Thầy Trần Đức Tình',
       totalStudents: 32,
       createdAt: new Date().toISOString()
+    },
+    {
+      id: 'CLASS_6B',
+      code: '6B',
+      name: 'Lớp 6B',
+      school: 'THCS Đắk Trôi',
+      teacher: 'Thầy Trần Đức Tình',
+      totalStudents: 30,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'CLASS_6C',
+      code: '6C',
+      name: 'Lớp 6C',
+      school: 'THCS Đắk Trôi',
+      teacher: 'Thầy Trần Đức Tình',
+      totalStudents: 28,
+      createdAt: new Date().toISOString()
     }
   ],
-  students: DEFAULT_STUDENTS,
+  students: [...STUDENTS_6A, ...STUDENTS_6B, ...STUDENTS_6C],
   questionBanks: [],
   activeRooms: {}
 };
@@ -73,6 +140,11 @@ class ClassroomStore {
     try {
       if (fs.existsSync(DB_FILE)) {
         this.data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+        // Ensure classes array has at least 6A, 6B, 6C if missing
+        if (!this.data.classes || this.data.classes.length <= 1) {
+          this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
+          this.save();
+        }
       } else {
         this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
         this.save();
@@ -122,40 +194,133 @@ class ClassroomStore {
     }
   }
 
-  // Classes & Students
+  // ==========================================
+  // CLASSES CRUD & STUDENT MANAGEMENT
+  // ==========================================
   getClasses() {
     return this.data.classes || [];
+  }
+
+  addClass({ name, code, school = 'THCS Đắk Trôi', teacher = 'Thầy Trần Đức Tình' }) {
+    const id = `CLASS_${Date.now()}`;
+    const cleanCode = (code || name.replace(/[^a-zA-Z0-9]/g, '')).toUpperCase();
+    const newClass = {
+      id,
+      code: cleanCode,
+      name,
+      school,
+      teacher,
+      totalStudents: 0,
+      createdAt: new Date().toISOString()
+    };
+    if (!this.data.classes) this.data.classes = [];
+    this.data.classes.push(newClass);
+    this.save();
+    return newClass;
+  }
+
+  updateClass(classId, updateData) {
+    const cls = (this.data.classes || []).find((c) => c.id === classId);
+    if (!cls) return null;
+    Object.assign(cls, updateData);
+    this.save();
+    return cls;
+  }
+
+  deleteClass(classId) {
+    this.data.classes = (this.data.classes || []).filter((c) => c.id !== classId);
+    this.data.students = (this.data.students || []).filter((s) => s.classId !== classId);
+    this.save();
+    return { success: true };
   }
 
   getStudents(classId = 'CLASS_6A') {
     return (this.data.students || []).filter((s) => !classId || s.classId === classId);
   }
 
-  findStudentByCardId(cardId) {
-    return (this.data.students || []).find((s) => s.cardId === cardId || s.cardId === `CARD_${cardId}`);
+  saveClassStudents(classId, studentsList) {
+    const cls = (this.data.classes || []).find((c) => c.id === classId);
+    if (!cls) return [];
+
+    // Remove existing students of this class
+    this.data.students = (this.data.students || []).filter((s) => s.classId !== classId);
+
+    const newStudents = studentsList.map((item, idx) => {
+      const num = idx + 1;
+      const numStr = num < 10 ? `0${num}` : `${num}`;
+      const cardNum = num < 10 ? `000${num}` : `00${num}`;
+      const fullName = typeof item === 'string' ? item.trim() : (item.fullName || item.name || `Học sinh ${num}`).trim();
+      const cardId = typeof item === 'object' && item.cardId ? item.cardId : `CARD_${cardNum}`;
+      const studentCode = typeof item === 'object' && item.studentCode ? item.studentCode : `HS${cls.code || '6'}${numStr}`;
+
+      return {
+        id: `STU_${classId}_${numStr}`,
+        studentCode,
+        fullName,
+        classId,
+        cardId,
+        status: 'active',
+        createdAt: new Date().toISOString()
+      };
+    });
+
+    this.data.students.push(...newStudents);
+    cls.totalStudents = newStudents.length;
+
+    // Update active room if this class is currently in use
+    Object.values(this.data.activeRooms || {}).forEach((room) => {
+      if (room.classId === classId) {
+        room.totalStudents = newStudents.length;
+        this.broadcast(room.roomCode, 'ROOM_STATE', room);
+      }
+    });
+
+    this.save();
+    return newStudents;
   }
 
-  // Room Management
+  updateStudent(studentId, { fullName, cardId, studentCode }) {
+    const student = (this.data.students || []).find((s) => s.id === studentId);
+    if (!student) return null;
+    if (fullName) student.fullName = fullName.trim();
+    if (cardId) student.cardId = cardId.trim();
+    if (studentCode) student.studentCode = studentCode.trim();
+    this.save();
+    return student;
+  }
+
+  findStudentByCardId(cardId, classId = null) {
+    const list = classId 
+      ? (this.data.students || []).filter((s) => s.classId === classId)
+      : (this.data.students || []);
+    return list.find((s) => s.cardId === cardId || s.cardId === `CARD_${cardId}`);
+  }
+
+  // ==========================================
+  // ROOM MANAGEMENT & SWITCHING CLASS
+  // ==========================================
   createRoom(roomCode = 'WB-601', classId = 'CLASS_6A') {
     const existing = this.data.activeRooms[roomCode];
     if (existing) {
       return existing;
     }
 
+    const cls = (this.data.classes || []).find((c) => c.id === classId) || { name: 'Lớp 6A' };
     const students = this.getStudents(classId);
     const room = {
       roomCode,
       classId,
+      className: cls.name,
       school: 'THCS Đắk Trôi',
       currentQuestion: DEFAULT_QUESTION,
       activeQuestion: DEFAULT_QUESTION,
-      questionState: 'COLLECTING', // Start ready to accept student QR answers!
+      questionState: 'COLLECTING',
       activeQuestionIndex: 0,
       totalStudents: students.length,
-      studentResponses: {}, // studentId -> item
-      responses: {},        // cardId -> item (for direct cardId lookup in frontend)
-      groupSubmissions: {}, // group_1 -> item
-      groupWorks: {},       // 1 -> item
+      studentResponses: {},
+      responses: {},
+      groupSubmissions: {},
+      groupWorks: {},
       history: [],
       createdAt: new Date().toISOString()
     };
@@ -175,6 +340,31 @@ class ClassroomStore {
     if (!room.currentQuestion && room.activeQuestion) room.currentQuestion = room.activeQuestion;
     if (!room.responses) room.responses = {};
     if (!room.groupWorks) room.groupWorks = {};
+    if (!room.className) {
+      const cls = (this.data.classes || []).find((c) => c.id === room.classId);
+      room.className = cls ? cls.name : 'Lớp 6A';
+    }
+    return room;
+  }
+
+  // Switch Room Class dynamically for this session/room
+  setRoomClass(roomCode, classId) {
+    const room = this.getRoom(roomCode);
+    const cls = (this.data.classes || []).find((c) => c.id === classId);
+    if (!cls) return room;
+
+    room.classId = classId;
+    room.className = cls.name;
+    const students = this.getStudents(classId);
+    room.totalStudents = students.length;
+    room.studentResponses = {}; // reset responses for new class
+    room.responses = {};
+    const analytics = this.calculateAnalytics(roomCode);
+    room.analytics = analytics;
+
+    this.save();
+    this.broadcast(roomCode, 'ROOM_CLASS_CHANGED', room);
+    this.broadcast(roomCode, 'ROOM_STATE', room);
     return room;
   }
 
@@ -227,9 +417,11 @@ class ClassroomStore {
     }
 
     const correctOpt = room.currentQuestion?.correctAnswer;
+    const activeClassId = room.classId || 'CLASS_6A';
 
     responsesList.forEach((item) => {
-      const student = this.findStudentByCardId(item.cardId);
+      // Map cardId to the student of the CURRENT CLASS assigned to this room!
+      const student = this.findStudentByCardId(item.cardId, activeClassId);
       if (!student) return;
 
       const answer = (item.answer || '').toUpperCase();
@@ -279,7 +471,7 @@ class ClassroomStore {
     };
 
     room.groupSubmissions[grpKey] = item;
-    room.groupWorks[gNum] = item; // Map directly by integer group number
+    room.groupWorks[gNum] = item;
 
     this.save();
     this.broadcast(roomCode, 'GROUP_WORK_SUBMITTED', room);
@@ -318,6 +510,8 @@ class ClassroomStore {
 
     return {
       roomCode,
+      classId: room.classId,
+      className: room.className,
       questionText: room.currentQuestion?.questionText || '',
       correctAnswer: correctOpt,
       totalStudents,

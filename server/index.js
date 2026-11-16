@@ -299,9 +299,39 @@ app.get('/api/classroom/classes', (req, res) => {
   res.json({ classes: classroomStore.getClasses() });
 });
 
+app.post('/api/classroom/classes', (req, res) => {
+  const { name, code, school, teacher } = req.body;
+  if (!name) return res.status(400).json({ error: 'Tên lớp không được để trống' });
+  const newClass = classroomStore.addClass({ name, code, school, teacher });
+  res.json({ class: newClass });
+});
+
+app.put('/api/classroom/classes/:classId', (req, res) => {
+  const updated = classroomStore.updateClass(req.params.classId, req.body);
+  if (!updated) return res.status(404).json({ error: 'Không tìm thấy lớp học' });
+  res.json({ class: updated });
+});
+
+app.delete('/api/classroom/classes/:classId', (req, res) => {
+  const result = classroomStore.deleteClass(req.params.classId);
+  res.json(result);
+});
+
 app.get('/api/classroom/classes/:classId/students', (req, res) => {
   const students = classroomStore.getStudents(req.params.classId);
   res.json({ students });
+});
+
+app.post('/api/classroom/classes/:classId/students/bulk', (req, res) => {
+  const { students = [] } = req.body;
+  const result = classroomStore.saveClassStudents(req.params.classId, students);
+  res.json({ students: result });
+});
+
+app.put('/api/classroom/classes/:classId/students/:studentId', (req, res) => {
+  const updated = classroomStore.updateStudent(req.params.studentId, req.body);
+  if (!updated) return res.status(404).json({ error: 'Không tìm thấy học sinh' });
+  res.json({ student: updated });
 });
 
 app.get('/api/classroom/rooms/:code', (req, res) => {
@@ -312,6 +342,14 @@ app.get('/api/classroom/rooms/:code', (req, res) => {
 app.post('/api/classroom/rooms', (req, res) => {
   const { roomCode = 'WB-601', classId = 'CLASS_6A' } = req.body;
   const room = classroomStore.createRoom(roomCode, classId);
+  res.json({ room });
+});
+
+// Teacher switches active class for this room/session
+app.post('/api/classroom/rooms/:code/class/set', (req, res) => {
+  const { classId } = req.body;
+  if (!classId) return res.status(400).json({ error: 'Thiếu classId' });
+  const room = classroomStore.setRoomClass(req.params.code, classId);
   res.json({ room });
 });
 

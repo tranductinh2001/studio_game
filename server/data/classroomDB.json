@@ -7,297 +7,837 @@
       "school": "THCS Đắk Trôi",
       "teacher": "Thầy Trần Đức Tình",
       "totalStudents": 32,
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "CLASS_6B",
+      "code": "6B",
+      "name": "Lớp 6B",
+      "school": "THCS Đắk Trôi",
+      "teacher": "Thầy Trần Đức Tình",
+      "totalStudents": 30,
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "CLASS_6C",
+      "code": "6C",
+      "name": "Lớp 6C",
+      "school": "THCS Đắk Trôi",
+      "teacher": "Thầy Trần Đức Tình",
+      "totalStudents": 28,
+      "createdAt": "2026-11-16T01:31:36.254Z"
     }
   ],
   "students": [
     {
-      "id": "STU_01",
+      "id": "STU_6A_01",
       "studentCode": "HS6A01",
       "fullName": "Nguyễn Hoàng An",
       "classId": "CLASS_6A",
       "cardId": "CARD_0001",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.390Z"
+      "createdAt": "2026-11-16T01:31:36.248Z"
     },
     {
-      "id": "STU_02",
+      "id": "STU_6A_02",
       "studentCode": "HS6A02",
       "fullName": "Trần Quốc Bảo",
       "classId": "CLASS_6A",
       "cardId": "CARD_0002",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.253Z"
     },
     {
-      "id": "STU_03",
+      "id": "STU_6A_03",
       "studentCode": "HS6A03",
       "fullName": "Lê Thị Ngọc Bích",
       "classId": "CLASS_6A",
       "cardId": "CARD_0003",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.253Z"
     },
     {
-      "id": "STU_04",
+      "id": "STU_6A_04",
       "studentCode": "HS6A04",
       "fullName": "Phạm Minh Cường",
       "classId": "CLASS_6A",
       "cardId": "CARD_0004",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.253Z"
     },
     {
-      "id": "STU_05",
+      "id": "STU_6A_05",
       "studentCode": "HS6A05",
       "fullName": "Đỗ Diệu Châu",
       "classId": "CLASS_6A",
       "cardId": "CARD_0005",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.253Z"
     },
     {
-      "id": "STU_06",
+      "id": "STU_6A_06",
       "studentCode": "HS6A06",
       "fullName": "Vũ Tiến Dũng",
       "classId": "CLASS_6A",
       "cardId": "CARD_0006",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_07",
+      "id": "STU_6A_07",
       "studentCode": "HS6A07",
       "fullName": "Hoàng Thùy Dương",
       "classId": "CLASS_6A",
       "cardId": "CARD_0007",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_08",
+      "id": "STU_6A_08",
       "studentCode": "HS6A08",
       "fullName": "Bùi Đức Đạt",
       "classId": "CLASS_6A",
       "cardId": "CARD_0008",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_09",
+      "id": "STU_6A_09",
       "studentCode": "HS6A09",
       "fullName": "Đặng Hương Giang",
       "classId": "CLASS_6A",
       "cardId": "CARD_0009",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_10",
+      "id": "STU_6A_10",
       "studentCode": "HS6A10",
       "fullName": "Ngô Gia Huy",
       "classId": "CLASS_6A",
       "cardId": "CARD_0010",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_11",
+      "id": "STU_6A_11",
       "studentCode": "HS6A11",
       "fullName": "Dương Thu Hà",
       "classId": "CLASS_6A",
       "cardId": "CARD_0011",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_12",
+      "id": "STU_6A_12",
       "studentCode": "HS6A12",
       "fullName": "Lý Thanh Hải",
       "classId": "CLASS_6A",
       "cardId": "CARD_0012",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_13",
+      "id": "STU_6A_13",
       "studentCode": "HS6A13",
       "fullName": "Mai Đức Hiếu",
       "classId": "CLASS_6A",
       "cardId": "CARD_0013",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_14",
+      "id": "STU_6A_14",
       "studentCode": "HS6A14",
       "fullName": "Trịnh Thúy Hằng",
       "classId": "CLASS_6A",
       "cardId": "CARD_0014",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_15",
+      "id": "STU_6A_15",
       "studentCode": "HS6A15",
       "fullName": "Phan Nhật Khánh",
       "classId": "CLASS_6A",
       "cardId": "CARD_0015",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_16",
+      "id": "STU_6A_16",
       "studentCode": "HS6A16",
       "fullName": "Hồ Gia Linh",
       "classId": "CLASS_6A",
       "cardId": "CARD_0016",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_17",
+      "id": "STU_6A_17",
       "studentCode": "HS6A17",
       "fullName": "Đinh Tuấn Kiệt",
       "classId": "CLASS_6A",
       "cardId": "CARD_0017",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_18",
+      "id": "STU_6A_18",
       "studentCode": "HS6A18",
       "fullName": "Lương Phương Mai",
       "classId": "CLASS_6A",
       "cardId": "CARD_0018",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_19",
+      "id": "STU_6A_19",
       "studentCode": "HS6A19",
       "fullName": "Võ Hải Nam",
       "classId": "CLASS_6A",
       "cardId": "CARD_0019",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_20",
+      "id": "STU_6A_20",
       "studentCode": "HS6A20",
       "fullName": "Tạ Bích Ngọc",
       "classId": "CLASS_6A",
       "cardId": "CARD_0020",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_21",
+      "id": "STU_6A_21",
       "studentCode": "HS6A21",
       "fullName": "Nguyễn Minh Quân",
       "classId": "CLASS_6A",
       "cardId": "CARD_0021",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_22",
+      "id": "STU_6A_22",
       "studentCode": "HS6A22",
       "fullName": "Trần Như Quỳnh",
       "classId": "CLASS_6A",
       "cardId": "CARD_0022",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_23",
+      "id": "STU_6A_23",
       "studentCode": "HS6A23",
       "fullName": "Lê Văn Sang",
       "classId": "CLASS_6A",
       "cardId": "CARD_0023",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_24",
+      "id": "STU_6A_24",
       "studentCode": "HS6A24",
       "fullName": "Phạm Thu Thảo",
       "classId": "CLASS_6A",
       "cardId": "CARD_0024",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_25",
+      "id": "STU_6A_25",
       "studentCode": "HS6A25",
       "fullName": "Đỗ Đức Thắng",
       "classId": "CLASS_6A",
       "cardId": "CARD_0025",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_26",
+      "id": "STU_6A_26",
       "studentCode": "HS6A26",
       "fullName": "Vũ Mai Trang",
       "classId": "CLASS_6A",
       "cardId": "CARD_0026",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_27",
+      "id": "STU_6A_27",
       "studentCode": "HS6A27",
       "fullName": "Hoàng Trọng Tín",
       "classId": "CLASS_6A",
       "cardId": "CARD_0027",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_28",
+      "id": "STU_6A_28",
       "studentCode": "HS6A28",
       "fullName": "Bùi Thanh Trúc",
       "classId": "CLASS_6A",
       "cardId": "CARD_0028",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_29",
+      "id": "STU_6A_29",
       "studentCode": "HS6A29",
       "fullName": "Đặng Quốc Việt",
       "classId": "CLASS_6A",
       "cardId": "CARD_0029",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_30",
+      "id": "STU_6A_30",
       "studentCode": "HS6A30",
       "fullName": "Ngô Tuệ Mẫn",
       "classId": "CLASS_6A",
       "cardId": "CARD_0030",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_31",
+      "id": "STU_6A_31",
       "studentCode": "HS6A31",
       "fullName": "Dương Khắc Vượng",
       "classId": "CLASS_6A",
       "cardId": "CARD_0031",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
-      "id": "STU_32",
+      "id": "STU_6A_32",
       "studentCode": "HS6A32",
       "fullName": "Lê Cẩm Yến",
       "classId": "CLASS_6A",
       "cardId": "CARD_0032",
       "status": "active",
-      "createdAt": "2026-11-15T23:28:46.405Z"
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_01",
+      "studentCode": "HS6B01",
+      "fullName": "Trần Văn Bình",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0001",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_02",
+      "studentCode": "HS6B02",
+      "fullName": "Hoàng Thị Mai",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0002",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_03",
+      "studentCode": "HS6B03",
+      "fullName": "Phạm Tuấn Kiệt",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0003",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_04",
+      "studentCode": "HS6B04",
+      "fullName": "Lê Thùy Linh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0004",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_05",
+      "studentCode": "HS6B05",
+      "fullName": "Vũ Hải Đăng",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0005",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_06",
+      "studentCode": "HS6B06",
+      "fullName": "Đỗ Ngọc Hân",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0006",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_07",
+      "studentCode": "HS6B07",
+      "fullName": "Bùi Minh Trí",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0007",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_08",
+      "studentCode": "HS6B08",
+      "fullName": "Ngô Phương Anh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0008",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_09",
+      "studentCode": "HS6B09",
+      "fullName": "Dương Quốc Khánh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0009",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_10",
+      "studentCode": "HS6B10",
+      "fullName": "Đặng Diễm My",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0010",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_11",
+      "studentCode": "HS6B11",
+      "fullName": "Lý Gia Bảo",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0011",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_12",
+      "studentCode": "HS6B12",
+      "fullName": "Mai Trúc Linh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0012",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_13",
+      "studentCode": "HS6B13",
+      "fullName": "Trịnh Văn Nam",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0013",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_14",
+      "studentCode": "HS6B14",
+      "fullName": "Phan Kim Ngân",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0014",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_15",
+      "studentCode": "HS6B15",
+      "fullName": "Hồ Thế Vinh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0015",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_16",
+      "studentCode": "HS6B16",
+      "fullName": "Đinh Cẩm Tú",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0016",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_17",
+      "studentCode": "HS6B17",
+      "fullName": "Lương Hữu Phước",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0017",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_18",
+      "studentCode": "HS6B18",
+      "fullName": "Võ Thùy Trang",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0018",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_19",
+      "studentCode": "HS6B19",
+      "fullName": "Tạ Đức Huy",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0019",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_20",
+      "studentCode": "HS6B20",
+      "fullName": "Nguyễn Yến Nhi",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0020",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_21",
+      "studentCode": "HS6B21",
+      "fullName": "Trần Bảo Long",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0021",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_22",
+      "studentCode": "HS6B22",
+      "fullName": "Lê Thanh Thảo",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0022",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_23",
+      "studentCode": "HS6B23",
+      "fullName": "Phạm Đình Trọng",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0023",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_24",
+      "studentCode": "HS6B24",
+      "fullName": "Đỗ Thu Uyên",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0024",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_25",
+      "studentCode": "HS6B25",
+      "fullName": "Vũ Quang Minh",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0025",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_26",
+      "studentCode": "HS6B26",
+      "fullName": "Hoàng Bảo Ngọc",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0026",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_27",
+      "studentCode": "HS6B27",
+      "fullName": "Bùi Nhật Tân",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0027",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_28",
+      "studentCode": "HS6B28",
+      "fullName": "Đặng Thảo Vy",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0028",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_29",
+      "studentCode": "HS6B29",
+      "fullName": "Ngô Tấn Phát",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0029",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6B_30",
+      "studentCode": "HS6B30",
+      "fullName": "Dương Hồng Nhung",
+      "classId": "CLASS_6B",
+      "cardId": "CARD_0030",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_01",
+      "studentCode": "HS6C01",
+      "fullName": "Lê Thanh Tùng",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0001",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_02",
+      "studentCode": "HS6C02",
+      "fullName": "Bùi Thu Trang",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0002",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_03",
+      "studentCode": "HS6C03",
+      "fullName": "Nguyễn Đức Anh",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0003",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_04",
+      "studentCode": "HS6C04",
+      "fullName": "Trần Mai Hoa",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0004",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_05",
+      "studentCode": "HS6C05",
+      "fullName": "Phạm Quang Huy",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0005",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_06",
+      "studentCode": "HS6C06",
+      "fullName": "Đỗ Hải Yến",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0006",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_07",
+      "studentCode": "HS6C07",
+      "fullName": "Vũ Hoàng Nam",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0007",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_08",
+      "studentCode": "HS6C08",
+      "fullName": "Hoàng Minh Quân",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0008",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_09",
+      "studentCode": "HS6C09",
+      "fullName": "Đặng Ngọc Ánh",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0009",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_10",
+      "studentCode": "HS6C10",
+      "fullName": "Ngô Quốc Thái",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0010",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_11",
+      "studentCode": "HS6C11",
+      "fullName": "Dương Thúy Kiều",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0011",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_12",
+      "studentCode": "HS6C12",
+      "fullName": "Lý Tuấn Anh",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0012",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_13",
+      "studentCode": "HS6C13",
+      "fullName": "Mai Thanh Hương",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0013",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_14",
+      "studentCode": "HS6C14",
+      "fullName": "Trịnh Bảo Trâm",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0014",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_15",
+      "studentCode": "HS6C15",
+      "fullName": "Phan Hữu Nghĩa",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0015",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_16",
+      "studentCode": "HS6C16",
+      "fullName": "Hồ Ngọc Diệp",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0016",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_17",
+      "studentCode": "HS6C17",
+      "fullName": "Đinh Văn Hùng",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0017",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_18",
+      "studentCode": "HS6C18",
+      "fullName": "Lương Kim Oanh",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0018",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_19",
+      "studentCode": "HS6C19",
+      "fullName": "Võ Đình Phúc",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0019",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_20",
+      "studentCode": "HS6C20",
+      "fullName": "Tạ Thảo Nguyên",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0020",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_21",
+      "studentCode": "HS6C21",
+      "fullName": "Nguyễn Văn Toàn",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0021",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_22",
+      "studentCode": "HS6C22",
+      "fullName": "Trần Thùy Chi",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0022",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_23",
+      "studentCode": "HS6C23",
+      "fullName": "Lê Tấn Sang",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0023",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_24",
+      "studentCode": "HS6C24",
+      "fullName": "Phạm Bích Thủy",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0024",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_25",
+      "studentCode": "HS6C25",
+      "fullName": "Đỗ Minh Nhật",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0025",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_26",
+      "studentCode": "HS6C26",
+      "fullName": "Vũ Khánh Linh",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0026",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_27",
+      "studentCode": "HS6C27",
+      "fullName": "Hoàng Đức Duy",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0027",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6C_28",
+      "studentCode": "HS6C28",
+      "fullName": "Bùi Quỳnh Như",
+      "classId": "CLASS_6C",
+      "cardId": "CARD_0028",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
     }
   ],
   "questionBanks": [],
@@ -305,6 +845,7 @@
     "WB-601": {
       "roomCode": "WB-601",
       "classId": "CLASS_6A",
+      "className": "Lớp 6A",
       "school": "THCS Đắk Trôi",
       "currentQuestion": {
         "id": "Q_01",
@@ -320,46 +861,6 @@
         "bloomLevel": "Nhận biết",
         "difficulty": "Dễ"
       },
-      "questionState": "COLLECTING",
-      "activeQuestionIndex": 0,
-      "totalStudents": 32,
-      "studentResponses": {},
-      "groupSubmissions": {
-        "group_1": {
-          "groupNumber": 1,
-          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-          "caption": "Poster Tin học 6 - Nhóm 1",
-          "timestamp": "2026-11-15T23:35:46.681Z"
-        }
-      },
-      "history": [],
-      "createdAt": "2026-11-15T23:34:38.786Z",
-      "responses": {},
-      "groupWorks": {
-        "1": {
-          "groupNumber": 1,
-          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-          "caption": "Poster Tin học 6 - Nhóm 1",
-          "timestamp": "2026-11-15T23:35:46.681Z"
-        }
-      },
-      "analytics": {
-        "roomCode": "WB-601",
-        "questionText": "",
-        "totalStudents": 32,
-        "totalAnswered": 29,
-        "totalUnanswered": 3,
-        "totalCorrect": 0,
-        "totalIncorrect": 0,
-        "percentageCorrectOnAnswered": 0,
-        "percentageCorrectOnTotal": 0,
-        "choiceDistribution": {
-          "A": 6,
-          "B": 19,
-          "C": 4,
-          "D": 0
-        }
-      },
       "activeQuestion": {
         "id": "Q_01",
         "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
@@ -373,6 +874,747 @@
         "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
         "bloomLevel": "Nhận biết",
         "difficulty": "Dễ"
+      },
+      "questionState": "REVEALED",
+      "activeQuestionIndex": 0,
+      "totalStudents": 32,
+      "studentResponses": {
+        "STU_6A_01": {
+          "studentId": "STU_6A_01",
+          "studentCode": "HS6A01",
+          "fullName": "Nguyễn Hoàng An",
+          "studentName": "Nguyễn Hoàng An",
+          "cardId": "CARD_0001",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_02": {
+          "studentId": "STU_6A_02",
+          "studentCode": "HS6A02",
+          "fullName": "Trần Quốc Bảo",
+          "studentName": "Trần Quốc Bảo",
+          "cardId": "CARD_0002",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_03": {
+          "studentId": "STU_6A_03",
+          "studentCode": "HS6A03",
+          "fullName": "Lê Thị Ngọc Bích",
+          "studentName": "Lê Thị Ngọc Bích",
+          "cardId": "CARD_0003",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_04": {
+          "studentId": "STU_6A_04",
+          "studentCode": "HS6A04",
+          "fullName": "Phạm Minh Cường",
+          "studentName": "Phạm Minh Cường",
+          "cardId": "CARD_0004",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_05": {
+          "studentId": "STU_6A_05",
+          "studentCode": "HS6A05",
+          "fullName": "Đỗ Diệu Châu",
+          "studentName": "Đỗ Diệu Châu",
+          "cardId": "CARD_0005",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_06": {
+          "studentId": "STU_6A_06",
+          "studentCode": "HS6A06",
+          "fullName": "Vũ Tiến Dũng",
+          "studentName": "Vũ Tiến Dũng",
+          "cardId": "CARD_0006",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_07": {
+          "studentId": "STU_6A_07",
+          "studentCode": "HS6A07",
+          "fullName": "Hoàng Thùy Dương",
+          "studentName": "Hoàng Thùy Dương",
+          "cardId": "CARD_0007",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_08": {
+          "studentId": "STU_6A_08",
+          "studentCode": "HS6A08",
+          "fullName": "Bùi Đức Đạt",
+          "studentName": "Bùi Đức Đạt",
+          "cardId": "CARD_0008",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_09": {
+          "studentId": "STU_6A_09",
+          "studentCode": "HS6A09",
+          "fullName": "Đặng Hương Giang",
+          "studentName": "Đặng Hương Giang",
+          "cardId": "CARD_0009",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_10": {
+          "studentId": "STU_6A_10",
+          "studentCode": "HS6A10",
+          "fullName": "Ngô Gia Huy",
+          "studentName": "Ngô Gia Huy",
+          "cardId": "CARD_0010",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_11": {
+          "studentId": "STU_6A_11",
+          "studentCode": "HS6A11",
+          "fullName": "Dương Thu Hà",
+          "studentName": "Dương Thu Hà",
+          "cardId": "CARD_0011",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_12": {
+          "studentId": "STU_6A_12",
+          "studentCode": "HS6A12",
+          "fullName": "Lý Thanh Hải",
+          "studentName": "Lý Thanh Hải",
+          "cardId": "CARD_0012",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_13": {
+          "studentId": "STU_6A_13",
+          "studentCode": "HS6A13",
+          "fullName": "Mai Đức Hiếu",
+          "studentName": "Mai Đức Hiếu",
+          "cardId": "CARD_0013",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_14": {
+          "studentId": "STU_6A_14",
+          "studentCode": "HS6A14",
+          "fullName": "Trịnh Thúy Hằng",
+          "studentName": "Trịnh Thúy Hằng",
+          "cardId": "CARD_0014",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_15": {
+          "studentId": "STU_6A_15",
+          "studentCode": "HS6A15",
+          "fullName": "Phan Nhật Khánh",
+          "studentName": "Phan Nhật Khánh",
+          "cardId": "CARD_0015",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_16": {
+          "studentId": "STU_6A_16",
+          "studentCode": "HS6A16",
+          "fullName": "Hồ Gia Linh",
+          "studentName": "Hồ Gia Linh",
+          "cardId": "CARD_0016",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_17": {
+          "studentId": "STU_6A_17",
+          "studentCode": "HS6A17",
+          "fullName": "Đinh Tuấn Kiệt",
+          "studentName": "Đinh Tuấn Kiệt",
+          "cardId": "CARD_0017",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "STU_6A_18": {
+          "studentId": "STU_6A_18",
+          "studentCode": "HS6A18",
+          "fullName": "Lương Phương Mai",
+          "studentName": "Lương Phương Mai",
+          "cardId": "CARD_0018",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_19": {
+          "studentId": "STU_6A_19",
+          "studentCode": "HS6A19",
+          "fullName": "Võ Hải Nam",
+          "studentName": "Võ Hải Nam",
+          "cardId": "CARD_0019",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_20": {
+          "studentId": "STU_6A_20",
+          "studentCode": "HS6A20",
+          "fullName": "Tạ Bích Ngọc",
+          "studentName": "Tạ Bích Ngọc",
+          "cardId": "CARD_0020",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_21": {
+          "studentId": "STU_6A_21",
+          "studentCode": "HS6A21",
+          "fullName": "Nguyễn Minh Quân",
+          "studentName": "Nguyễn Minh Quân",
+          "cardId": "CARD_0021",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_22": {
+          "studentId": "STU_6A_22",
+          "studentCode": "HS6A22",
+          "fullName": "Trần Như Quỳnh",
+          "studentName": "Trần Như Quỳnh",
+          "cardId": "CARD_0022",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_23": {
+          "studentId": "STU_6A_23",
+          "studentCode": "HS6A23",
+          "fullName": "Lê Văn Sang",
+          "studentName": "Lê Văn Sang",
+          "cardId": "CARD_0023",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_24": {
+          "studentId": "STU_6A_24",
+          "studentCode": "HS6A24",
+          "fullName": "Phạm Thu Thảo",
+          "studentName": "Phạm Thu Thảo",
+          "cardId": "CARD_0024",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_25": {
+          "studentId": "STU_6A_25",
+          "studentCode": "HS6A25",
+          "fullName": "Đỗ Đức Thắng",
+          "studentName": "Đỗ Đức Thắng",
+          "cardId": "CARD_0025",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_26": {
+          "studentId": "STU_6A_26",
+          "studentCode": "HS6A26",
+          "fullName": "Vũ Mai Trang",
+          "studentName": "Vũ Mai Trang",
+          "cardId": "CARD_0026",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_27": {
+          "studentId": "STU_6A_27",
+          "studentCode": "HS6A27",
+          "fullName": "Hoàng Trọng Tín",
+          "studentName": "Hoàng Trọng Tín",
+          "cardId": "CARD_0027",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_28": {
+          "studentId": "STU_6A_28",
+          "studentCode": "HS6A28",
+          "fullName": "Bùi Thanh Trúc",
+          "studentName": "Bùi Thanh Trúc",
+          "cardId": "CARD_0028",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "STU_6A_29": {
+          "studentId": "STU_6A_29",
+          "studentCode": "HS6A29",
+          "fullName": "Đặng Quốc Việt",
+          "studentName": "Đặng Quốc Việt",
+          "cardId": "CARD_0029",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        }
+      },
+      "responses": {
+        "CARD_0001": {
+          "studentId": "STU_6A_01",
+          "studentCode": "HS6A01",
+          "fullName": "Nguyễn Hoàng An",
+          "studentName": "Nguyễn Hoàng An",
+          "cardId": "CARD_0001",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0002": {
+          "studentId": "STU_6A_02",
+          "studentCode": "HS6A02",
+          "fullName": "Trần Quốc Bảo",
+          "studentName": "Trần Quốc Bảo",
+          "cardId": "CARD_0002",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0003": {
+          "studentId": "STU_6A_03",
+          "studentCode": "HS6A03",
+          "fullName": "Lê Thị Ngọc Bích",
+          "studentName": "Lê Thị Ngọc Bích",
+          "cardId": "CARD_0003",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0004": {
+          "studentId": "STU_6A_04",
+          "studentCode": "HS6A04",
+          "fullName": "Phạm Minh Cường",
+          "studentName": "Phạm Minh Cường",
+          "cardId": "CARD_0004",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0005": {
+          "studentId": "STU_6A_05",
+          "studentCode": "HS6A05",
+          "fullName": "Đỗ Diệu Châu",
+          "studentName": "Đỗ Diệu Châu",
+          "cardId": "CARD_0005",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0006": {
+          "studentId": "STU_6A_06",
+          "studentCode": "HS6A06",
+          "fullName": "Vũ Tiến Dũng",
+          "studentName": "Vũ Tiến Dũng",
+          "cardId": "CARD_0006",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0007": {
+          "studentId": "STU_6A_07",
+          "studentCode": "HS6A07",
+          "fullName": "Hoàng Thùy Dương",
+          "studentName": "Hoàng Thùy Dương",
+          "cardId": "CARD_0007",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0008": {
+          "studentId": "STU_6A_08",
+          "studentCode": "HS6A08",
+          "fullName": "Bùi Đức Đạt",
+          "studentName": "Bùi Đức Đạt",
+          "cardId": "CARD_0008",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0009": {
+          "studentId": "STU_6A_09",
+          "studentCode": "HS6A09",
+          "fullName": "Đặng Hương Giang",
+          "studentName": "Đặng Hương Giang",
+          "cardId": "CARD_0009",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0010": {
+          "studentId": "STU_6A_10",
+          "studentCode": "HS6A10",
+          "fullName": "Ngô Gia Huy",
+          "studentName": "Ngô Gia Huy",
+          "cardId": "CARD_0010",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0011": {
+          "studentId": "STU_6A_11",
+          "studentCode": "HS6A11",
+          "fullName": "Dương Thu Hà",
+          "studentName": "Dương Thu Hà",
+          "cardId": "CARD_0011",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0012": {
+          "studentId": "STU_6A_12",
+          "studentCode": "HS6A12",
+          "fullName": "Lý Thanh Hải",
+          "studentName": "Lý Thanh Hải",
+          "cardId": "CARD_0012",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0013": {
+          "studentId": "STU_6A_13",
+          "studentCode": "HS6A13",
+          "fullName": "Mai Đức Hiếu",
+          "studentName": "Mai Đức Hiếu",
+          "cardId": "CARD_0013",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0014": {
+          "studentId": "STU_6A_14",
+          "studentCode": "HS6A14",
+          "fullName": "Trịnh Thúy Hằng",
+          "studentName": "Trịnh Thúy Hằng",
+          "cardId": "CARD_0014",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0015": {
+          "studentId": "STU_6A_15",
+          "studentCode": "HS6A15",
+          "fullName": "Phan Nhật Khánh",
+          "studentName": "Phan Nhật Khánh",
+          "cardId": "CARD_0015",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0016": {
+          "studentId": "STU_6A_16",
+          "studentCode": "HS6A16",
+          "fullName": "Hồ Gia Linh",
+          "studentName": "Hồ Gia Linh",
+          "cardId": "CARD_0016",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0017": {
+          "studentId": "STU_6A_17",
+          "studentCode": "HS6A17",
+          "fullName": "Đinh Tuấn Kiệt",
+          "studentName": "Đinh Tuấn Kiệt",
+          "cardId": "CARD_0017",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.844Z"
+        },
+        "CARD_0018": {
+          "studentId": "STU_6A_18",
+          "studentCode": "HS6A18",
+          "fullName": "Lương Phương Mai",
+          "studentName": "Lương Phương Mai",
+          "cardId": "CARD_0018",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0019": {
+          "studentId": "STU_6A_19",
+          "studentCode": "HS6A19",
+          "fullName": "Võ Hải Nam",
+          "studentName": "Võ Hải Nam",
+          "cardId": "CARD_0019",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0020": {
+          "studentId": "STU_6A_20",
+          "studentCode": "HS6A20",
+          "fullName": "Tạ Bích Ngọc",
+          "studentName": "Tạ Bích Ngọc",
+          "cardId": "CARD_0020",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0021": {
+          "studentId": "STU_6A_21",
+          "studentCode": "HS6A21",
+          "fullName": "Nguyễn Minh Quân",
+          "studentName": "Nguyễn Minh Quân",
+          "cardId": "CARD_0021",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0022": {
+          "studentId": "STU_6A_22",
+          "studentCode": "HS6A22",
+          "fullName": "Trần Như Quỳnh",
+          "studentName": "Trần Như Quỳnh",
+          "cardId": "CARD_0022",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0023": {
+          "studentId": "STU_6A_23",
+          "studentCode": "HS6A23",
+          "fullName": "Lê Văn Sang",
+          "studentName": "Lê Văn Sang",
+          "cardId": "CARD_0023",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0024": {
+          "studentId": "STU_6A_24",
+          "studentCode": "HS6A24",
+          "fullName": "Phạm Thu Thảo",
+          "studentName": "Phạm Thu Thảo",
+          "cardId": "CARD_0024",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0025": {
+          "studentId": "STU_6A_25",
+          "studentCode": "HS6A25",
+          "fullName": "Đỗ Đức Thắng",
+          "studentName": "Đỗ Đức Thắng",
+          "cardId": "CARD_0025",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0026": {
+          "studentId": "STU_6A_26",
+          "studentCode": "HS6A26",
+          "fullName": "Vũ Mai Trang",
+          "studentName": "Vũ Mai Trang",
+          "cardId": "CARD_0026",
+          "rotation": 5,
+          "angle": 5,
+          "answer": "A",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0027": {
+          "studentId": "STU_6A_27",
+          "studentCode": "HS6A27",
+          "fullName": "Hoàng Trọng Tín",
+          "studentName": "Hoàng Trọng Tín",
+          "cardId": "CARD_0027",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0028": {
+          "studentId": "STU_6A_28",
+          "studentCode": "HS6A28",
+          "fullName": "Bùi Thanh Trúc",
+          "studentName": "Bùi Thanh Trúc",
+          "cardId": "CARD_0028",
+          "rotation": 92,
+          "angle": 92,
+          "answer": "B",
+          "isCorrect": true,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        },
+        "CARD_0029": {
+          "studentId": "STU_6A_29",
+          "studentCode": "HS6A29",
+          "fullName": "Đặng Quốc Việt",
+          "studentName": "Đặng Quốc Việt",
+          "cardId": "CARD_0029",
+          "rotation": 184,
+          "angle": 184,
+          "answer": "C",
+          "isCorrect": false,
+          "timestamp": "2026-11-16T01:36:11.845Z"
+        }
+      },
+      "groupSubmissions": {
+        "group_1": {
+          "groupNumber": 1,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+          "caption": "Poster Tin học 6 - Nhóm 1",
+          "timestamp": "2026-11-16T01:36:04.234Z"
+        }
+      },
+      "groupWorks": {
+        "1": {
+          "groupNumber": 1,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+          "caption": "Poster Tin học 6 - Nhóm 1",
+          "timestamp": "2026-11-16T01:36:04.234Z"
+        }
+      },
+      "history": [],
+      "createdAt": "2026-11-16T01:33:13.483Z",
+      "analytics": {
+        "roomCode": "WB-601",
+        "classId": "CLASS_6A",
+        "className": "Lớp 6A",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+        "correctAnswer": "B",
+        "totalStudents": 32,
+        "totalAnswered": 29,
+        "totalUnanswered": 3,
+        "totalCorrect": 19,
+        "totalIncorrect": 10,
+        "percentageCorrectOnAnswered": 66,
+        "percentageCorrectOnTotal": 59,
+        "choiceDistribution": {
+          "A": 6,
+          "B": 19,
+          "C": 4,
+          "D": 0
+        }
       }
     }
   }

@@ -16,14 +16,18 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
 
+  const [classes, setClasses] = useState([]);
+  const [activeClassId, setActiveClassId] = useState('CLASS_6A');
+  const [activeClassName, setActiveClassName] = useState('Lớp 6A');
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const requestRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Load students for cardId -> student name mapping
-  useEffect(() => {
-    classroomService.getStudents('CLASS_6A').then((list) => {
+  // Load students for active class
+  const loadStudentsForClass = (classId) => {
+    classroomService.getStudents(classId).then((list) => {
       const map = {};
       if (Array.isArray(list)) {
         list.forEach((s) => {
@@ -33,7 +37,47 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       }
       setStudentsMap(map);
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    classroomService.getClasses().then((clsList) => {
+      setClasses(clsList || []);
+    });
+
+    classroomService.getRoom(roomCode).then((room) => {
+      if (room) {
+        const cId = room.classId || 'CLASS_6A';
+        setActiveClassId(cId);
+        setActiveClassName(room.className || 'Lớp 6A');
+        loadStudentsForClass(cId);
+      }
+    });
+
+    const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
+      if (event.type === 'ROOM_CLASS_CHANGED' || (event.type === 'ROOM_STATE' && event.payload.classId)) {
+        const newClassId = event.payload.classId;
+        setActiveClassId(newClassId);
+        setActiveClassName(event.payload.className || 'Lớp 6A');
+        loadStudentsForClass(newClassId);
+        setDetectedResponses({});
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomCode]);
+
+  const handleSwitchClass = async (newClassId) => {
+    setActiveClassId(newClassId);
+    const cls = classes.find((c) => c.id === newClassId);
+    if (cls) setActiveClassName(cls.name);
+    loadStudentsForClass(newClassId);
+    setDetectedResponses({});
+    try {
+      await classroomService.setRoomClass(roomCode, newClassId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Calculate orientation and map to answer A, B, C, D
   const calculateAnswerFromCorners = (location) => {
@@ -253,9 +297,24 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
             <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-emerald-200 to-white">
               QUÉT THẺ QR THÔNG MINH (COMPUTER VISION)
             </h2>
-            <p className="text-xs text-slate-400">
-              Nhận diện thẻ & góc xoay hướng đáp án (A: 0°, B: 90°, C: 180°, D: 270°) • Phòng: <span className="text-cyan-400 font-mono font-bold">{roomCode}</span>
-            </p>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span>Phòng: <span className="text-cyan-400 font-mono font-bold">{roomCode}</span></span>
+              <span>•</span>
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-0.5">
+                <span className="text-[11px] text-slate-400">Đang quét lớp:</span>
+                <select
+                  value={activeClassId}
+                  onChange={(e) => handleSwitchClass(e.target.value)}
+                  className="bg-transparent text-cyan-300 font-bold text-xs focus:outline-none cursor-pointer"
+                >
+                  {classes.map((cls) => (
+                    <option key={cls.id} value={cls.id} className="bg-slate-900 text-white">
+                      {cls.name} ({cls.totalStudents || 0} HS)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 

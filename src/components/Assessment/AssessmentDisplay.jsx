@@ -23,6 +23,9 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
   });
 
   const [questionState, setQuestionState] = useState('COLLECTING'); // 'COLLECTING' | 'LOCKED' | 'REVEALED'
+  const [classes, setClasses] = useState([]);
+  const [activeClassId, setActiveClassId] = useState('CLASS_6A');
+  const [activeClassName, setActiveClassName] = useState('Lớp 6A');
   const [students, setStudents] = useState([]);
   const [responses, setResponses] = useState({});
   const [analytics, setAnalytics] = useState(null);
@@ -31,9 +34,11 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
   const [bitoneAiAnalysis, setBitoneAiAnalysis] = useState(null);
   const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
 
-  // Load students & Room state
+  // Load classes, students & Room state
   useEffect(() => {
-    classroomService.getStudents('CLASS_6A').then(setStudents);
+    classroomService.getClasses().then((clsList) => {
+      setClasses(clsList || []);
+    });
 
     classroomService.getRoom(roomCode).then((room) => {
       if (room) {
@@ -41,6 +46,10 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
         if (room.questionState) setQuestionState(room.questionState);
         if (room.responses) setResponses(room.responses);
         if (room.analytics) setAnalytics(room.analytics);
+        const targetClassId = room.classId || 'CLASS_6A';
+        setActiveClassId(targetClassId);
+        setActiveClassName(room.className || 'Lớp 6A');
+        classroomService.getStudents(targetClassId).then(setStudents);
       }
     });
 
@@ -57,16 +66,37 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
       } else if (event.type === 'ANSWER_REVEALED') {
         setQuestionState('REVEALED');
         triggerConfetti();
-      } else if (event.type === 'ROOM_STATE') {
-        if (event.payload.activeQuestion) setActiveQuestion(event.payload.activeQuestion);
-        if (event.payload.questionState) setQuestionState(event.payload.questionState);
-        if (event.payload.responses) setResponses(event.payload.responses);
-        if (event.payload.analytics) setAnalytics(event.payload.analytics);
+      } else if (event.type === 'ROOM_CLASS_CHANGED' || event.type === 'ROOM_STATE') {
+        const payload = event.payload;
+        if (payload.activeQuestion) setActiveQuestion(payload.activeQuestion);
+        if (payload.questionState) setQuestionState(payload.questionState);
+        if (payload.responses) setResponses(payload.responses);
+        if (payload.analytics) setAnalytics(payload.analytics);
+        if (payload.classId) {
+          setActiveClassId(payload.classId);
+          setActiveClassName(payload.className || 'Lớp 6A');
+          classroomService.getStudents(payload.classId).then(setStudents);
+        }
       }
     });
 
     return () => unsubscribe();
   }, [roomCode]);
+
+  // Switch Room Class
+  const handleSwitchClass = async (newClassId) => {
+    setActiveClassId(newClassId);
+    const cls = classes.find((c) => c.id === newClassId);
+    if (cls) setActiveClassName(cls.name);
+    try {
+      await classroomService.setRoomClass(roomCode, newClassId);
+      const stuList = await classroomService.getStudents(newClassId);
+      setStudents(stuList || []);
+      setResponses({});
+    } catch (err) {
+      console.error('Error switching room class:', err);
+    }
+  };
 
   // Sync external question selection if changed from Question Bank
   useEffect(() => {
@@ -202,9 +232,24 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400">
-              Phòng: <span className="text-cyan-400 font-mono font-bold">{roomCode}</span> • Lớp 6A (THCS Đắk Trôi)
-            </p>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span>Phòng: <span className="text-cyan-400 font-mono font-bold">{roomCode}</span></span>
+              <span>•</span>
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-0.5">
+                <span className="text-[11px] text-slate-400">Đang chọn lớp:</span>
+                <select
+                  value={activeClassId}
+                  onChange={(e) => handleSwitchClass(e.target.value)}
+                  className="bg-transparent text-cyan-300 font-bold text-xs focus:outline-none cursor-pointer"
+                >
+                  {classes.map((cls) => (
+                    <option key={cls.id} value={cls.id} className="bg-slate-900 text-white">
+                      {cls.name} ({cls.totalStudents || 0} HS)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -233,13 +278,21 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
             </button>
           )}
 
-          {questionState !== 'REVEALED' && (
+          {questionState !== 'REVEALED' ? (
             <button
               onClick={handleRevealAnswer}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20"
             >
               <Eye className="w-3.5 h-3.5" />
               Công bố đáp án
+            </button>
+          ) : (
+            <button
+              onClick={handleResetQuestion}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 transition-all border border-slate-700 shadow-md"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Làm lại câu này
             </button>
           )}
 

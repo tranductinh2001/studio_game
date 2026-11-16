@@ -97,7 +97,9 @@ export default function MobileController({ roomCode = 'WB-601' }) {
           </div>
           <div>
             <h3 className="font-bold text-sm text-cyan-300">ĐIỀU KHIỂN GIÁO VIÊN</h3>
-            <p className="text-[10px] text-slate-400">Phòng: <span className="font-mono text-cyan-400 font-bold">{roomCode}</span></p>
+            <p className="text-[10px] text-slate-400">
+              Phòng: <span className="font-mono text-cyan-400 font-bold">{roomCode}</span> • <span className="text-emerald-400 font-bold">{roomState?.className || 'Lớp 6A'}</span>
+            </p>
           </div>
         </div>
 

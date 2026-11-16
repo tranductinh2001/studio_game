@@ -96,6 +96,31 @@ async def main():
         await page.wait_for_selector("h2:has-text('ĐÁNH GIÁ QR THẺ GIẤY')", timeout=5000)
         print("[OK] Đã chuyển sang Tab Đánh giá QR")
 
+        # Reset question to COLLECTING state
+        reset_req = urllib.request.Request(
+            "http://127.0.0.1:3001/api/classroom/rooms/WB-601/question/set",
+            data=json.dumps({
+                "question": {
+                    "id": "Q_01",
+                    "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+                    "options": {
+                        "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+                        "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+                        "C": "Là một phần mềm dùng để soạn thảo văn bản",
+                        "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
+                    },
+                    "correctAnswer": "B",
+                    "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+                    "bloomLevel": "Nhận biết",
+                    "difficulty": "Dễ"
+                },
+                "state": "COLLECTING"
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        urllib.request.urlopen(reset_req)
+        await asyncio.sleep(1)
+
         # Simulate batch student responses via API
         responses_payload = json.dumps({
             "responses": [
@@ -146,13 +171,19 @@ async def main():
         print("[OK] Đã chụp ảnh Tab 4: screenshot_classroom_tab4_bitone.png")
 
         # --- 6. Tab 5: Card Generator & Roster ---
-        print("\n--- 6. Kiểm tra Tab 5: In Thẻ QR Học Sinh (Plickers-style) ---")
+        print("\n--- 6. Kiểm tra Tab 5: Cài đặt Lớp học & In Thẻ QR ---")
         await page.click("button:has-text('In Thẻ QR')")
-        await page.wait_for_selector("h2:has-text('QUẢN LÝ & IN THẺ QR ĐÁNH GIÁ')", timeout=5000)
-        print("[OK] Đã chuyển sang Tab In Thẻ QR")
+        await page.wait_for_selector("h2:has-text('CÀI ĐẶT LỚP HỌC & MÃ THẺ QR')", timeout=5000)
+        print("[OK] Đã chuyển sang Tab Cài đặt Lớp học & In Thẻ QR")
 
-        # Verify 32 students in roster list
-        roster_text = await page.locator("h3:has-text('DANH SÁCH LỚP 6A')").inner_text()
+        # Verify class buttons exist
+        await page.wait_for_selector("button:has-text('Lớp 6A')", timeout=5000)
+        await page.wait_for_selector("button:has-text('Lớp 6B')", timeout=5000)
+        await page.wait_for_selector("button:has-text('Lớp 6C')", timeout=5000)
+        print("[OK] Hiển thị đầy đủ danh sách lựa chọn các lớp: Lớp 6A, Lớp 6B, Lớp 6C")
+
+        # Verify students in roster list
+        roster_text = await page.locator("h3:has-text('DANH SÁCH')").first.inner_text()
         print(f"[OK] {roster_text}")
 
         # Verify directional markers A, B, C, D on card preview
