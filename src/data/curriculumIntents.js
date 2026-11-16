@@ -93,18 +93,7 @@ export const KNOWLEDGE_INTENTS = [
     emotion: 'SPEAKING'
   },
 
-  // 9. Web Browser (Trình duyệt web)
-  {
-    id: 'web_browser',
-    patterns: [
-      /(trình duyệt là gì|trình duyệt web là gì|browser là gì|công dụng của trình duyệt|dùng để làm gì)/i
-    ],
-    keywords: ['trình duyệt là gì', 'trình duyệt web', 'browser', 'phần mềm', 'công dụng'],
-    reply: "Trình duyệt web là phần mềm ứng dụng giúp người dùng truy cập, hiển thị và tương tác với các trang web trên Mạng thông tin toàn cầu!",
-    emotion: 'SPEAKING'
-  },
-
-  // 10. Popular Browsers (Các trình duyệt phổ biến)
+  // 9. Popular Browsers (Các trình duyệt phổ biến - Đặt trước để ưu tiên nhận diện câu hỏi kể tên)
   {
     id: 'popular_browsers',
     patterns: [
@@ -113,6 +102,17 @@ export const KNOWLEDGE_INTENTS = [
     keywords: ['kể tên trình duyệt', 'các trình duyệt', 'chrome', 'cốc cốc', 'edge', 'firefox', 'safari'],
     reply: "Một số trình duyệt web rất quen thuộc và phổ biến hiện nay gồm có: Google Chrome, Microsoft Edge, Cốc Cốc, Mozilla Firefox và Safari của Apple!",
     emotion: 'HAPPY'
+  },
+
+  // 10. Web Browser (Trình duyệt web)
+  {
+    id: 'web_browser',
+    patterns: [
+      /(trình duyệt là gì|trình duyệt web là gì|browser là gì|công dụng của trình duyệt|dùng để làm gì)/i
+    ],
+    keywords: ['trình duyệt là gì', 'trình duyệt web', 'browser', 'phần mềm', 'công dụng'],
+    reply: "Trình duyệt web là phần mềm ứng dụng giúp người dùng truy cập, hiển thị và tương tác với các trang web trên Mạng thông tin toàn cầu!",
+    emotion: 'SPEAKING'
   },
 
   // 11. 3 Steps to Access a Webpage (Quy trình 3 bước)
@@ -148,13 +148,24 @@ export const KNOWLEDGE_INTENTS = [
     emotion: 'SPEAKING'
   },
 
-  // 14. Internet Benefits (Lợi ích Internet)
+  // 14. Lesson 6 context / Today's lesson (Đặt trước internet benefits)
+  {
+    id: 'lesson_topic',
+    patterns: [
+      /(hôm nay học bài gì|bài hôm nay|bài 6|tiết 11|môn tin|môn tin học|học bài gì)/i
+    ],
+    keywords: ['bài 6', 'tiết 11', 'học bài gì', 'mạng thông tin toàn cầu'],
+    reply: "Hôm nay chúng mình học Bài 6: Mạng thông tin toàn cầu (Tiết 11) môn Tin học 6 nhé! Bài học có rất nhiều điều kỳ diệu về WWW, website, siêu liên kết và trình duyệt web đấy!",
+    emotion: 'SPEAKING'
+  },
+
+  // 15. Internet Benefits (Lợi ích Internet)
   {
     id: 'internet_benefits',
     patterns: [
       /(lợi ích của internet|internet giúp ích gì|internet dùng để làm gì|học tập trên mạng|xem youtube|xem video|nghe nhạc|tra cứu)/i
     ],
-    keywords: ['lợi ích', 'giúp ích gì', 'xem video', 'học bài', 'tra cứu', 'youtube'],
+    keywords: ['lợi ích của internet', 'internet giúp ích gì', 'xem video', 'tra cứu kiến thức', 'youtube'],
     reply: "Internet mang lại vô vàn lợi ích: giúp chúng mình tra cứu kiến thức học tập, xem video khoa học, học trực tuyến, nghe nhạc thư giãn và kết nối với bạn bè khắp nơi!",
     emotion: 'HAPPY'
   },
@@ -194,16 +205,6 @@ export const KNOWLEDGE_INTENTS = [
     emotion: 'HAPPY'
   },
 
-  // 18. Lesson 6 context / Today's lesson
-  {
-    id: 'lesson_topic',
-    patterns: [
-      /(hôm nay học bài gì|bài hôm nay|bài 6|tiết 11|môn tin|môn tin học)/i
-    ],
-    keywords: ['bài 6', 'tiết 11', 'học bài gì', 'mạng thông tin toàn cầu'],
-    reply: "Hôm nay chúng mình học Bài 6: Mạng thông tin toàn cầu (Tiết 11) môn Tin học 6 nhé! Bài học có rất nhiều điều kỳ diệu về WWW, website, siêu liên kết và trình duyệt web đấy!",
-    emotion: 'SPEAKING'
-  },
 
   // 19. Group Discussion & Paper Draft (Thảo luận nhóm giấy nháp)
   {
