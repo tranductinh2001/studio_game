@@ -6,7 +6,10 @@ import {
 import SmartScanner from '../Scanner/SmartScanner';
 import { classroomService } from '../../services/classroomService';
 
-export default function MobileController({ roomCode = 'WB-601' }) {
+export default function MobileController({ roomCode: propRoomCode = 'WB-601' }) {
+  const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const roomCode = urlParams.get('room') || propRoomCode;
+
   const [activeTab, setActiveTab] = useState('scanner'); // 'scanner' | 'groupPhoto' | 'quizControl'
   const [selectedGroup, setSelectedGroup] = useState(1);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);

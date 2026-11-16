@@ -3,12 +3,26 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { classroomStore } from './data/classroomStore.js';
 import { generateQuestionsWithBitOne, analyzeResultsWithBitOne } from './services/bitoneService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Helper to determine exact LAN IPv4 for Wi-Fi mobile connection
+function getLocalLanIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
 
 // Load .env
 dotenv.config();
@@ -403,14 +417,32 @@ app.post('/api/classroom/smas/upload', (req, res) => {
   }
 });
 
+// Network Info Endpoint for Dynamic LAN IP Discovery & Mobile QR
+app.get('/api/network-info', (req, res) => {
+  const lanIp = getLocalLanIp();
+  res.json({
+    success: true,
+    lanIp,
+    frontendPort: 5173,
+    backendPort: PORT,
+    mobileConnectUrl: `http://${lanIp}:5173/?mode=mobile&room=WB-601`
+  });
+});
+
 app.get('/api/classroom/rooms/:code', (req, res) => {
   const room = classroomStore.getRoom(req.params.code);
   res.json({ room });
 });
 
 app.post('/api/classroom/rooms', (req, res) => {
-  const { roomCode = 'WB-601', classId = 'CLASS_6A' } = req.body;
-  const room = classroomStore.createRoom(roomCode, classId);
+  const { roomCode = 'WB-601', classId = 'CLASS_6A', options = {} } = req.body;
+  const room = classroomStore.createRoom(roomCode, classId, options);
+  res.json({ room });
+});
+
+// Teacher starts room session
+app.post('/api/classroom/rooms/:code/start', (req, res) => {
+  const room = classroomStore.startRoom(req.params.code);
   res.json({ room });
 });
 
@@ -433,20 +465,20 @@ app.get('/api/classroom/rooms/:code/events', (req, res) => {
 });
 
 // Teacher sets active question
-app.post('/api/classroom/rooms/:code/question/set', (req, res) => {
+app.post(['/api/classroom/rooms/:code/question/set', '/api/classroom/rooms/:code/question'], (req, res) => {
   const { question, state = 'COLLECTING' } = req.body;
   const room = classroomStore.setQuestion(req.params.code, question, state);
   res.json({ room });
 });
 
 // Teacher locks question
-app.post('/api/classroom/rooms/:code/question/lock', (req, res) => {
+app.post(['/api/classroom/rooms/:code/question/lock', '/api/classroom/rooms/:code/lock'], (req, res) => {
   const room = classroomStore.lockQuestion(req.params.code);
   res.json({ room });
 });
 
 // Teacher reveals correct answer
-app.post('/api/classroom/rooms/:code/question/reveal', (req, res) => {
+app.post(['/api/classroom/rooms/:code/question/reveal', '/api/classroom/rooms/:code/reveal'], (req, res) => {
   const room = classroomStore.revealAnswer(req.params.code);
   res.json({ room });
 });
@@ -499,8 +531,12 @@ app.post('/api/bitone/analyze-results', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌐 WEBBY AI Backend running on http://0.0.0.0:${PORT}`);
-  console.log(`📡 Gemini API Key: ${GEMINI_API_KEY ? 'Configured ✅' : 'Not configured (Running in Smart Offline Mode 🛡️)'}`);
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🌐 WEBBY AI Backend running on http://0.0.0.0:${PORT}`);
+    console.log(`📡 Gemini API Key: ${GEMINI_API_KEY ? 'Configured ✅' : 'Not configured (Running in Smart Offline Mode 🛡️)'}`);
+  });
+}
+
+export default app;
 

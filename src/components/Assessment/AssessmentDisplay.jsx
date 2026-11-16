@@ -424,7 +424,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           <div className="flex-1 min-h-0 overflow-y-auto py-2 pr-1">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               {students.map((stu) => {
-                const res = responses[stu.cardId];
+                const res = responses[stu.cardId] || responses[stu.id];
                 const hasAnswered = !!res;
                 const isCorrect = hasAnswered && res.answer === activeQuestion.correctAnswer;
 

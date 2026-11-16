@@ -2,27 +2,28 @@
  * Classroom API & SSE Realtime Client for WEBBY CLASSROOM
  */
 
-const getApiBase = () => {
-  if (typeof window !== 'undefined' && window.location) {
-    if (window.location.protocol === 'file:') {
-      return 'http://127.0.0.1:3001/api';
-    }
-    // In browser, use same-origin relative /api which Vite proxies seamlessly without cross-origin/PNA blocks
-    return '/api';
-  }
-  return 'http://127.0.0.1:3001/api';
-};
-
-const API_BASE = getApiBase();
+import { getApiBaseUrl, buildRoomJoinUrl, detectAppEnv } from '../config/environment';
 
 class ClassroomService {
   constructor() {
     this.eventSource = null;
+    this.pollingInterval = null;
     this.activeRoomCode = 'WB-601';
   }
 
   getBaseUrl() {
-    return getApiBase();
+    return getApiBaseUrl();
+  }
+
+  // Get network and dynamic LAN IP info for QR pairing
+  async getNetworkInfo() {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/network-info`);
+      return await res.json();
+    } catch (err) {
+      console.warn('Network info endpoint unavailable:', err.message);
+      return { success: false, lanIp: 'localhost', mobileConnectUrl: '' };
+    }
   }
 
   // Get all classes
@@ -382,35 +383,103 @@ class ClassroomService {
     }
   }
 
-  // Subscribe to SSE Realtime Stream
+  // Start room session (WAITING -> ACTIVE)
+  async startRoom(roomCode = 'WB-601') {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/start`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      return data.room;
+    } catch (err) {
+      console.error('Error starting room:', err);
+      throw err;
+    }
+  }
+
+  // Subscribe to Resilient Realtime Stream (SSE + Auto-polling fallback)
   subscribeToRoom(roomCode, onEvent) {
     if (this.eventSource) {
       this.eventSource.close();
+      this.eventSource = null;
+    }
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
     }
 
+    let isSseActive = false;
+    let lastStateHash = '';
+
+    const handleRoomUpdate = (room, eventType = 'ROOM_STATE') => {
+      if (!room) return;
+      const responsesCount = Object.keys(room.responses || {}).length;
+      const qState = room.questionState || '';
+      const qIndex = room.activeQuestionIndex || 0;
+      const currentHash = `${room.lastUpdated || ''}_${responsesCount}_${qState}_${qIndex}`;
+
+      if (currentHash !== lastStateHash) {
+        lastStateHash = currentHash;
+        if (onEvent) {
+          onEvent({ type: eventType, payload: room });
+        }
+      }
+    };
+
+    // 1. Initial State Fetch
+    this.getRoom(roomCode).then(room => {
+      if (room) handleRoomUpdate(room, 'ROOM_STATE');
+    }).catch(console.warn);
+
+    // 2. Try Server-Sent Events (SSE)
     try {
       this.eventSource = new EventSource(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/events`);
-      
+
+      this.eventSource.onopen = () => {
+        isSseActive = true;
+      };
+
       this.eventSource.onmessage = (e) => {
         try {
+          isSseActive = true;
           const parsed = JSON.parse(e.data);
-          if (onEvent) onEvent(parsed);
+          if (parsed && parsed.payload) {
+            handleRoomUpdate(parsed.payload, parsed.type || 'ROOM_STATE');
+          }
         } catch (parseErr) {
           console.warn('Error parsing SSE event:', parseErr);
         }
       };
 
-      this.eventSource.onerror = (err) => {
-        console.warn('SSE connection error:', err);
+      this.eventSource.onerror = () => {
+        isSseActive = false;
       };
     } catch (e) {
-      console.warn('Could not initiate SSE:', e);
+      isSseActive = false;
     }
+
+    // 3. Resilient Polling Fallback (runs every 1.2s - activates automatically if SSE is down or on serverless)
+    this.pollingInterval = setInterval(async () => {
+      if (isSseActive) return;
+
+      try {
+        const room = await this.getRoom(roomCode);
+        if (room) {
+          handleRoomUpdate(room, 'ROOM_STATE');
+        }
+      } catch (pollErr) {
+        // silent fail on network hiccups
+      }
+    }, 1200);
 
     return () => {
       if (this.eventSource) {
         this.eventSource.close();
         this.eventSource = null;
+      }
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
       }
     };
   }

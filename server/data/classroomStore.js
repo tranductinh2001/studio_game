@@ -142,15 +142,19 @@ class ClassroomStore {
     try {
       if (fs.existsSync(DB_FILE)) {
         this.data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-        // Ensure classes array has at least 6A, 6B, 6C if missing
         if (!this.data.classes || this.data.classes.length <= 1) {
           this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
           this.save();
         }
-      } else {
-        this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
-        this.save();
+        return;
       }
+      const tmpFile = path.join('/tmp', 'classroomDB.json');
+      if (fs.existsSync(tmpFile)) {
+        this.data = JSON.parse(fs.readFileSync(tmpFile, 'utf-8'));
+        return;
+      }
+      this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
+      this.save();
     } catch (err) {
       console.warn('Error reading classroom DB, using defaults:', err.message);
       this.data = JSON.parse(JSON.stringify(DEFAULT_DB));
@@ -161,7 +165,12 @@ class ClassroomStore {
     try {
       fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (err) {
-      console.error('Error saving classroom DB:', err.message);
+      try {
+        const tmpFile = path.join('/tmp', 'classroomDB.json');
+        fs.writeFileSync(tmpFile, JSON.stringify(this.data, null, 2), 'utf-8');
+      } catch (e) {
+        console.warn('Running with in-memory persistence:', err.message);
+      }
     }
   }
 
@@ -416,10 +425,31 @@ class ClassroomStore {
   }
 
   findStudentByCardId(cardId, classId = null) {
+    if (!cardId) return null;
     const list = classId 
       ? (this.data.students || []).filter((s) => s.classId === classId)
       : (this.data.students || []);
-    return list.find((s) => s.cardId === cardId || s.cardId === `CARD_${cardId}`);
+
+    const rawId = String(cardId).trim();
+    // 1. Direct match on cardId (e.g. CARD_0001)
+    let found = list.find((s) => s.cardId === rawId || s.cardId === `CARD_${rawId}`);
+    if (found) return found;
+
+    // 2. Numeric match (e.g. 1 -> CARD_0001, or P 1 -> CARD_0001)
+    const numMatch = rawId.match(/(\d+)/);
+    if (numMatch) {
+      const pNum = parseInt(numMatch[1], 10);
+      const paddedCardId = `CARD_${pNum < 10 ? '000' + pNum : '00' + pNum}`;
+      found = list.find((s) => s.cardId === paddedCardId);
+      if (found) return found;
+
+      // 3. Match by student position in class roster (STT 1 = P 1, STT 2 = P 2)
+      if (pNum >= 1 && pNum <= list.length) {
+        return list[pNum - 1];
+      }
+    }
+
+    return null;
   }
 
   // ==========================================
@@ -434,10 +464,12 @@ class ClassroomStore {
     const cls = (this.data.classes || []).find((c) => c.id === classId) || { name: 'Lớp 6A' };
     const students = this.getStudents(classId);
     const room = {
+      id: `ROOM_${roomCode}_${Date.now()}`,
       roomCode,
       classId,
       className: cls.name,
-      school: 'THCS Đắk Trôi',
+      school: cls.school || 'THCS Đắk Trôi',
+      status: 'ACTIVE', // Automatically active for immediate live interaction
       currentQuestion: DEFAULT_QUESTION,
       activeQuestion: DEFAULT_QUESTION,
       questionState: 'COLLECTING',
@@ -448,11 +480,25 @@ class ClassroomStore {
       groupSubmissions: {},
       groupWorks: {},
       history: [],
-      createdAt: new Date().toISOString()
+      connectedDevices: 0,
+      createdAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
     };
 
     this.data.activeRooms[roomCode] = room;
     this.save();
+    return room;
+  }
+
+  startRoom(roomCode = 'WB-601') {
+    const room = this.getRoom(roomCode);
+    room.status = 'ACTIVE';
+    room.startedAt = new Date().toISOString();
+    room.lastUpdated = new Date().toISOString();
+    this.save();
+    this.broadcast(roomCode, 'ROOM_STARTED', room);
+    this.broadcast(roomCode, 'ROOM_STATE', room);
     return room;
   }
 
@@ -466,6 +512,7 @@ class ClassroomStore {
     if (!room.currentQuestion && room.activeQuestion) room.currentQuestion = room.activeQuestion;
     if (!room.responses) room.responses = {};
     if (!room.groupWorks) room.groupWorks = {};
+    if (!room.status) room.status = 'ACTIVE';
     if (!room.className) {
       const cls = (this.data.classes || []).find((c) => c.id === room.classId);
       room.className = cls ? cls.name : 'Lớp 6A';
@@ -485,6 +532,7 @@ class ClassroomStore {
     room.totalStudents = students.length;
     room.studentResponses = {}; // reset responses for new class
     room.responses = {};
+    room.lastUpdated = new Date().toISOString();
     const analytics = this.calculateAnalytics(roomCode);
     room.analytics = analytics;
 
@@ -501,6 +549,7 @@ class ClassroomStore {
     room.questionState = state;
     room.studentResponses = {}; // reset for new question
     room.responses = {};
+    room.lastUpdated = new Date().toISOString();
     this.save();
     this.broadcast(roomCode, 'QUESTION_UPDATED', room);
     return room;
@@ -509,6 +558,7 @@ class ClassroomStore {
   lockQuestion(roomCode) {
     const room = this.getRoom(roomCode);
     room.questionState = 'LOCKED';
+    room.lastUpdated = new Date().toISOString();
     this.save();
     this.broadcast(roomCode, 'QUESTION_LOCKED', room);
     return room;
@@ -517,6 +567,7 @@ class ClassroomStore {
   revealAnswer(roomCode) {
     const room = this.getRoom(roomCode);
     room.questionState = 'REVEALED';
+    room.lastUpdated = new Date().toISOString();
 
     const correctOpt = room.currentQuestion?.correctAnswer;
     Object.values(room.studentResponses).forEach((resp) => {
@@ -534,24 +585,38 @@ class ClassroomStore {
     return room;
   }
 
-  // Submit Answer from Camera Scanner (Single or Batch)
+  // Submit Answer from Camera Scanner (Single or Batch with UPSERT & Rotation update)
   submitResponses(roomCode, responsesList) {
     const room = this.getRoom(roomCode);
 
     if (room.questionState === 'LOCKED' || room.questionState === 'COMPLETED') {
-      return { warning: 'Question is locked. Cannot accept answers.', room };
+      return { 
+        success: false, 
+        locked: true,
+        error: 'Câu hỏi đã bị khóa! Không thể nhận thêm hoặc thay đổi đáp án.', 
+        room 
+      };
     }
 
     const correctOpt = room.currentQuestion?.correctAnswer;
     const activeClassId = room.classId || 'CLASS_6A';
+    const nowIso = new Date().toISOString();
+    let updatedCount = 0;
+    let newCount = 0;
 
     responsesList.forEach((item) => {
       // Map cardId to the student of the CURRENT CLASS assigned to this room!
-      const student = this.findStudentByCardId(item.cardId, activeClassId);
+      const student = this.findStudentByCardId(item.cardId || item.quizizzCode, activeClassId);
       if (!student) return;
 
       const answer = (item.answer || '').toUpperCase();
       const isCorrect = correctOpt ? answer === correctOpt : false;
+      const existing = room.studentResponses[student.id];
+
+      // Upsert logic: if student already answered, update answer & increment revision
+      const isUpdated = !!existing && existing.answer !== answer;
+      if (isUpdated) updatedCount++;
+      else if (!existing) newCount++;
 
       const respObj = {
         studentId: student.id,
@@ -563,13 +628,18 @@ class ClassroomStore {
         angle: item.angle || item.rotation || 0,
         answer,
         isCorrect,
-        timestamp: new Date().toISOString()
+        revision: existing ? (existing.revision || 1) + 1 : 1,
+        previousAnswer: existing ? existing.answer : null,
+        scannedAt: existing?.scannedAt || nowIso,
+        updatedAt: nowIso,
+        timestamp: nowIso
       };
 
       room.studentResponses[student.id] = respObj;
       room.responses[student.cardId] = respObj; // Map directly by cardId for UI
     });
 
+    room.lastUpdated = nowIso;
     const analytics = this.calculateAnalytics(roomCode);
     room.analytics = analytics;
 
@@ -578,6 +648,8 @@ class ClassroomStore {
     return { 
       success: true, 
       totalAnswered: Object.keys(room.responses).length, 
+      updatedCount,
+      newCount,
       room,
       analytics 
     };

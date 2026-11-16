@@ -26,6 +26,45 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   const requestRef = useRef(null);
   const streamRef = useRef(null);
 
+  // Auto-streaming queue to instantly push detected responses to Teacher Desktop in real time
+  const pendingSyncQueueRef = useRef(new Map());
+  const syncTimeoutRef = useRef(null);
+  const syncedCardsRef = useRef(new Map()); // cardId -> last synced answer
+
+  const queueResponseForAutoSync = (respItem) => {
+    const lastAnswer = syncedCardsRef.current.get(respItem.cardId);
+    if (lastAnswer === respItem.answer) {
+      return;
+    }
+
+    pendingSyncQueueRef.current.set(respItem.cardId, respItem);
+
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      const batch = Array.from(pendingSyncQueueRef.current.values());
+      if (batch.length === 0) return;
+      pendingSyncQueueRef.current.clear();
+
+      try {
+        const res = await classroomService.submitResponses(roomCode, batch);
+        if (res && res.locked) {
+          setSyncStatus('⚠️ Câu hỏi đã bị khóa!');
+        } else if (res && res.success) {
+          batch.forEach(item => {
+            syncedCardsRef.current.set(item.cardId, item.answer);
+          });
+          setSyncStatus(`⚡ Realtime: Đã nạp ${res.totalAnswered || batch.length} đáp án lên máy chiếu!`);
+          if (onResponsesUpdated) onResponsesUpdated(batch);
+        }
+      } catch (err) {
+        console.warn('Auto-sync response error:', err);
+      }
+    }, 120);
+  };
+
   // Load students for active class
   const loadStudentsForClass = (classId) => {
     classroomService.getStudents(classId).then((list) => {
@@ -60,12 +99,21 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     });
 
     const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
-      if (event.type === 'ROOM_CLASS_CHANGED' || (event.type === 'ROOM_STATE' && event.payload.classId)) {
+      if (event.type === 'ROOM_CLASS_CHANGED' || (event.type === 'ROOM_STATE' && event.payload?.classId)) {
         const newClassId = event.payload.classId;
         setActiveClassId(newClassId);
         setActiveClassName(event.payload.className || 'Lớp 6A');
         loadStudentsForClass(newClassId);
         setDetectedResponses({});
+        syncedCardsRef.current.clear();
+      }
+      if (event.type === 'QUESTION_UPDATED' || event.type === 'ROOM_STARTED') {
+        setDetectedResponses({});
+        syncedCardsRef.current.clear();
+        setSyncStatus('Câu hỏi mới: Sẵn sàng quét thẻ học sinh');
+      }
+      if (event.type === 'QUESTION_LOCKED') {
+        setSyncStatus('⚠️ Giáo viên đã khóa nhận đáp án');
       }
     });
 
@@ -199,23 +247,26 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
           ctx.font = 'bold 20px Orbitron, sans-serif';
           ctx.fillText(`[${student.fullName}] -> Đáp án ${answer} (${angle}°)`, topLeftCorner.x, topLeftCorner.y - 10);
 
+          const respItem = {
+            cardId,
+            studentCode: student.studentCode,
+            studentName: student.fullName,
+            answer,
+            angle,
+            cardType: 'Webby QR',
+            detectedAt: new Date().toISOString()
+          };
+
           // Update detected responses
-          setDetectedResponses((prev) => {
-            const next = {
-              ...prev,
-              [cardId]: {
-                cardId,
-                studentCode: student.studentCode,
-                studentName: student.fullName,
-                answer,
-                angle,
-                detectedAt: new Date().toISOString()
-              }
-            };
-            return next;
-          });
+          setDetectedResponses((prev) => ({
+            ...prev,
+            [cardId]: respItem
+          }));
 
           setLastScannedStudent({ name: student.fullName, answer, angle });
+
+          // Auto-stream to server in real-time
+          queueResponseForAutoSync(respItem);
 
           // Haptic feedback if supported
           if (navigator.vibrate) {
@@ -258,21 +309,26 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
 
             // Record response
             const targetKey = student.cardId || cardId;
+            const respItem = {
+              cardId: targetKey,
+              quizizzCode,
+              studentCode: student.studentCode,
+              studentName: student.fullName,
+              answer,
+              angle: visualAngle,
+              cardType: 'Quizizz Q-Card',
+              detectedAt: new Date().toISOString()
+            };
+
             setDetectedResponses((prev) => ({
               ...prev,
-              [targetKey]: {
-                cardId: targetKey,
-                quizizzCode,
-                studentCode: student.studentCode,
-                studentName: student.fullName,
-                answer,
-                angle: visualAngle,
-                cardType: 'Quizizz Q-Card',
-                detectedAt: new Date().toISOString()
-              }
+              [targetKey]: respItem
             }));
 
             setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
+
+            // Auto-stream to server in real-time
+            queueResponseForAutoSync(respItem);
 
             if (navigator.vibrate) {
               navigator.vibrate(40);

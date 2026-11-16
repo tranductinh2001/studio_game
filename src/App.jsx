@@ -17,6 +17,7 @@ import { speechSynth } from './services/speechSynthesis';
 import { speechRec } from './services/speechRecognition';
 import { aiService } from './services/aiService';
 import { classroomService } from './services/classroomService';
+import { detectAppEnv, buildRoomJoinUrl } from './config/environment';
 import conversationScripts from './data/conversationScripts.json';
 import QRCode from 'qrcode';
 import { 
@@ -88,26 +89,34 @@ export default function App() {
       setCurrentTab('mobile-controller');
     }
 
-    // Determine LAN IP and generate mobile connection QR
-    let host = '192.168.1.10';
-    if (typeof window !== 'undefined' && window.location) {
-      if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        host = window.location.hostname;
-      }
-    }
-    const fullUrl = `http://${host}:5173/?mode=mobile`;
-    setMobileConnectUrl(fullUrl);
+    // Determine correct environment URL & dynamic LAN IP for room join
+    const updateMobileConnectUrl = async () => {
+      try {
+        const netInfo = await classroomService.getNetworkInfo();
+        const joinUrl = buildRoomJoinUrl(roomCode, netInfo?.lanIp);
+        setMobileConnectUrl(joinUrl);
 
-    QRCode.toDataURL(fullUrl, {
-      width: 280,
-      margin: 2,
-      color: { dark: '#000000', light: '#ffffff' },
-      errorCorrectionLevel: 'H'
-    }).then((url) => {
-      setPhoneConnectQr(url);
-    }).catch((err) => {
-      console.warn('QR generate error:', err);
-    });
+        const qrData = await QRCode.toDataURL(joinUrl, {
+          width: 280,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'H'
+        });
+        setPhoneConnectQr(qrData);
+      } catch (err) {
+        console.warn('Network info fallback for QR:', err);
+        const fallbackUrl = buildRoomJoinUrl(roomCode);
+        setMobileConnectUrl(fallbackUrl);
+        QRCode.toDataURL(fallbackUrl, {
+          width: 280,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'H'
+        }).then(setPhoneConnectQr).catch(console.warn);
+      }
+    };
+
+    updateMobileConnectUrl();
   }, []);
 
   const handleCopyMobileLink = () => {
@@ -628,13 +637,21 @@ export default function App() {
               </button>
             </div>
 
-            {/* Wi-Fi Guide notes */}
+            {/* Dynamic Environment & Wi-Fi Guide notes */}
             <div className="text-[11px] text-slate-400 text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-1">
               <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
                 <Wifi className="w-3.5 h-3.5" />
-                Lưu ý quan trọng:
+                Môi trường kết nối: {detectAppEnv() === 'production' ? (
+                  <span className="text-emerald-400 font-semibold">Vercel Cloud (Online 4G/Wi-Fi)</span>
+                ) : (
+                  <span className="text-amber-300 font-semibold">Mạng LAN Wi-Fi Nội Bộ</span>
+                )}
               </div>
-              <p>• Điện thoại và máy tính cần kết nối chung một mạng Wi-Fi (hoặc phát Wi-Fi từ điện thoại sang máy tính).</p>
+              {detectAppEnv() === 'production' ? (
+                <p>• Điện thoại có thể quét mã từ bất kỳ đâu (4G hoặc Wi-Fi) để đồng bộ trực tiếp với màn hình máy chiếu.</p>
+              ) : (
+                <p>• Điện thoại và máy tính cần kết nối chung mạng Wi-Fi (hoặc phát Wi-Fi từ điện thoại sang máy tính).</p>
+              )}
               <p>• Dùng điện thoại để: <span className="text-emerald-300 font-semibold">Quét thẻ QR học sinh</span> và <span className="text-cyan-300 font-semibold">Chụp ảnh bài làm nhóm (A3/A4)</span>.</p>
             </div>
           </div>
