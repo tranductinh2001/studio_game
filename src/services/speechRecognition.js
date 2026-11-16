@@ -7,10 +7,18 @@ class SpeechRecognitionService {
     this.isMuted = false;           // Echo suppression while Webby is speaking
     this.listeners = new Set();
     this.isSupported = false;
+    this.hasPermissionError = false;
+
+    // Direct callback handlers that can be assigned directly by React components
+    this.onResult = null;
+    this.onInterim = null;
+    this.onError = null;
+    this.onStart = null;
+    this.onEnd = null;
 
     // Silence detection & debounce timers
     this.silenceTimer = null;
-    this.silenceThresholdMs = 1000; // 1 second of silence marks end of sentence
+    this.silenceThresholdMs = 1200; // 1.2s silence marks end of sentence for 6th graders
     this.accumulatedTranscript = '';
     this.lastDispatchedTranscript = '';
     this.lastDispatchTime = 0;
@@ -19,16 +27,40 @@ class SpeechRecognitionService {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'vi-VN';
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
-        this.recognition.maxAlternatives = 1;
-        this.isSupported = true;
+        try {
+          this.recognition = new SpeechRecognition();
+          this.recognition.lang = 'vi-VN';
+          this.recognition.continuous = true;
+          this.recognition.interimResults = true;
+          this.recognition.maxAlternatives = 1;
+          this.isSupported = true;
 
-        this.setupHandlers();
+          this.setupHandlers();
+        } catch (e) {
+          console.warn('SpeechRecognition initialization error:', e);
+          this.isSupported = false;
+        }
       }
     }
+  }
+
+  // Request browser microphone permission explicitly via getUserMedia
+  async requestMicPermission() {
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Immediately release tracks so SpeechRecognition has full microphone access
+        stream.getTracks().forEach((track) => track.stop());
+        this.hasPermissionError = false;
+        return true;
+      } catch (err) {
+        console.warn('Microphone permission request failed:', err);
+        this.hasPermissionError = true;
+        this.notify({ type: 'permission-denied', error: err.name || 'not-allowed' });
+        return false;
+      }
+    }
+    return true;
   }
 
   setupHandlers() {
@@ -36,6 +68,8 @@ class SpeechRecognitionService {
 
     this.recognition.onstart = () => {
       this.isListening = true;
+      this.hasPermissionError = false;
+      console.log('[SpeechRecognition] Micro started listening (vi-VN)...');
       this.notify({ type: 'start' });
     };
 
@@ -87,9 +121,18 @@ class SpeechRecognitionService {
     };
 
     this.recognition.onerror = (event) => {
-      // Ignore common non-fatal events like 'no-speech'
+      // Permission denied or device blocked
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        this.hasPermissionError = true;
+        console.warn('[SpeechRecognition] Microphone access not allowed:', event.error);
+        this.notify({ type: 'error', error: 'not-allowed' });
+        this.notify({ type: 'permission-denied', error: event.error });
+        return;
+      }
+
+      // Ignore common non-fatal events like 'no-speech' or 'aborted'
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        console.warn('SpeechRecognition notice:', event.error);
+        console.warn('[SpeechRecognition] notice:', event.error);
       }
       this.notify({ type: 'error', error: event.error });
     };
@@ -98,11 +141,11 @@ class SpeechRecognitionService {
       this.isListening = false;
       this.notify({ type: 'end' });
 
-      // Continuous Watchdog: If agent is still supposed to listen and not muted, auto-restart
-      if (this.shouldBeListening && !this.isMuted) {
+      // Continuous Watchdog: If agent is still supposed to listen, not muted, and not blocked by permission
+      if (this.shouldBeListening && !this.isMuted && !this.hasPermissionError) {
         if (this.restartDebounceTimer) clearTimeout(this.restartDebounceTimer);
         this.restartDebounceTimer = setTimeout(() => {
-          if (this.shouldBeListening && !this.isMuted && !this.isListening) {
+          if (this.shouldBeListening && !this.isMuted && !this.isListening && !this.hasPermissionError) {
             this.safeStart();
           }
         }, 300);
@@ -128,6 +171,8 @@ class SpeechRecognitionService {
     this.lastDispatchTime = now;
     this.accumulatedTranscript = '';
 
+    console.log('[SpeechRecognition] Utterance Recognized:', clean);
+
     this.notify({
       type: 'result',
       final: clean,
@@ -142,6 +187,28 @@ class SpeechRecognitionService {
   }
 
   notify(event) {
+    // 1. Invoke direct callback properties (onResult, onInterim, onError, onStart, onEnd)
+    try {
+      if (event.type === 'result') {
+        if (event.isFinal && typeof this.onResult === 'function') {
+          this.onResult(event.final);
+        } else if (!event.isFinal && typeof this.onInterim === 'function') {
+          this.onInterim(event.interim);
+        }
+      } else if (event.type === 'error' && typeof this.onError === 'function') {
+        this.onError(event.error);
+      } else if (event.type === 'permission-denied' && typeof this.onError === 'function') {
+        this.onError('not-allowed');
+      } else if (event.type === 'start' && typeof this.onStart === 'function') {
+        this.onStart();
+      } else if (event.type === 'end' && typeof this.onEnd === 'function') {
+        this.onEnd();
+      }
+    } catch (e) {
+      console.error('Error executing speechRec direct callback:', e);
+    }
+
+    // 2. Broadcast to subscribed listeners
     this.listeners.forEach((cb) => {
       try {
         cb(event);
@@ -155,6 +222,7 @@ class SpeechRecognitionService {
   startContinuous() {
     this.shouldBeListening = true;
     this.isMuted = false;
+    this.hasPermissionError = false;
     this.accumulatedTranscript = '';
     this.safeStart();
   }
@@ -178,20 +246,25 @@ class SpeechRecognitionService {
   // Unmute/resume listening after Webby finishes speaking
   unmute() {
     this.isMuted = false;
-    if (this.shouldBeListening) {
-      this.safeStart();
-    }
+    this.shouldBeListening = true; // Ensure persistent state is enabled
+    this.safeStart();
   }
 
   safeStart() {
-    if (!this.recognition) return;
+    if (!this.recognition || this.isMuted) return;
+    if (this.hasPermissionError) {
+      console.warn('Microphone permission blocked. Please grant access in browser settings.');
+      return;
+    }
     try {
       if (!this.isListening) {
         this.recognition.start();
       }
     } catch (err) {
-      // If already started or aborting, will recover via onend
-      if (err.name !== 'InvalidStateError') {
+      // If already started, mark isListening
+      if (err.name === 'InvalidStateError') {
+        this.isListening = true;
+      } else {
         console.warn('Recognition start warning:', err.message);
       }
     }
@@ -200,9 +273,9 @@ class SpeechRecognitionService {
   safeStop() {
     if (!this.recognition) return;
     try {
-      if (this.isListening) {
-        this.recognition.stop();
-      }
+      // abort() immediately discards buffer and halts capture, preventing echo
+      this.recognition.abort();
+      this.isListening = false;
     } catch (err) {
       // Ignore
     }

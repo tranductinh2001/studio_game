@@ -1,4 +1,4 @@
-// Service for Text-to-Speech in Vietnamese with audio phoneme synchronization
+// Service for Text-to-Speech in Vietnamese with audio phoneme synchronization and Chrome keep-alive
 class SpeechSynthesisService {
   constructor() {
     this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
@@ -9,6 +9,9 @@ class SpeechSynthesisService {
     this.pitch = 1.05; // slightly cheerful
     this.listeners = new Set();
     this.mouthInterval = null;
+    this.activeUtterance = null; // Prevent Chrome V8 garbage-collection bug
+    this.speechWatchdog = null;
+    this.keepAliveInterval = null;
 
     if (this.synth) {
       this.initVoices();
@@ -22,12 +25,16 @@ class SpeechSynthesisService {
     if (!this.synth) return;
     const voices = this.synth.getVoices();
     // Prioritize natural Vietnamese voices
-    const viVoice = voices.find(v => v.lang.includes('vi') || v.lang.includes('VI') || v.name.toLowerCase().includes('vietnam') || v.name.toLowerCase().includes('hoaimy'));
+    const viVoice = voices.find(
+      (v) =>
+        v.lang.includes('vi') ||
+        v.lang.includes('VI') ||
+        v.name.toLowerCase().includes('vietnam') ||
+        v.name.toLowerCase().includes('hoaimy')
+    );
     if (viVoice) {
       this.selectedVoice = viVoice;
-      console.log('Selected Vietnamese Voice:', viVoice.name, viVoice.lang);
-    } else {
-      console.warn('No native Vietnamese voice found. Browser will attempt default or fallback.');
+      console.log('[SpeechSynthesis] Selected Vietnamese Voice:', viVoice.name, viVoice.lang);
     }
   }
 
@@ -38,7 +45,7 @@ class SpeechSynthesisService {
   }
 
   notify(event) {
-    this.listeners.forEach(cb => {
+    this.listeners.forEach((cb) => {
       try {
         cb(event);
       } catch (e) {
@@ -47,7 +54,7 @@ class SpeechSynthesisService {
     });
   }
 
-  // Speak a text string in Vietnamese
+  // Speak a text string in Vietnamese with Chrome keep-alive & watchdog
   speak(text, onComplete = null) {
     if (!this.synth) {
       console.warn('SpeechSynthesis is not supported in this browser.');
@@ -65,6 +72,7 @@ class SpeechSynthesisService {
 
     const cleanText = text.replace(/[*_~`#]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    this.activeUtterance = utterance; // Keep reference to prevent Chrome garbage-collection bug
 
     if (this.selectedVoice) {
       utterance.voice = this.selectedVoice;
@@ -73,36 +81,80 @@ class SpeechSynthesisService {
     utterance.rate = this.speechRate;
     utterance.pitch = this.pitch;
 
+    let hasCompleted = false;
+    const finishSpeech = (eventType = 'end') => {
+      if (hasCompleted) return;
+      hasCompleted = true;
+
+      if (this.speechWatchdog) {
+        clearTimeout(this.speechWatchdog);
+        this.speechWatchdog = null;
+      }
+      if (this.keepAliveInterval) {
+        clearInterval(this.keepAliveInterval);
+        this.keepAliveInterval = null;
+      }
+
+      this.isSpeaking = false;
+      this.isPaused = false;
+      this.stopMouthSimulation();
+      this.activeUtterance = null;
+      this.notify({ type: eventType });
+
+      if (typeof onComplete === 'function') {
+        try {
+          onComplete();
+        } catch (err) {
+          console.error('Error executing speech onComplete:', err);
+        }
+      }
+    };
+
     utterance.onstart = () => {
       this.isSpeaking = true;
       this.isPaused = false;
       this.notify({ type: 'start', text: cleanText });
       this.startMouthSimulation();
+
+      // Chrome SpeechSynthesis Keep-Alive: Chrome pauses speech after 15 seconds without this
+      if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = setInterval(() => {
+        if (this.synth && this.isSpeaking && !this.isPaused) {
+          this.synth.pause();
+          this.synth.resume();
+        }
+      }, 5000);
     };
 
     utterance.onend = () => {
-      this.isSpeaking = false;
-      this.isPaused = false;
-      this.stopMouthSimulation();
-      this.notify({ type: 'end' });
-      if (onComplete) onComplete();
+      finishSpeech('end');
     };
 
     utterance.onerror = (e) => {
-      console.error('SpeechSynthesis error:', e);
-      this.isSpeaking = false;
-      this.isPaused = false;
-      this.stopMouthSimulation();
-      this.notify({ type: 'error', error: e });
-      if (onComplete) onComplete();
+      console.warn('[SpeechSynthesis] error event:', e);
+      finishSpeech('error');
     };
 
-    // On boundary if supported (words)
     utterance.onboundary = (e) => {
       this.notify({ type: 'boundary', charIndex: e.charIndex });
     };
 
-    this.synth.speak(utterance);
+    // Watchdog safety timer: Vietnamese speech averages 12-15 chars/sec
+    // Allow generous limit + 4s padding so agent is never stuck in SPEAKING mode
+    const maxDurationMs = Math.max(3500, Math.ceil((cleanText.length / 8) * 1000) + 4000);
+    this.speechWatchdog = setTimeout(() => {
+      if (this.isSpeaking) {
+        console.warn(`[SpeechSynthesis] Watchdog triggered after ${maxDurationMs}ms - freeing agent to listen.`);
+        finishSpeech('end');
+      }
+    }, maxDurationMs);
+
+    try {
+      this.synth.speak(utterance);
+    } catch (err) {
+      console.error('Error starting speech synthesis:', err);
+      finishSpeech('error');
+    }
   }
 
   // Realistic mouth phoneme oscillation during speech
@@ -111,7 +163,6 @@ class SpeechSynthesisService {
     let phase = 0;
     this.mouthInterval = setInterval(() => {
       phase += 0.35;
-      // Combine multiple sine frequencies to simulate natural syllable cadence
       const raw = Math.sin(phase) * 0.5 + Math.sin(phase * 2.3) * 0.3 + Math.random() * 0.2;
       const mouthOpen = Math.max(0.05, Math.min(1.0, Math.abs(raw)));
       this.notify({ type: 'mouth', value: mouthOpen });
@@ -145,11 +196,24 @@ class SpeechSynthesisService {
   }
 
   stop() {
+    if (this.speechWatchdog) {
+      clearTimeout(this.speechWatchdog);
+      this.speechWatchdog = null;
+    }
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = null;
+    }
     if (this.synth) {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
+      } catch (e) {
+        // Ignore
+      }
     }
     this.isSpeaking = false;
     this.isPaused = false;
+    this.activeUtterance = null;
     this.stopMouthSimulation();
     this.notify({ type: 'stop' });
   }
@@ -160,4 +224,3 @@ class SpeechSynthesisService {
 }
 
 export const speechSynth = new SpeechSynthesisService();
-

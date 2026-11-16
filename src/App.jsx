@@ -40,6 +40,7 @@ export default function App() {
   // Real-time Agent State: 'IDLE' | 'GREETING' | 'LISTENING' | 'PROCESSING' | 'SPEAKING' | 'PAUSED'
   const [agentState, setAgentState] = useState('IDLE');
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [micError, setMicError] = useState(null);
 
   // Avatar & Speech animation states
   const [emotion, setEmotion] = useState('IDLE');
@@ -214,31 +215,80 @@ export default function App() {
 
   // Bind speech recognition callbacks
   useEffect(() => {
-    speechRec.onResult = (finalTranscript) => {
+    const handleResult = (finalTranscript) => {
+      if (!finalTranscript) return;
+      console.log('[App] Speech Recognition Result:', finalTranscript);
       if (agentStateRef.current === 'SPEAKING' || !isSessionActiveRef.current) {
+        console.log('[App] Ignored speech while Webby is speaking or session inactive');
         return;
       }
       handleStudentQuery(finalTranscript);
     };
 
-    speechRec.onInterim = (interimTranscript) => {
+    const handleInterim = (interimTranscript) => {
       if (agentStateRef.current === 'LISTENING') {
         setInterimText(interimTranscript);
       }
     };
 
-    speechRec.onError = (error) => {
-      if (error !== 'no-speech') {
+    const handleError = (error) => {
+      if (error === 'not-allowed' || error === 'service-not-allowed') {
+        setMicError('Trình duyệt chưa cho phép truy cập Micro. Hãy nhấp vào biểu tượng 🔒 hoặc 🎙️ trên thanh địa chỉ để Cấp quyền!');
+      } else if (error !== 'no-speech' && error !== 'aborted') {
         console.warn('Speech recognition notice:', error);
       }
     };
+
+    // Assign direct callback properties
+    speechRec.onResult = handleResult;
+    speechRec.onInterim = handleInterim;
+    speechRec.onError = handleError;
+
+    // Also subscribe via event emitter for maximum reliability
+    const unsubscribe = speechRec.subscribe((event) => {
+      if (event.type === 'result') {
+        if (event.isFinal && event.final) {
+          handleResult(event.final);
+        } else if (!event.isFinal && event.interim) {
+          handleInterim(event.interim);
+        }
+      } else if (event.type === 'error' || event.type === 'permission-denied') {
+        handleError(event.error);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      speechRec.onResult = null;
+      speechRec.onInterim = null;
+      speechRec.onError = null;
+    };
   }, [handleStudentQuery]);
 
+  // Request mic permission manually
+  const handleRequestMicPermission = async () => {
+    if (speechRec.requestMicPermission) {
+      const ok = await speechRec.requestMicPermission();
+      if (ok) {
+        setMicError(null);
+        speechRec.startContinuous();
+      }
+    }
+  };
+
   // Start continuous conversation session
-  const handleStartSession = () => {
+  const handleStartSession = async () => {
+    setMicError(null);
+    if (speechRec.requestMicPermission) {
+      await speechRec.requestMicPermission();
+    }
+
     setIsSessionActive(true);
     setRoundCount(0);
     setConversationHistory([]);
+
+    // Enable continuous listening mode so safeStart() knows agent wants to listen
+    speechRec.startContinuous();
 
     const greetingText =
       'Xin chào các bạn học sinh lớp 6! Mình là WEBBY, đại sứ Mạng thông tin toàn cầu! Hôm nay mình rất vui được đồng hành cùng các bạn khám phá thế giới Internet kỳ thú! Các bạn đã sẵn sàng chưa nào?';
@@ -246,11 +296,29 @@ export default function App() {
     speakAsWebby(greetingText, 'GREETING');
   };
 
+  // Directly activate microphone listening without waiting for greeting
+  const handleDirectListen = async () => {
+    setMicError(null);
+    if (speechRec.requestMicPermission) {
+      await speechRec.requestMicPermission();
+    }
+
+    setIsSessionActive(true);
+    speechSynth.stop();
+    setAgentState('LISTENING');
+    setEmotion('LISTENING');
+    setCurrentSpeaker('HỌC SINH');
+    setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói hoặc chọn câu hỏi gợi ý!');
+    setInterimText('');
+    speechRec.unmute();
+    speechRec.startContinuous();
+  };
+
   // Stop session
   const handleStopSession = () => {
     setIsSessionActive(false);
     speechSynth.stop();
-    speechRec.stop();
+    speechRec.stopContinuous();
     setAgentState('IDLE');
     setEmotion('IDLE');
     setCurrentSpeaker('WEBBY');
@@ -261,7 +329,7 @@ export default function App() {
   // Pause listening
   const handlePauseListening = () => {
     setAgentState('PAUSED');
-    speechRec.stop();
+    speechRec.mute();
     speechSynth.stop();
   };
 
@@ -271,7 +339,8 @@ export default function App() {
     setEmotion('LISTENING');
     setCurrentSpeaker('HỌC SINH');
     setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói đi nào!');
-    speechRec.start();
+    speechRec.unmute();
+    speechRec.startContinuous();
   };
 
   // Replay speech
@@ -515,10 +584,13 @@ export default function App() {
               <VoiceControlBar
                 isSessionActive={isSessionActive}
                 agentState={agentState}
+                micError={micError}
+                onRequestMicPermission={handleRequestMicPermission}
                 onStartSession={handleStartSession}
                 onStopSession={handleStopSession}
                 onPauseListening={handlePauseListening}
                 onResumeListening={handleResumeListening}
+                onDirectListen={handleDirectListen}
                 onReplaySpeech={handleReplaySpeech}
                 onManualSubmit={handleStudentQuery}
               />
