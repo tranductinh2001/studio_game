@@ -7,6 +7,7 @@ import TeacherPanel from './components/TeacherPanel/TeacherPanel';
 import IntroBanner from './components/IntroBanner/IntroBanner';
 
 // New Classroom Modules
+import LessonSlidePresentation from './components/Presentation/LessonSlidePresentation';
 import GroupWorkDisplay from './components/GroupWork/GroupWorkDisplay';
 import AssessmentDisplay from './components/Assessment/AssessmentDisplay';
 import BitOneQuestionGenerator from './components/BitOneQuiz/BitOneQuestionGenerator';
@@ -22,12 +23,12 @@ import conversationScripts from './data/conversationScripts.json';
 import QRCode from 'qrcode';
 import { 
   Maximize2, Minimize2, Globe, Bot, Image as ImageIcon, 
-  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink 
+  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink, BookOpen 
 } from 'lucide-react';
 
 export default function App() {
-  // Navigation Tab: 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
-  const [currentTab, setCurrentTab] = useState('webby-agent');
+  // Navigation Tab: 'lesson-slide' | 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
+  const [currentTab, setCurrentTab] = useState('lesson-slide');
   const [assessmentSelectedQuestion, setAssessmentSelectedQuestion] = useState(null);
 
   // Phone Connect Modal state
@@ -83,10 +84,12 @@ export default function App() {
       }
     });
 
-    // Check URL parameters for direct mobile view (?mode=mobile)
+    // Check URL parameters for direct mobile view (?mode=mobile) or direct tab (?tab=...)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('mode') === 'mobile' || window.location.pathname === '/mobile') {
       setCurrentTab('mobile-controller');
+    } else if (urlParams.get('tab')) {
+      setCurrentTab(urlParams.get('tab'));
     }
 
     // Determine correct environment URL & dynamic LAN IP for room join
@@ -371,8 +374,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* 5 Main Mode Navigation Switcher Tabs */}
+        {/* 6 Main Mode Navigation Switcher Tabs */}
         <nav className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800/80 shadow-inner">
+          <button
+            onClick={() => setCurrentTab('lesson-slide')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+              currentTab === 'lesson-slide'
+                ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 text-slate-950 shadow-md shadow-cyan-500/40 ring-1 ring-cyan-300'
+                : 'text-cyan-300 hover:text-white hover:bg-slate-800/80'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Slide Bài 6</span>
+          </button>
+
           <button
             onClick={() => setCurrentTab('webby-agent')}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -469,6 +484,11 @@ export default function App() {
 
       {/* 3. DYNAMIC BODY ROUTING ACCORDING TO CURRENT TAB */}
       <section className="relative z-20 flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* TAB 0: INTERACTIVE LESSON PRESENTATION (BÀI 6 - MẠNG THÔNG TIN TOÀN CẦU) */}
+        {currentTab === 'lesson-slide' && (
+          <LessonSlidePresentation onSwitchTab={(tab) => setCurrentTab(tab)} />
+        )}
+
         {/* TAB 1: ORIGINAL 3D WEBBY AI AGENT */}
         {currentTab === 'webby-agent' && (
           <div className="w-full h-full flex flex-col justify-between overflow-hidden">

@@ -297,7 +297,11 @@
 
     <!-- Footer button -->
     <div class="flex items-center justify-between shrink-0 pt-1">
-      <span class="text-xs text-slate-500">Giáo viên chốt nhận định để dẫn dắt vào bài mới</span>
+      <div class="flex items-center gap-2">
+        <button onclick="switchParentTab('webby-agent')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all flex items-center gap-1.5 border border-indigo-400/40 shadow-md">
+          <span>🤖 Trò chuyện giọng nói với Webby AI</span>
+        </button>
+      </div>
       <button onclick="goToSlide(3)" class="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-all flex items-center gap-1.5">
         <span>Sang Hoạt động 2: Hình thành kiến thức</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -686,10 +690,13 @@
         ⏱️ <strong>Luật chơi:</strong> 20 giây suy nghĩ cho mỗi câu • Học sinh giơ thẻ hoặc chọn đáp án A, B, C, D • Bấm "Hiện đáp án" để xem giải thích chi tiết!
       </p>
 
-      <!-- Nút bắt đầu -->
-      <div>
-        <button onclick="startQuiz()" class="btn-glow px-10 py-3.5 rounded-2xl font-black text-lg text-slate-950 bg-gradient-to-r from-amber-400 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 transition-all transform hover:scale-105 shadow-xl">
-          🔥 BẮT ĐẦU CÂU HỎI 1
+      <!-- Nút bắt đầu & Chuyển sang Đấu trường QR -->
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <button onclick="startQuiz()" class="btn-glow px-8 py-3.5 rounded-2xl font-black text-base sm:text-lg text-slate-950 bg-gradient-to-r from-amber-400 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 transition-all transform hover:scale-105 shadow-xl">
+          🔥 BẮT ĐẦU CÂU HỎI 1 (TRỰC TIẾP TRÊN SLIDE)
+        </button>
+        <button onclick="switchParentTab('qr-assessment')" class="px-6 py-3.5 rounded-2xl font-bold text-sm bg-purple-600 hover:bg-purple-500 text-white transition-all transform hover:scale-105 shadow-xl flex items-center gap-2 border border-purple-400/40">
+          <span>🚀 MỞ ĐẤU TRƯỜNG THẺ QR / QUIZIZZ (MÁY CHIẾU)</span>
         </button>
       </div>
     </div>
@@ -1308,6 +1315,18 @@
       // Handle specific slide activations
       onSlideChanged(currentSlide);
     }
+
+    function switchParentTab(tabName) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'SWITCH_TAB', tab: tabName }, '*');
+      }
+    }
+
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'GO_TO_SLIDE') {
+        goToSlide(event.data.index);
+      }
+    });
 
     function nextSlide() {
       showSlide(currentSlide + 1);

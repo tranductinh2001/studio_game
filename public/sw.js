@@ -2,6 +2,7 @@ const CACHE_NAME = 'webby-classroom-v3-realtime';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/slide_trinh_chieu_tinhoc6_bai06.html',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
