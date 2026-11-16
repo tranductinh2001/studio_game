@@ -3,12 +3,14 @@ import {
   Printer, Download, Eye, Users, FileText, CheckCircle2, 
   RotateCw, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, RefreshCw,
   Plus, Edit3, Trash2, Clipboard, Save, X, School, Check, AlertCircle,
-  FileSpreadsheet, FolderSync, Upload, CheckSquare, Square, UserPlus
+  FileSpreadsheet, FolderSync, Upload, CheckSquare, Square, UserPlus,
+  ExternalLink, Layers
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { classroomService } from '../../services/classroomService';
+import { renderQuizizzMarkerSVG, QUIZIZZ_CARDS } from '../../utils/quizizzArucoDetector';
 
 export default function CardGenerator() {
   const [classes, setClasses] = useState([]);
@@ -18,6 +20,10 @@ export default function CardGenerator() {
   const [previewQrDataUrl, setPreviewQrDataUrl] = useState('');
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
+
+  // Card Standard Mode: 'quizizz' (Quizizz Paper Mode Q-Cards P 1-60) or 'webby' (Webby QR 4 directions)
+  const [cardStandard, setCardStandard] = useState('quizizz');
+  const [quizizzCardSide, setQuizizzCardSide] = useState('front'); // 'front' | 'back'
 
   // Quick single student add bar
   const [quickAddName, setQuickAddName] = useState('');
@@ -748,8 +754,65 @@ export default function CardGenerator() {
         </div>
       )}
 
+      {/* Card Standard Mode Switcher: Quizizz Q-Cards (vi.pdf) vs Webby QR */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 py-2 px-3 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-slate-900/40 rounded-xl border border-purple-500/40 my-1.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+            <Layers className="w-4 h-4 text-purple-400" />
+            CHUẨN MÃ THẺ:
+          </span>
+          <div className="flex items-center gap-1.5 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
+            <button
+              onClick={() => setCardStandard('quizizz')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                cardStandard === 'quizizz'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Check className={`w-3.5 h-3.5 ${cardStandard === 'quizizz' ? 'inline' : 'hidden'}`} />
+              Thẻ Quizizz Q-Cards (P 1 - P 60)
+            </button>
+            <button
+              onClick={() => setCardStandard('webby')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                cardStandard === 'webby'
+                  ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Check className={`w-3.5 h-3.5 ${cardStandard === 'webby' ? 'inline' : 'hidden'}`} />
+              Thẻ Webby QR 4 hướng (CARD_0001)
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs">
+          {cardStandard === 'quizizz' ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-purple-300 hidden sm:inline font-medium">
+                🎯 Thầy/Cô dùng trực tiếp bộ thẻ Quizizz (P 1 - P 60) đã in sẵn từ vi.pdf!
+              </span>
+              <a
+                href="https://cf.quizizz.com/pdf/Wayground-QCards/vi.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-500/40 text-[11px] font-semibold transition-all shadow-sm"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Mở file Quizizz vi.pdf gốc
+              </a>
+            </div>
+          ) : (
+            <span className="text-[11px] text-cyan-300">
+              💡 Thẻ QR Webby 4 hướng (A: trên, B: phải, C: dưới, D: trái)
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Class Selector Bar & Notification */}
-      <div className="flex flex-wrap items-center justify-between gap-3 py-2.5 px-3 bg-slate-900/60 rounded-xl border border-slate-800 my-2 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-2 px-3 bg-slate-900/60 rounded-xl border border-slate-800 my-1 shrink-0">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
             <School className="w-4 h-4 text-cyan-400" />
@@ -777,7 +840,11 @@ export default function CardGenerator() {
         {/* Notice of Shared QR Card Set */}
         <div className="text-[11px] text-amber-300/90 flex items-center gap-1.5 bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-800/40">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>Mã thẻ QR (CARD_0001 - CARD_0040) là cố định dùng chung cho mọi lớp. Khi chọn lớp nào, tên học sinh lớp đó sẽ tự liên kết với thẻ!</span>
+          <span>
+            {cardStandard === 'quizizz'
+              ? 'Thẻ Quizizz (P 1 - P 60) dùng chung cho mọi lớp: STT 1 nhận thẻ P 1, STT 2 nhận thẻ P 2...'
+              : 'Mã thẻ QR (CARD_0001 - CARD_0040) là cố định dùng chung cho mọi lớp!'}
+          </span>
         </div>
       </div>
 
@@ -883,6 +950,18 @@ export default function CardGenerator() {
                           className="w-24 bg-slate-900 border border-cyan-400 rounded px-1.5 py-0.5 text-xs text-emerald-400 font-mono"
                           placeholder="CARD_0001"
                         />
+                      ) : cardStandard === 'quizizz' ? (
+                        <div className="flex items-center gap-1.5">
+                          <span 
+                            className="font-mono text-[11px] text-purple-200 bg-purple-900/80 px-2 py-0.5 rounded border border-purple-500/60 font-black shadow-sm"
+                            title={`Thẻ Quizizz Q-Card số ${index + 1}`}
+                          >
+                            Thẻ P {index + 1}
+                          </span>
+                          <span className="font-mono text-[10px] text-slate-500 hidden sm:inline">
+                            {stu.cardId}
+                          </span>
+                        </div>
                       ) : (
                         <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40 font-bold">
                           {stu.cardId}
@@ -934,6 +1013,149 @@ export default function CardGenerator() {
         {/* Right: Live Interactive Card Preview (5 cols) */}
         <div className="lg:col-span-5 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 overflow-y-auto items-center justify-center">
           {selectedStudent ? (
+            cardStandard === 'quizizz' ? (
+              /* REALISTIC QUIZIZZ Q-CARD PREVIEW */
+              (() => {
+                const studentIndex = Math.max(0, students.findIndex(s => s.id === selectedStudent.id));
+                const pNum = studentIndex + 1;
+                return (
+                  <div className="w-full max-w-sm bg-white text-slate-900 rounded-2xl shadow-2xl p-4 flex flex-col border-4 border-purple-400 relative select-none">
+                    {/* Switcher: Front vs Back */}
+                    <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-2">
+                      <div>
+                        <h4 className="font-black text-xs text-purple-900 uppercase tracking-wide flex items-center gap-1.5">
+                          <span>WAYGROUND / QUIZIZZ</span>
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-300">
+                            Q-CARD
+                          </span>
+                        </h4>
+                        <p className="text-[10px] text-slate-500 font-semibold">
+                          {selectedClassObj.school} • {selectedClassObj.name}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-[10px]">
+                        <button
+                          onClick={() => setQuizizzCardSide('front')}
+                          className={`px-2 py-0.5 rounded font-bold transition-all ${
+                            quizizzCardSide === 'front'
+                              ? 'bg-purple-600 text-white shadow-sm'
+                              : 'text-slate-600 hover:text-purple-600'
+                          }`}
+                        >
+                          Mặt trước (Mã)
+                        </button>
+                        <button
+                          onClick={() => setQuizizzCardSide('back')}
+                          className={`px-2 py-0.5 rounded font-bold transition-all ${
+                            quizizzCardSide === 'back'
+                              ? 'bg-purple-600 text-white shadow-sm'
+                              : 'text-slate-600 hover:text-purple-600'
+                          }`}
+                        >
+                          Mặt sau (HS xem)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Student Info Strip */}
+                    <div className="text-center py-1">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-purple-900 text-white font-mono font-black text-xs mb-1 shadow-sm">
+                        THẺ QUIZIZZ SỐ P {pNum}
+                      </span>
+                      <h3 className="text-base font-black text-slate-900">
+                        {selectedStudent.fullName}
+                      </h3>
+                      <p className="text-[10px] text-slate-500 font-mono">
+                        Mã số: {selectedStudent.studentCode} • Hệ thống: {selectedStudent.cardId}
+                      </p>
+                    </div>
+
+                    {quizizzCardSide === 'front' ? (
+                      /* FRONT: 4-Way Directions + ArUco Marker */
+                      <div className="relative my-2 p-6 bg-slate-50 border-2 border-slate-300 rounded-xl flex items-center justify-center">
+                        {/* Corners: P X */}
+                        <span className="absolute top-1 left-2 font-black text-xs text-slate-800 font-mono">P {pNum}</span>
+                        <span className="absolute top-1 right-2 font-black text-xs text-slate-800 font-mono">P {pNum}</span>
+                        <span className="absolute bottom-1 left-2 font-black text-xs text-slate-800 font-mono">P {pNum}</span>
+                        <span className="absolute bottom-1 right-2 font-black text-xs text-slate-800 font-mono">P {pNum}</span>
+
+                        {/* DIRECTION A (TOP) */}
+                        <div className="absolute top-1 left-0 right-0 flex flex-col items-center">
+                          <span className="font-black text-base text-slate-800 leading-none">A</span>
+                        </div>
+                        {/* DIRECTION B (RIGHT) */}
+                        <div className="absolute right-2 top-0 bottom-0 flex items-center">
+                          <span className="font-black text-base text-slate-800 leading-none">B</span>
+                        </div>
+                        {/* DIRECTION C (BOTTOM) */}
+                        <div className="absolute bottom-1 left-0 right-0 flex flex-col items-center">
+                          <span className="font-black text-base text-slate-800 leading-none">C</span>
+                        </div>
+                        {/* DIRECTION D (LEFT) */}
+                        <div className="absolute left-2 top-0 bottom-0 flex items-center">
+                          <span className="font-black text-base text-slate-800 leading-none">D</span>
+                        </div>
+
+                        {/* Center ArUco Marker SVG */}
+                        <div 
+                          className="p-2 bg-white rounded border-2 border-slate-900 shadow-md"
+                          dangerouslySetInnerHTML={{ __html: renderQuizizzMarkerSVG(pNum, 160) }}
+                        />
+                      </div>
+                    ) : (
+                      /* BACK: Student View with Big Circles & Directional Arrows */
+                      <div className="relative my-2 p-5 bg-slate-50 border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center">
+                        {/* TOP: A ^ */}
+                        <div className="flex flex-col items-center mb-3">
+                          <span className="text-[12px] font-black text-slate-600 leading-none">^</span>
+                          <div className="w-9 h-9 rounded-full border-2 border-slate-900 flex items-center justify-center font-black text-base text-slate-900 bg-white shadow-sm">
+                            A
+                          </div>
+                        </div>
+
+                        {/* MIDDLE: Left B, Center P X, Right D */}
+                        <div className="w-full flex items-center justify-between px-3 my-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[12px] font-black text-slate-600 leading-none">&lt;</span>
+                            <div className="w-9 h-9 rounded-full border-2 border-slate-900 flex items-center justify-center font-black text-base text-slate-900 bg-white shadow-sm">
+                              B
+                            </div>
+                          </div>
+
+                          <div className="text-center font-mono font-black text-2xl text-slate-900">
+                            P {pNum}
+                            <span className="block text-[8px] font-sans font-bold text-slate-500 uppercase tracking-widest">
+                              WAYGROUND
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-9 h-9 rounded-full border-2 border-slate-900 flex items-center justify-center font-black text-base text-slate-900 bg-white shadow-sm">
+                              D
+                            </div>
+                            <span className="text-[12px] font-black text-slate-600 leading-none">&gt;</span>
+                          </div>
+                        </div>
+
+                        {/* BOTTOM: C v */}
+                        <div className="flex flex-col items-center mt-3">
+                          <div className="w-9 h-9 rounded-full border-2 border-slate-900 flex items-center justify-center font-black text-base text-slate-900 bg-white shadow-sm">
+                            C
+                          </div>
+                          <span className="text-[12px] font-black text-slate-600 leading-none">v</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Instructions footer */}
+                    <div className="mt-2 text-[9px] text-purple-900 text-center bg-purple-50 rounded-lg p-1.5 border border-purple-200">
+                      🎯 <span className="font-bold">Đã đồng bộ với file vi.pdf đã in của thầy/cô!</span> Phát thẻ số <strong>P {pNum}</strong> cho học sinh <strong>{selectedStudent.fullName}</strong>.
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
             <div className="w-full max-w-sm bg-white text-slate-900 rounded-2xl shadow-2xl p-4 flex flex-col border-4 border-slate-300 relative select-none">
               {/* Card Header Strip */}
               <div className="border-b-2 border-slate-800 pb-2 mb-2 flex items-center justify-between">
@@ -1019,7 +1241,7 @@ export default function CardGenerator() {
                 💡 <span className="font-bold">Học sinh xoay chữ cái đáp án lên trên cùng</span> và giơ thẳng thẻ để camera giáo viên quét nhận diện!
               </div>
             </div>
-          ) : (
+          )) : (
             <p className="text-sm text-slate-500">Chọn một học sinh từ danh sách để xem trước thẻ.</p>
           )}
         </div>

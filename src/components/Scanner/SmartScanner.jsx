@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import jsQR from 'jsqr';
 import { 
   Camera, CameraOff, CheckCircle2, RotateCw, RefreshCw, Send, 
-  Users, Volume2, Sparkles, AlertCircle, PlayCircle
+  Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers
 } from 'lucide-react';
 import { classroomService } from '../../services/classroomService';
+import { detectQuizizzCards } from '../../utils/quizizzArucoDetector';
 
 export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }) {
   const [isScanning, setIsScanning] = useState(false);
@@ -30,8 +31,13 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     classroomService.getStudents(classId).then((list) => {
       const map = {};
       if (Array.isArray(list)) {
-        list.forEach((s) => {
+        list.forEach((s, idx) => {
           map[s.cardId] = s;
+          const pNum = idx + 1;
+          const cardKey = `CARD_${String(pNum).padStart(4, '0')}`;
+          map[cardKey] = s;
+          map[`P ${pNum}`] = s;
+          map[`P${pNum}`] = s;
         });
         setTotalStudents(list.length);
       }
@@ -217,6 +223,65 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
           }
         }
       }
+
+      // 2. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
+      try {
+        const qCards = detectQuizizzCards(imageData);
+        if (qCards && qCards.length > 0) {
+          qCards.forEach((q) => {
+            const { participant, cardId, quizizzCode, answer, visualAngle, corners } = q;
+            const student = studentsMap[cardId] || studentsMap[quizizzCode] || {
+              fullName: `Học sinh Thẻ ${quizizzCode}`,
+              studentCode: quizizzCode,
+              cardId: cardId
+            };
+
+            // Draw glowing violet/purple polygon
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            ctx.lineTo(corners[1].x, corners[1].y);
+            ctx.lineTo(corners[2].x, corners[2].y);
+            ctx.lineTo(corners[3].x, corners[3].y);
+            ctx.closePath();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#c084fc'; // Purple 400
+            ctx.stroke();
+
+            // Text overlay
+            ctx.fillStyle = '#c084fc';
+            ctx.font = 'bold 18px Orbitron, sans-serif';
+            ctx.fillText(
+              `[Quizizz ${quizizzCode} • ${student.fullName}] -> Đáp án ${answer} (${visualAngle}°)`,
+              corners[0].x,
+              Math.max(22, corners[0].y - 8)
+            );
+
+            // Record response
+            const targetKey = student.cardId || cardId;
+            setDetectedResponses((prev) => ({
+              ...prev,
+              [targetKey]: {
+                cardId: targetKey,
+                quizizzCode,
+                studentCode: student.studentCode,
+                studentName: student.fullName,
+                answer,
+                angle: visualAngle,
+                cardType: 'Quizizz Q-Card',
+                detectedAt: new Date().toISOString()
+              }
+            }));
+
+            setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
+
+            if (navigator.vibrate) {
+              navigator.vibrate(40);
+            }
+          });
+        }
+      } catch (err) {
+        // Safe scan fallback
+      }
     }
 
     if (isScanning) {
@@ -313,6 +378,10 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="hidden md:flex items-center gap-1.5 bg-purple-950/60 border border-purple-800/50 rounded-lg px-2 py-0.5 text-[11px] text-purple-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                <span>Hỗ trợ thẻ Quizizz Q-Cards (P 1 - P 60)</span>
               </div>
             </div>
           </div>
@@ -445,9 +514,15 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
                     className="flex items-center justify-between px-3 py-2 bg-slate-950/70 border border-slate-800/80 rounded-xl text-xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
-                        {res.cardId}
-                      </span>
+                      {res.cardType === 'Quizizz Q-Card' ? (
+                        <span className="font-mono text-[10px] text-purple-300 bg-purple-950/80 px-1.5 py-0.5 rounded border border-purple-800/60 font-bold">
+                          Quizizz {res.quizizzCode || res.cardId}
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                          {res.cardId}
+                        </span>
+                      )}
                       <span className="font-semibold text-slate-100">{res.studentName}</span>
                     </div>
 
