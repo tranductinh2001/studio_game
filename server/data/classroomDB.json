@@ -2541,22 +2541,22 @@
         "questionText": "Mạng toàn cầu World Wide Web (WWW) hoạt động trên nền tảng nào?",
         "correctAnswer": "B",
         "totalStudents": 33,
-        "totalAnswered": 3,
-        "totalUnanswered": 30,
-        "totalCorrect": 3,
+        "totalAnswered": 6,
+        "totalUnanswered": 27,
+        "totalCorrect": 6,
         "totalIncorrect": 0,
         "percentageCorrectOnAnswered": 100,
-        "percentageCorrectOnTotal": 9,
+        "percentageCorrectOnTotal": 18,
         "choiceDistribution": {
           "A": 0,
-          "B": 3,
+          "B": 6,
           "C": 0,
           "D": 0
         }
       },
       "status": "ACTIVE",
-      "startedAt": "2026-11-16T16:03:07.453Z",
-      "lastUpdated": "2026-11-16T16:03:13.758Z"
+      "startedAt": "2026-11-16T16:04:48.073Z",
+      "lastUpdated": "2026-11-16T16:04:56.405Z"
     }
   }
 }

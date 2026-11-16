@@ -674,7 +674,7 @@ class ClassroomStore {
     this.broadcast(roomCode, 'RESPONSES_UPDATED', room);
     return { 
       success: true, 
-      totalAnswered: Object.keys(room.responses).length, 
+      totalAnswered: Object.keys(room.studentResponses).length, 
       updatedCount,
       newCount,
       room,
