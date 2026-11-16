@@ -116,14 +116,18 @@ class SpeechSynthesisService {
       this.notify({ type: 'start', text: cleanText });
       this.startMouthSimulation();
 
-      // Chrome SpeechSynthesis Keep-Alive: Chrome pauses speech after 15 seconds without this
+      // Safe SpeechSynthesis Watcher: Only resume if browser engine got unexpectedly paused
+      // NEVER call pause() + resume() periodically as that restarts audio playback on Windows!
       if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
       this.keepAliveInterval = setInterval(() => {
-        if (this.synth && this.isSpeaking && !this.isPaused) {
-          this.synth.pause();
-          this.synth.resume();
+        if (this.synth && this.synth.paused && this.isSpeaking) {
+          try {
+            this.synth.resume();
+          } catch (e) {
+            // Ignore
+          }
         }
-      }, 5000);
+      }, 3000);
     };
 
     utterance.onend = () => {

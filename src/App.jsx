@@ -76,6 +76,12 @@ export default function App() {
   const agentStateRef = useRef(agentState);
   agentStateRef.current = agentState;
 
+  // Anti-loop, Anti-echo & Mutex Lock Refs
+  const isProcessingQueryRef = useRef(false);
+  const speechEndedTimeRef = useRef(0);
+  const lastWebbySpeechRef = useRef('');
+  lastWebbySpeechRef.current = lastWebbySpeech;
+
   // Check Backend status on mount
   useEffect(() => {
     aiService.checkStatus().then((status) => {
@@ -149,9 +155,11 @@ export default function App() {
   // Webby speaks text with subtitles, lip-sync, and auto-transition when done
   const speakAsWebby = useCallback(
     (text, targetEmotion = 'SPEAKING', onFinish = null) => {
+      // 1. Immediately mute speech recognition so Webby's voice is never captured by microphone
       speechRec.mute();
 
       setLastWebbySpeech(text);
+      lastWebbySpeechRef.current = text;
       setCurrentSpeaker('WEBBY');
       setSubtitleText(text);
       setInterimText('');
@@ -161,10 +169,16 @@ export default function App() {
       setConversationHistory((prev) => [...prev.slice(-8), { sender: 'webby', text }]);
 
       speechSynth.speak(text, () => {
+        // Record timestamp when Webby stops speaking
+        speechEndedTimeRef.current = Date.now();
+
         if (onFinish) {
           onFinish();
+          isProcessingQueryRef.current = false;
         } else if (isSessionActiveRef.current) {
+          // Acoustic cooldown window: 800ms to allow physical room echo to completely dissipate
           setTimeout(() => {
+            isProcessingQueryRef.current = false;
             if (isSessionActiveRef.current && agentStateRef.current !== 'PAUSED') {
               setAgentState('LISTENING');
               setEmotion('LISTENING');
@@ -172,8 +186,9 @@ export default function App() {
               setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói đi nào!');
               speechRec.unmute();
             }
-          }, 350);
+          }, 800);
         } else {
+          isProcessingQueryRef.current = false;
           setAgentState('IDLE');
           setEmotion('IDLE');
         }
@@ -184,10 +199,43 @@ export default function App() {
 
   // Handle student spoken or typed input
   const handleStudentQuery = useCallback(
-    async (studentText) => {
+    async (studentText, isManual = false) => {
       if (!studentText || !studentText.trim()) return;
 
       const trimmed = studentText.trim();
+      const lower = trimmed.toLowerCase();
+
+      // Guard 1: Mutex lock - already answering a query
+      if (isProcessingQueryRef.current) {
+        console.log('[handleStudentQuery] Blocked: Already processing a query');
+        return;
+      }
+
+      // Guard 2: Agent is currently speaking or processing (unless manual override)
+      if (!isManual && (agentStateRef.current === 'SPEAKING' || agentStateRef.current === 'PROCESSING')) {
+        console.log('[handleStudentQuery] Blocked: Agent is currently speaking/processing');
+        return;
+      }
+
+      // Guard 3: Acoustic cooldown window (800ms after Webby stops speaking)
+      const timeSinceSpeech = Date.now() - speechEndedTimeRef.current;
+      if (!isManual && speechEndedTimeRef.current > 0 && timeSinceSpeech < 800) {
+        console.log(`[handleStudentQuery] Blocked: Within 800ms acoustic cooldown window (${timeSinceSpeech}ms)`);
+        return;
+      }
+
+      // Guard 4: Anti-echo filter - verify student input is not echoing Webby's own voice
+      if (!isManual && lastWebbySpeechRef.current) {
+        const lastWebbyLower = lastWebbySpeechRef.current.toLowerCase();
+        if (lastWebbyLower.includes(lower) && lower.length > 6) {
+          console.log('[handleStudentQuery] Blocked: Self-echo detected from speaker:', trimmed);
+          return;
+        }
+      }
+
+      // Acquire mutex lock
+      isProcessingQueryRef.current = true;
+
       setCurrentSpeaker('HỌC SINH');
       setSubtitleText(`"${trimmed}"`);
       setInterimText('');
@@ -205,8 +253,8 @@ export default function App() {
       } catch (err) {
         console.error('Error generating AI response:', err);
         speakAsWebby(
-          'Đó là một câu hỏi rất hay! Nhưng mình hơi bối rối một chút. Bạn có thể hỏi lại về trang web hay Internet được không?',
-          'THINKING'
+          'Thầy cô và các bạn hãy hỏi mình thêm về World Wide Web, siêu liên kết hoặc trình duyệt web nhé! Mình đã sẵn sàng rồi đây!',
+          'HAPPY'
         );
       }
     },
@@ -218,8 +266,8 @@ export default function App() {
     const handleResult = (finalTranscript) => {
       if (!finalTranscript) return;
       console.log('[App] Speech Recognition Result:', finalTranscript);
-      if (agentStateRef.current === 'SPEAKING' || !isSessionActiveRef.current) {
-        console.log('[App] Ignored speech while Webby is speaking or session inactive');
+      if (agentStateRef.current === 'SPEAKING' || agentStateRef.current === 'PROCESSING' || !isSessionActiveRef.current) {
+        console.log('[App] Ignored speech while Webby is speaking/processing or session inactive');
         return;
       }
       handleStudentQuery(finalTranscript);
@@ -239,26 +287,12 @@ export default function App() {
       }
     };
 
-    // Assign direct callback properties
+    // Assign direct callback properties (Do NOT double-bind with subscribe)
     speechRec.onResult = handleResult;
     speechRec.onInterim = handleInterim;
     speechRec.onError = handleError;
 
-    // Also subscribe via event emitter for maximum reliability
-    const unsubscribe = speechRec.subscribe((event) => {
-      if (event.type === 'result') {
-        if (event.isFinal && event.final) {
-          handleResult(event.final);
-        } else if (!event.isFinal && event.interim) {
-          handleInterim(event.interim);
-        }
-      } else if (event.type === 'error' || event.type === 'permission-denied') {
-        handleError(event.error);
-      }
-    });
-
     return () => {
-      unsubscribe();
       speechRec.onResult = null;
       speechRec.onInterim = null;
       speechRec.onError = null;
@@ -286,6 +320,8 @@ export default function App() {
     setIsSessionActive(true);
     setRoundCount(0);
     setConversationHistory([]);
+    isProcessingQueryRef.current = false;
+    speechEndedTimeRef.current = 0;
 
     // Enable continuous listening mode so safeStart() knows agent wants to listen
     speechRec.startContinuous();
@@ -304,6 +340,8 @@ export default function App() {
     }
 
     setIsSessionActive(true);
+    isProcessingQueryRef.current = false;
+    speechEndedTimeRef.current = 0;
     speechSynth.stop();
     setAgentState('LISTENING');
     setEmotion('LISTENING');
@@ -317,6 +355,8 @@ export default function App() {
   // Stop session
   const handleStopSession = () => {
     setIsSessionActive(false);
+    isProcessingQueryRef.current = false;
+    speechEndedTimeRef.current = 0;
     speechSynth.stop();
     speechRec.stopContinuous();
     setAgentState('IDLE');
@@ -329,6 +369,7 @@ export default function App() {
   // Pause listening
   const handlePauseListening = () => {
     setAgentState('PAUSED');
+    isProcessingQueryRef.current = false;
     speechRec.mute();
     speechSynth.stop();
   };

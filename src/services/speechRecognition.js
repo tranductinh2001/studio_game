@@ -162,8 +162,8 @@ class SpeechRecognitionService {
     const clean = transcript.trim();
     const now = Date.now();
 
-    // Prevent duplicate dispatches of the same phrase within 2.5 seconds
-    if (!clean || (clean === this.lastDispatchedTranscript && now - this.lastDispatchTime < 2500)) {
+    // Prevent duplicate dispatches of the same phrase within 3.5 seconds
+    if (!clean || clean.length < 2 || (clean === this.lastDispatchedTranscript && now - this.lastDispatchTime < 3500)) {
       return;
     }
 
@@ -187,18 +187,24 @@ class SpeechRecognitionService {
   }
 
   notify(event) {
+    let handledByProperty = false;
+
     // 1. Invoke direct callback properties (onResult, onInterim, onError, onStart, onEnd)
     try {
       if (event.type === 'result') {
         if (event.isFinal && typeof this.onResult === 'function') {
           this.onResult(event.final);
+          handledByProperty = true;
         } else if (!event.isFinal && typeof this.onInterim === 'function') {
           this.onInterim(event.interim);
+          handledByProperty = true;
         }
       } else if (event.type === 'error' && typeof this.onError === 'function') {
         this.onError(event.error);
+        handledByProperty = true;
       } else if (event.type === 'permission-denied' && typeof this.onError === 'function') {
         this.onError('not-allowed');
+        handledByProperty = true;
       } else if (event.type === 'start' && typeof this.onStart === 'function') {
         this.onStart();
       } else if (event.type === 'end' && typeof this.onEnd === 'function') {
@@ -208,14 +214,17 @@ class SpeechRecognitionService {
       console.error('Error executing speechRec direct callback:', e);
     }
 
-    // 2. Broadcast to subscribed listeners
-    this.listeners.forEach((cb) => {
-      try {
-        cb(event);
-      } catch (e) {
-        console.error(e);
-      }
-    });
+    // 2. Broadcast to subscribed listeners ONLY if not already dispatched to property callback
+    // (Prevents double triggering / repeating responses in UI)
+    if (!handledByProperty) {
+      this.listeners.forEach((cb) => {
+        try {
+          cb(event);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
   }
 
   // Start continuous listening session
@@ -239,13 +248,18 @@ class SpeechRecognitionService {
   // Temporarily mute/pause listening (e.g. while Webby is speaking)
   mute() {
     this.isMuted = true;
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    this.accumulatedTranscript = '';
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
     this.safeStop();
   }
 
   // Unmute/resume listening after Webby finishes speaking
   unmute() {
     this.isMuted = false;
+    this.accumulatedTranscript = '';
     this.shouldBeListening = true; // Ensure persistent state is enabled
     this.safeStart();
   }
