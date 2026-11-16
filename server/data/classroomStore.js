@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import xlsx from 'xlsx';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'classroomDB.json');
+export const DEFAULT_SMAS_PATH = 'C:\\Users\\X1\\Desktop\\tài liệu THCS Đắk Trôi\\điểm kiểm tra\\SDGHS_Tin học_2026-2027.xlsx';
 
 // Default Students for 6A (THCS Đắk Trôi)
 const STUDENTS_6A = [
@@ -523,6 +525,193 @@ class ClassroomStore {
       percentageCorrectOnTotal,
       choiceDistribution
     };
+  }
+
+  // ==========================================
+  // SMAS EXCEL PARSER & AUTO-IMPORT
+  // ==========================================
+  parseSmasWorkbook(workbook) {
+    const result = [];
+    const schoolDefault = 'TRƯỜNG TH & THCS ĐĂK TRÔI';
+
+    for (const sheetName of workbook.SheetNames) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) continue;
+      const rawData = xlsx.utils.sheet_to_json(ws, { header: 1 });
+      if (!rawData || rawData.length < 14) continue;
+
+      // School name (Row 4, Col 1)
+      let school = schoolDefault;
+      if (rawData[3] && rawData[3][0] && typeof rawData[3][0] === 'string') {
+        school = rawData[3][0].trim();
+      }
+
+      // Class code (Row 1, Col 4 or parsed from sheet name)
+      let classCode = '';
+      if (rawData[0] && rawData[0][3]) {
+        classCode = String(rawData[0][3]).trim();
+      }
+      if (!classCode) {
+        const match = sheetName.match(/(\d+[A-Za-z]*)/);
+        classCode = match ? match[1] : sheetName.replace(/\s+/g, '_');
+      }
+
+      const className = `Lớp ${classCode}`;
+      const classId = `CLASS_${classCode.toUpperCase()}`;
+
+      // Find start row: row 14 (0-index 13) by default, or look for 'STT' & 'Họ và tên'
+      let startRow = 13;
+      for (let r = 0; r < Math.min(20, rawData.length); r++) {
+        const row = rawData[r];
+        if (Array.isArray(row)) {
+          const textJoined = row.map((c) => String(c || '').toLowerCase()).join(' ');
+          if (textJoined.includes('stt') && textJoined.includes('họ và tên')) {
+            startRow = r + 2;
+            break;
+          }
+        }
+      }
+
+      const students = [];
+      for (let r = startRow; r < rawData.length; r++) {
+        const row = rawData[r];
+        if (!row || !Array.isArray(row)) continue;
+        const stt = row[0];
+        const code = row[2];
+        const name = row[3];
+
+        if (name && String(name).trim() && String(name).trim() !== 'None') {
+          const studentIndex = students.length + 1;
+          const num = Number(stt) || studentIndex;
+          const numStr = num < 10 ? `0${num}` : `${num}`;
+          const cardNum = num < 10 ? `000${num}` : `00${num}`;
+          const cleanName = String(name).trim();
+          const cleanCode = code ? String(code).trim() : `HS${classCode}${numStr}`;
+
+          students.push({
+            id: `STU_${classCode}_${numStr}`,
+            studentCode: cleanCode,
+            fullName: cleanName,
+            classId: classId,
+            cardId: `CARD_${cardNum}`,
+            status: 'active',
+            group: `Nhóm ${((num - 1) % 4) + 1}`,
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+
+      if (students.length > 0) {
+        result.push({
+          id: classId,
+          code: classCode,
+          name: className,
+          school: school,
+          teacher: 'Thầy Trần Đức Tình',
+          totalStudents: students.length,
+          students: students,
+          sheetName: sheetName
+        });
+      }
+    }
+
+    return result;
+  }
+
+  detectLocalSmasFile(filePath = null) {
+    const targetPath = (filePath && typeof filePath === 'string' && filePath.trim()) ? filePath.trim() : DEFAULT_SMAS_PATH;
+    try {
+      if (fs.existsSync(targetPath)) {
+        const wb = xlsx.readFile(targetPath);
+        const parsed = this.parseSmasWorkbook(wb);
+        return {
+          detected: true,
+          filePath: targetPath,
+          sheetsCount: wb.SheetNames.length,
+          classes: parsed.map(c => ({
+            id: c.id,
+            code: c.code,
+            name: c.name,
+            school: c.school,
+            totalStudents: c.totalStudents,
+            sheetName: c.sheetName,
+            sampleStudents: c.students.slice(0, 3).map(s => s.fullName)
+          }))
+        };
+      }
+      return { detected: false, filePath: targetPath, classes: [] };
+    } catch (err) {
+      console.warn('Error detecting local SMAS file:', err.message);
+      return { detected: false, error: err.message, filePath: targetPath, classes: [] };
+    }
+  }
+
+  importSmasData(parsedClasses, classCodesToImport = null) {
+    const importedClasses = [];
+    const classesToProcess = classCodesToImport && classCodesToImport.length > 0
+      ? parsedClasses.filter(c => classCodesToImport.includes(c.id) || classCodesToImport.includes(c.code))
+      : parsedClasses;
+
+    for (const item of classesToProcess) {
+      let cls = (this.data.classes || []).find(c => c.id === item.id || c.code === item.code);
+      if (!cls) {
+        cls = {
+          id: item.id,
+          code: item.code,
+          name: item.name,
+          school: item.school,
+          teacher: item.teacher,
+          totalStudents: item.students.length,
+          createdAt: new Date().toISOString()
+        };
+        if (!this.data.classes) this.data.classes = [];
+        this.data.classes.push(cls);
+      } else {
+        cls.name = item.name;
+        cls.school = item.school;
+        cls.teacher = item.teacher;
+        cls.totalStudents = item.students.length;
+      }
+
+      // Replace students for this class
+      this.data.students = (this.data.students || []).filter(s => s.classId !== cls.id);
+      this.data.students.push(...item.students);
+
+      // Update active rooms using this class
+      Object.values(this.data.activeRooms || {}).forEach(room => {
+        if (room.classId === cls.id) {
+          room.totalStudents = item.students.length;
+          room.className = cls.name;
+          this.broadcast(room.roomCode, 'ROOM_STATE', room);
+        }
+      });
+
+      importedClasses.push(cls);
+    }
+
+    this.save();
+    return {
+      success: true,
+      importedCount: importedClasses.length,
+      classes: importedClasses,
+      totalStudents: this.data.students.length
+    };
+  }
+
+  importLocalSmas(filePath = null, classCodesToImport = null) {
+    const targetPath = (filePath && typeof filePath === 'string' && filePath.trim()) ? filePath.trim() : DEFAULT_SMAS_PATH;
+    if (!fs.existsSync(targetPath)) {
+      throw new Error(`Không tìm thấy file SMAS tại đường dẫn: ${targetPath}`);
+    }
+    const wb = xlsx.readFile(targetPath);
+    const parsed = this.parseSmasWorkbook(wb);
+    return this.importSmasData(parsed, classCodesToImport);
+  }
+
+  importUploadedSmasBuffer(buffer, classCodesToImport = null) {
+    const wb = xlsx.read(buffer, { type: 'buffer' });
+    const parsed = this.parseSmasWorkbook(wb);
+    return this.importSmasData(parsed, classCodesToImport);
   }
 }
 

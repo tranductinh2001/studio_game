@@ -334,6 +334,42 @@ app.put('/api/classroom/classes/:classId/students/:studentId', (req, res) => {
   res.json({ student: updated });
 });
 
+// ==========================================
+// SMAS EXCEL IMPORT APIS
+// ==========================================
+app.get('/api/classroom/smas/detect', (req, res) => {
+  const customPath = req.query.path;
+  const detection = classroomStore.detectLocalSmasFile(customPath);
+  res.json(detection);
+});
+
+app.post('/api/classroom/smas/import-local', (req, res) => {
+  try {
+    const { filePath, classCodes } = req.body || {};
+    const result = classroomStore.importLocalSmas(filePath, classCodes);
+    res.json(result);
+  } catch (err) {
+    console.error('Error importing local SMAS:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/classroom/smas/upload', (req, res) => {
+  try {
+    const { fileBase64, classCodes } = req.body || {};
+    if (!fileBase64) {
+      return res.status(400).json({ error: 'Thiếu dữ liệu fileBase64' });
+    }
+    const cleanBase64 = fileBase64.replace(/^data:.*?;base64,/, '');
+    const buffer = Buffer.from(cleanBase64, 'base64');
+    const result = classroomStore.importUploadedSmasBuffer(buffer, classCodes);
+    res.json(result);
+  } catch (err) {
+    console.error('Error uploading/importing SMAS:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/classroom/rooms/:code', (req, res) => {
   const room = classroomStore.getRoom(req.params.code);
   res.json({ room });

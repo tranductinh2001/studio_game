@@ -139,6 +139,48 @@ class ClassroomService {
     }
   }
 
+  // Detect local SMAS Excel file
+  async detectSmasFile(customPath = '') {
+    try {
+      const query = customPath ? `?path=${encodeURIComponent(customPath)}` : '';
+      const res = await fetch(`${this.getBaseUrl()}/classroom/smas/detect${query}`);
+      return await res.json();
+    } catch (err) {
+      console.warn('Error detecting SMAS file:', err);
+      return { detected: false, error: err.message, classes: [] };
+    }
+  }
+
+  // Import local SMAS Excel file
+  async importLocalSmas(classCodes = null, filePath = null) {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/smas/import-local`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classCodes, filePath: filePath || null })
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Error importing local SMAS:', err);
+      throw err;
+    }
+  }
+
+  // Upload and import SMAS file (base64)
+  async uploadSmasFile(fileBase64, classCodes = null) {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/smas/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileBase64, classCodes })
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Error uploading SMAS file:', err);
+      throw err;
+    }
+  }
+
   // Get active room state
   async getRoom(code = this.activeRoomCode) {
     try {

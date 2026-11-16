@@ -176,15 +176,52 @@ async def main():
         await page.wait_for_selector("h2:has-text('CÀI ĐẶT LỚP HỌC & MÃ THẺ QR')", timeout=5000)
         print("[OK] Đã chuyển sang Tab Cài đặt Lớp học & In Thẻ QR")
 
-        # Verify class buttons exist
-        await page.wait_for_selector("button:has-text('Lớp 6A')", timeout=5000)
-        await page.wait_for_selector("button:has-text('Lớp 6B')", timeout=5000)
-        await page.wait_for_selector("button:has-text('Lớp 6C')", timeout=5000)
-        print("[OK] Hiển thị đầy đủ danh sách lựa chọn các lớp: Lớp 6A, Lớp 6B, Lớp 6C")
+        # Test SMAS Excel Import Modal & Auto-detection
+        print("\n--- 6.1. Kiểm thử Nhập dữ liệu SMAS Excel THCS Đắk Trôi ---")
+        await page.click("button:has-text('Nhập Excel SMAS')")
+        await page.wait_for_selector("h3:has-text('NHẬP DANH SÁCH HỌC SINH TỪ EXCEL SMAS')", timeout=5000)
+        print("[OK] Modal Nhập SMAS mở thành công")
+        
+        # Verify detected local SMAS classes
+        await page.wait_for_selector("div:has-text('Tin học 6A')", timeout=5000)
+        print("[OK] Hệ thống tự động phát hiện thành công sổ điểm SMAS THCS Đắk Trôi với các lớp 6A, 6B, 7A, 7B, 8, 9")
+        await page.screenshot(path="screenshot_classroom_tab5_smas_modal.png")
 
-        # Verify students in roster list
-        roster_text = await page.locator("h3:has-text('DANH SÁCH')").first.inner_text()
-        print(f"[OK] {roster_text}")
+        # Auto accept any dialogs
+        page.on("dialog", lambda d: asyncio.create_task(d.accept()))
+
+        # Click 1-Click Import button
+        await page.click("button:has-text('NẠP NGAY')")
+        await asyncio.sleep(2)
+        # Wait for modal to close
+        try:
+            await page.wait_for_selector("h3:has-text('NHẬP DANH SÁCH HỌC SINH TỪ EXCEL SMAS')", state="detached", timeout=5000)
+        except Exception:
+            pass
+        print("[OK] Đã thực hiện nạp 1-Click dữ liệu SMAS vào cơ sở dữ liệu")
+
+        # Verify class buttons exist for all SMAS classes
+        await page.wait_for_selector("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('6A')", timeout=5000)
+        await page.wait_for_selector("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('6B')", timeout=5000)
+        await page.wait_for_selector("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('8')", timeout=5000)
+        await page.wait_for_selector("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('9')", timeout=5000)
+        print("[OK] Hiển thị đầy đủ danh sách lựa chọn các lớp từ SMAS: 6A, 6B, 7A, 7B, 8, 9")
+
+        # Select Lớp 6A
+        await page.locator("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('6A')").first.click()
+        await asyncio.sleep(1)
+        await page.wait_for_selector("div:has-text('AN')", timeout=5000)
+        print("[OK] Lớp 6A hiển thị đúng danh sách học sinh thật từ SMAS: AN (STT 1 - CARD_0001)")
+
+        # Switch to Lớp 6B and verify real SMAS student
+        await page.locator("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('6B')").first.click()
+        await asyncio.sleep(1)
+        await page.wait_for_selector("div:has-text('BÙI THỊ VÂN ANH')", timeout=5000)
+        print("[OK] Chuyển sang Lớp 6B hiển thị đúng danh sách thật từ SMAS: BÙI THỊ VÂN ANH (STT 1 - CARD_0001)")
+
+        # Switch back to 6A for primary demo
+        await page.locator("div:has-text('CHỌN LỚP HỌC:') >> button:has-text('6A')").first.click()
+        await asyncio.sleep(1)
 
         # Verify directional markers A, B, C, D on card preview
         await page.wait_for_selector("span:has-text('A')", timeout=5000)

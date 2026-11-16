@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Printer, Download, Eye, Users, FileText, CheckCircle2, 
   RotateCw, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, RefreshCw,
-  Plus, Edit3, Trash2, Clipboard, Save, X, School, Check, AlertCircle
+  Plus, Edit3, Trash2, Clipboard, Save, X, School, Check, AlertCircle,
+  FileSpreadsheet, FolderSync, Upload, CheckSquare, Square
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
@@ -27,6 +28,14 @@ export default function CardGenerator() {
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [bulkStudentsText, setBulkStudentsText] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
+
+  // SMAS Import Modal state
+  const [showSmasModal, setShowSmasModal] = useState(false);
+  const [smasDetection, setSmasDetection] = useState(null);
+  const [isDetectingSmas, setIsDetectingSmas] = useState(false);
+  const [isImportingSmas, setIsImportingSmas] = useState(false);
+  const [selectedSmasCodes, setSelectedSmasCodes] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState('');
 
   // Editing single student inline
   const [editingStudentId, setEditingStudentId] = useState(null);
@@ -125,6 +134,87 @@ export default function CardGenerator() {
       } catch (err) {
         console.error(err);
       }
+    }
+  };
+
+  // Check SMAS file on server
+  const checkSmasDetection = async () => {
+    setIsDetectingSmas(true);
+    try {
+      const data = await classroomService.detectSmasFile();
+      setSmasDetection(data);
+      if (data && data.classes && data.classes.length > 0) {
+        setSelectedSmasCodes(data.classes.map(c => c.code));
+      }
+    } catch (err) {
+      console.error('Error detecting SMAS:', err);
+    } finally {
+      setIsDetectingSmas(false);
+    }
+  };
+
+  const handleToggleSmasClass = (code) => {
+    setSelectedSmasCodes(prev => 
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    );
+  };
+
+  const handleImportLocalSmas = async () => {
+    setIsImportingSmas(true);
+    try {
+      const res = await classroomService.importLocalSmas(selectedSmasCodes);
+      if (res && res.success) {
+        setSaveStatus(`Đã nhập thành công ${res.importedCount} lớp học (${res.totalStudents} học sinh) từ SMAS!`);
+        await loadClasses();
+        const has6A = res.classes?.find(c => c.code === '6A');
+        if (has6A) {
+          setSelectedClassId(has6A.id);
+        } else if (res.classes && res.classes.length > 0) {
+          setSelectedClassId(res.classes[0].id);
+        }
+        setShowSmasModal(false);
+      }
+    } catch (err) {
+      console.error('Lỗi nạp SMAS:', err);
+      alert('Đã xảy ra lỗi khi nạp dữ liệu SMAS: ' + err.message);
+    } finally {
+      setIsImportingSmas(false);
+      setTimeout(() => setSaveStatus(''), 4000);
+    }
+  };
+
+  const handleUploadSmasExcel = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImportingSmas(true);
+    setUploadProgress('Đang đọc tệp Excel...');
+    try {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const base64 = evt.target.result;
+          setUploadProgress('Đang xử lý các lớp học trên máy chủ...');
+          const res = await classroomService.uploadSmasFile(base64, selectedSmasCodes.length > 0 ? selectedSmasCodes : null);
+          if (res && res.success) {
+            setSaveStatus(`Đã tải lên và nạp thành công ${res.importedCount} lớp học từ tệp Excel!`);
+            await loadClasses();
+            setShowSmasModal(false);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Lỗi xử lý file Excel SMAS: ' + err.message);
+        } finally {
+          setIsImportingSmas(false);
+          setUploadProgress('');
+          setTimeout(() => setSaveStatus(''), 4000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      setIsImportingSmas(false);
+      setUploadProgress('');
     }
   };
 
@@ -302,8 +392,8 @@ export default function CardGenerator() {
           </div>
         </div>
 
-        {/* Action Buttons: Add Class, Bulk Import, Print Full PDF */}
-        <div className="flex items-center gap-2">
+        {/* Action Buttons: Add Class, Bulk Import, SMAS Import, Print Full PDF */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowAddClassModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-200 hover:text-cyan-300 hover:border-cyan-500/50 transition-all"
@@ -314,12 +404,24 @@ export default function CardGenerator() {
           </button>
 
           <button
+            onClick={() => {
+              setShowSmasModal(true);
+              checkSmasDetection();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 hover:bg-emerald-900/60 hover:text-white hover:border-emerald-400 transition-all shadow-md shadow-emerald-500/20"
+            title="Nhập tự động danh sách học sinh từ file Excel SMAS (Sổ điểm THCS Đắk Trôi)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            Nhập Excel SMAS
+          </button>
+
+          <button
             onClick={() => setShowBulkImportModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-200 hover:text-emerald-300 hover:border-emerald-500/50 transition-all"
             title="Dán nhanh danh sách học sinh từ Excel hoặc Word"
           >
-            <Clipboard className="w-3.5 h-3.5 text-emerald-400" />
-            Nhập danh sách nhanh
+            <Clipboard className="w-3.5 h-3.5 text-slate-400" />
+            Dán danh sách
           </button>
 
           <button
@@ -346,16 +448,24 @@ export default function CardGenerator() {
         </div>
       </div>
 
+      {/* Save Status Notification */}
+      {saveStatus && (
+        <div className="bg-emerald-950/90 border border-emerald-500 text-emerald-300 text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 my-2 animate-fade-in shadow-lg">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-semibold">{saveStatus}</span>
+        </div>
+      )}
+
       {/* Class Selector Bar & Notification */}
       <div className="flex flex-wrap items-center justify-between gap-3 py-2.5 px-3 bg-slate-900/60 rounded-xl border border-slate-800 my-2 shrink-0">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
             <School className="w-4 h-4 text-cyan-400" />
             CHỌN LỚP HỌC:
           </span>
 
           {/* Class Dropdown */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {classes.map((cls) => (
               <button
                 key={cls.id}
@@ -709,6 +819,183 @@ export default function CardGenerator() {
                   Lưu & Tự động gán mã thẻ QR
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: NHẬP DỮ LIỆU TỪ EXCEL SMAS */}
+      {showSmasModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-emerald-500/50 rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl shadow-emerald-500/10 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowSmasModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <FileSpreadsheet className="w-6 h-6 text-slate-950" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-emerald-300">
+                  NHẬP DANH SÁCH HỌC SINH TỪ EXCEL SMAS
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Sổ Đánh Giá Học Sinh từ SMAS Bộ GD&ĐT • Khớp STT với Thẻ QR (CARD_0001 - CARD_0040)
+                </p>
+              </div>
+            </div>
+
+            {/* OPTION 1: DETECTED LOCAL FILE */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wide">
+                  <FolderSync className="w-4 h-4" />
+                  1. Sổ điểm SMAS trên máy tính (Tự động phát hiện)
+                </span>
+                {isDetectingSmas ? (
+                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 animate-spin text-emerald-400" />
+                    Đang quét file...
+                  </span>
+                ) : smasDetection?.detected ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    Phát hiện: {smasDetection.classes?.length || 0} Lớp ({smasDetection.classes?.reduce((acc, c) => acc + c.totalStudents, 0) || 0} HS)
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400">
+                    Chưa tìm thấy
+                  </span>
+                )}
+              </div>
+
+              {smasDetection?.detected ? (
+                <>
+                  <div className="text-[11px] text-slate-300 bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 font-mono truncate">
+                    📁 <span className="text-emerald-400 font-bold">Đường dẫn:</span> {smasDetection.filePath}
+                  </div>
+
+                  {/* List of Detected Classes */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>Chọn các lớp muốn nạp vào hệ thống:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (selectedSmasCodes.length === smasDetection.classes.length) {
+                            setSelectedSmasCodes([]);
+                          } else {
+                            setSelectedSmasCodes(smasDetection.classes.map(c => c.code));
+                          }
+                        }}
+                        className="text-[11px] text-cyan-400 hover:underline font-semibold"
+                      >
+                        {selectedSmasCodes.length === smasDetection.classes.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+                      {smasDetection.classes.map((c) => {
+                        const isSelected = selectedSmasCodes.includes(c.code);
+                        return (
+                          <div
+                            key={c.code}
+                            onClick={() => handleToggleSmasClass(c.code)}
+                            className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
+                              isSelected
+                                ? 'bg-emerald-950/50 border-emerald-500/70 text-white shadow-sm'
+                                : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isSelected ? (
+                                <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+                              ) : (
+                                <Square className="w-4 h-4 text-slate-600 shrink-0" />
+                              )}
+                              <div>
+                                <div className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                                  {c.name}
+                                  {c.code === '6A' && (
+                                    <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-500/40">
+                                      Thao giảng
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate max-w-[170px]">
+                                  Mẫu: {c.sampleStudents?.join(', ')}...
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+                              {c.totalStudents} HS
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 1-Click Import Button */}
+                  <button
+                    onClick={handleImportLocalSmas}
+                    disabled={isImportingSmas || selectedSmasCodes.length === 0}
+                    className={`w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
+                      isImportingSmas || selectedSmasCodes.length === 0
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-emerald-500/25'
+                    }`}
+                  >
+                    {isImportingSmas ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                        Đang đồng bộ dữ liệu vào hệ thống...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                        🚀 NẠP NGAY {selectedSmasCodes.length} LỚP VÀO HỆ THỐNG (1-CLICK)
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <div className="text-xs text-slate-400 p-2 text-center">
+                  Không tìm thấy file tại đường dẫn mặc định. Bạn có thể sử dụng tính năng tải file bên dưới.
+                </div>
+              )}
+            </div>
+
+            {/* OPTION 2: UPLOAD CUSTOM SMAS FILE */}
+            <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5 uppercase tracking-wide">
+                <Upload className="w-4 h-4" />
+                2. Tải lên tệp Excel SMAS khác (.xlsx)
+              </span>
+              <p className="text-xs text-slate-400">
+                Nếu bạn có file SMAS của các khối lớp hoặc năm học khác, hãy chọn tệp để nạp trực tiếp:
+              </p>
+
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-cyan-500/70 rounded-xl p-4 cursor-pointer bg-slate-900/40 hover:bg-slate-900/70 transition-all">
+                <Upload className="w-6 h-6 text-cyan-400 mb-1" />
+                <span className="text-xs font-semibold text-slate-200">
+                  {uploadProgress || 'Bấm để chọn file hoặc kéo thả tệp .xlsx vào đây'}
+                </span>
+                <span className="text-[10px] text-slate-500 mt-0.5">
+                  Định dạng chuẩn SMAS (các sheet: Tin học 6A, 6B, 7A...)
+                </span>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleUploadSmasExcel}
+                  className="hidden"
+                  disabled={isImportingSmas}
+                />
+              </label>
             </div>
           </div>
         </div>
