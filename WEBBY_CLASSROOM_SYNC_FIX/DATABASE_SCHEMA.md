@@ -134,3 +134,4 @@ interface Classroom {
    - Thẻ `P 2` (Participant 2) -> Khớp tự động với STT 2 (`CARD_0002`).
 3. **Khi xoá hoặc nhập thêm học sinh**:
    - Hệ thống tự động re-index lại số thẻ (`re-sequence`), đảm bảo không có lỗ hổng số thẻ và luôn tương thích hoàn toàn với bộ thẻ Quizizz giáo viên đã in.
+

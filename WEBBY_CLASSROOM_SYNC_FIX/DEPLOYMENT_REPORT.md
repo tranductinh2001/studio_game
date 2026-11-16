@@ -54,3 +54,4 @@ Quá trình build thành công hoàn toàn, không có lỗi cú pháp hoặc c�
 | **Localhost** (`http://localhost:5173`) | Thành công | Thành công | Cập nhật tức thì (< 100ms) | Đạt chuẩn |
 | **LAN IP Wi-Fi** (`http://10.135.169.82:5173`) | Điện thoại quét vào thẳng giao diện điều khiển | Camera nhận diện thẻ Webby QR & Quizizz | Máy chiếu sáng đèn xanh tức thì | Đạt chuẩn |
 | **Vercel Cloud** (`https://*.vercel.app`) | Truy cập HTTPS bảo mật, quét mã qua 4G | Camera nhận diện mượt mà | Đồng bộ qua Polling/SSE mượt mà | Đạt chuẩn |
+

@@ -70,3 +70,4 @@
 5. **Chuẩn hóa vòng đời Quiz Room & Upsert Đáp Án**:
    - Vòng đời: `WAITING` (chờ thiết bị) -> `ACTIVE` (đang thi đấu) -> `LOCKED` (khóa bài, từ chối nhận thêm) -> `REVEALED` (công bố đáp án, tính analytics).
    - Khóa duy nhất: `roomId + questionId + studentId`.
+

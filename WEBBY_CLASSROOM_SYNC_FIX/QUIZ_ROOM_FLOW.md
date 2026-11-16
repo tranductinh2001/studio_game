@@ -76,3 +76,4 @@
    - Biểu đồ phân bố (A, B, C, D), tỷ lệ chính xác trên số học sinh đã nộp bài và tỷ lệ trên toàn bộ sĩ số lớp.
 3. **Sư phạm AI BitOne**:
    - Giáo viên có thể bấm "Phân tích sư phạm AI" để nhận gợi ý củng cố kiến thức cho những học sinh chọn phương án nhiễu.
+

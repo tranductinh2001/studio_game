@@ -167,6 +167,10 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   // Start Camera
   const startCamera = async () => {
     setCameraError(null);
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('⚠️ Trình duyệt hạn chế video trực tiếp qua HTTP. Thầy/Cô hãy dùng nút "📸 Chụp ảnh quét thẻ" bên cạnh (hoạt động 100%), hoặc mở link Vercel HTTPS!');
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
@@ -180,7 +184,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       }
     } catch (err) {
       console.warn('Camera error:', err.message);
-      setCameraError('Không thể mở camera (chưa cấp quyền hoặc thiết bị không có camera). Bạn có thể dùng chế độ Giả Lập Quét bên dưới!');
+      setCameraError('Không thể mở camera video trực tiếp. Vui lòng bấm nút "📸 Chụp ảnh quét thẻ" bên cạnh để chụp thẻ ngay!');
     }
   };
 
@@ -195,6 +199,98 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       requestRef.current = null;
     }
     setIsScanning(false);
+  };
+
+  // Handle Scan from Photo Capture / File Upload (Works on 100% of mobile phones on any HTTP/HTTPS network!)
+  const handleScanFromPhoto = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSyncStatus('🔍 Đang phân tích thẻ học sinh từ ảnh chụp...');
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.width;
+        tempCanvas.height = img.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+
+        let detectedInPhoto = 0;
+
+        // 1. Try Quizizz ArUco Q-Cards
+        try {
+          const qCards = detectQuizizzCards(imageData);
+          if (qCards && qCards.length > 0) {
+            qCards.forEach((q) => {
+              const student = studentsMap[q.cardId] || studentsMap[q.quizizzCode] || {
+                fullName: `Học sinh Thẻ ${q.quizizzCode}`,
+                studentCode: q.quizizzCode,
+                cardId: q.cardId
+              };
+              const targetKey = student.cardId || q.cardId;
+              const respItem = {
+                cardId: targetKey,
+                quizizzCode: q.quizizzCode,
+                studentCode: student.studentCode,
+                studentName: student.fullName,
+                answer: q.answer,
+                angle: q.visualAngle,
+                cardType: 'Quizizz Q-Card',
+                detectedAt: new Date().toISOString()
+              };
+              setDetectedResponses((prev) => ({ ...prev, [targetKey]: respItem }));
+              queueResponseForAutoSync(respItem);
+              detectedInPhoto++;
+            });
+          }
+        } catch (err) {
+          console.warn('Quizizz scan error from photo:', err);
+        }
+
+        // 2. Try Webby QR
+        try {
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code) {
+            const { answer, angle } = calculateAnswerFromCorners(code.location);
+            let cId = null;
+            try {
+              const parsed = JSON.parse(code.data);
+              cId = parsed.cardId || parsed.studentCode;
+            } catch (err) {
+              cId = code.data;
+            }
+            if (cId) {
+              const student = studentsMap[cId] || { fullName: `Học sinh (${cId})`, studentCode: cId };
+              const respItem = {
+                cardId: cId,
+                studentCode: student.studentCode,
+                studentName: student.fullName,
+                answer,
+                angle,
+                cardType: 'Webby QR',
+                detectedAt: new Date().toISOString()
+              };
+              setDetectedResponses((prev) => ({ ...prev, [cId]: respItem }));
+              queueResponseForAutoSync(respItem);
+              detectedInPhoto++;
+            }
+          }
+        } catch (err) {
+          console.warn('Webby QR scan error from photo:', err);
+        }
+
+        if (detectedInPhoto > 0) {
+          setSyncStatus(`🎉 Đã quét thành công ${detectedInPhoto} thẻ từ ảnh chụp!`);
+        } else {
+          setSyncStatus('⚠️ Không nhận diện được thẻ trong ảnh. Vui lòng chụp rõ mã vuông trên giấy!');
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   // Scan frame loop
@@ -346,6 +442,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   };
 
   useEffect(() => {
+    startCamera();
     return () => {
       stopCamera();
     };
@@ -479,6 +576,18 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               CAMERA QUÉT THẺ
             </span>
             <div className="flex items-center gap-2">
+              <label className="cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow-md">
+                <Camera className="w-3.5 h-3.5" />
+                Chụp ảnh thẻ
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleScanFromPhoto}
+                  className="hidden"
+                />
+              </label>
+
               {isScanning ? (
                 <button
                   onClick={stopCamera}
@@ -514,12 +623,28 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
 
             {!isScanning && (
               <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
-                <Camera className="w-14 h-14 stroke-[1.2] text-slate-600" />
-                <p className="text-xs text-slate-400 max-w-sm">
-                  Nhấn <span className="text-cyan-300 font-bold">"Bật camera"</span> để quét thẻ giấy học sinh trực tiếp, hoặc nhấn <span className="text-indigo-300 font-bold">"Giả lập quét lớp"</span> để kiểm thử tức thì!
-                </p>
+                <Camera className="w-14 h-14 stroke-[1.2] text-cyan-400" />
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    onClick={startCamera}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-lg shadow-cyan-500/30"
+                  >
+                    Bật camera video
+                  </button>
+                  <label className="cursor-pointer px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/30 flex items-center gap-1.5">
+                    <Camera className="w-4 h-4" />
+                    Chụp ảnh quét thẻ
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleScanFromPhoto}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
                 {cameraError && (
-                  <p className="text-[11px] text-amber-300/90 bg-amber-950/40 p-2 rounded-lg border border-amber-800/40 max-w-sm">
+                  <p className="text-[11px] text-amber-300/90 bg-amber-950/40 p-2.5 rounded-lg border border-amber-800/40 max-w-sm">
                     {cameraError}
                   </p>
                 )}

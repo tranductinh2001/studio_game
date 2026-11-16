@@ -64,3 +64,4 @@ function poll() {
 ```
 
 Nhờ cơ chế này, ngay cả khi triển khai trên Vercel Serverless (nơi không duy trì kết nối TCP vĩnh viễn), máy chiếu và điện thoại vẫn đồng bộ dữ liệu trơn tru và hoàn toàn tức thì.
+

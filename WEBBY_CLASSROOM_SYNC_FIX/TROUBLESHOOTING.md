@@ -53,3 +53,4 @@
   - Webby Classroom triển khai cơ chế **Resilient Realtime (SSE + Polling Fallback 1.2s)**.
   - Ngay cả khi kết nối SSE bị Vercel Serverless Function ngắt sau timeout, hệ thống tự động chuyển sang chế độ Polling kiểm tra trạng thái phòng mỗi 1.2s.
   - Bộ lọc hàm băm (`lastStateHash`) đảm bảo chỉ cập nhật giao diện khi có học sinh nộp bài mới, không làm chậm điện thoại hay giật lag máy chiếu.
+

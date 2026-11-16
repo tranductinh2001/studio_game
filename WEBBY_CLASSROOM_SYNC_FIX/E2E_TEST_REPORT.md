@@ -77,3 +77,4 @@ TEST SUITE RESULTS: 32 PASSED, 0 FAILED
 - **Tính năng Upsert**: Học sinh xoay thẻ đổi đáp án được cập nhật chính xác mà không gây lỗi trùng lặp dữ liệu.
 - **Tính bảo vệ**: Khi giáo viên khóa bài, mọi đáp án gửi thêm đều bị chặn tuyệt đối.
 - **Độ trễ**: Thời gian phản hồi API trung bình dưới 15ms.
+

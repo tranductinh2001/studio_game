@@ -542,6 +542,7 @@ export default function App() {
           <AssessmentDisplay 
             roomCode={roomCode} 
             currentQuestion={assessmentSelectedQuestion} 
+            onOpenPhoneConnect={() => setShowPhoneConnectModal(true)}
           />
         )}
 

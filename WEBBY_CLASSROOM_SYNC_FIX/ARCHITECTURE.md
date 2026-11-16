@@ -85,3 +85,4 @@ Trước đây, giáo viên quét thẻ phải nhấn nút "Đồng bộ" thủ 
   - Khởi tạo kết nối SSE: `EventSource('/api/classroom/rooms/:code/events')`.
   - Nếu kết nối SSE gặp lỗi (`onError`), tự động kích hoạt bộ đếm Polling 1.2s.
   - Sử dụng cơ chế so khớp hàm băm (`lastStateHash`) để chỉ kích hoạt Re-render khi dữ liệu phòng thực sự thay đổi, loại bỏ hiện tượng giật lag màn hình.
+

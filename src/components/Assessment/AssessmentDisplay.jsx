@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, XCircle, Lock, Unlock, Eye, Sparkles, Clock, 
-  BarChart3, Users, ChevronLeft, ChevronRight, RotateCcw, AlertCircle
+  BarChart3, Users, ChevronLeft, ChevronRight, RotateCcw, AlertCircle,
+  Smartphone, QrCode, PlayCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { classroomService } from '../../services/classroomService';
 
-export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion = null }) {
-  const [activeQuestion, setActiveQuestion] = useState(currentQuestion || {
+export const LESSON_6_QUESTIONS = [
+  {
     id: 'Q_01',
     questionText: 'Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?',
     options: {
@@ -20,7 +21,68 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
     explanation: 'WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.',
     bloomLevel: 'Nhận biết',
     difficulty: 'Dễ'
-  });
+  },
+  {
+    id: 'Q_02',
+    questionText: 'Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?',
+    options: {
+      A: 'Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng',
+      B: 'WWW là hạ tầng mạng phần cứng, còn Internet là trang web',
+      C: 'Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet',
+      D: 'Muốn dùng Internet thì nhất thiết phải cài đặt WWW'
+    },
+    correctAnswer: 'C',
+    explanation: 'Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.',
+    bloomLevel: 'Thông hiểu',
+    difficulty: 'Trung bình'
+  },
+  {
+    id: 'Q_03',
+    questionText: 'Trang web đầu tiên mở ra khi bạn truy cập vào một địa chỉ website được gọi là gì?',
+    options: {
+      A: 'Trang chủ (Homepage)',
+      B: 'Trang tìm kiếm',
+      C: 'Trang liên hệ',
+      D: 'Trang mạng xã hội'
+    },
+    correctAnswer: 'A',
+    explanation: 'Trang chủ (Homepage) là trang đầu tiên được tải và hiển thị khi người dùng mở một địa chỉ website.',
+    bloomLevel: 'Nhận biết',
+    difficulty: 'Dễ'
+  },
+  {
+    id: 'Q_04',
+    questionText: 'Đoạn văn bản hoặc hình ảnh mà khi nháy chuột vào đó sẽ dẫn đến một trang web khác được gọi là gì?',
+    options: {
+      A: 'Siêu văn bản (Hypertext)',
+      B: 'Siêu liên kết (Hyperlink)',
+      C: 'Trình duyệt web (Web Browser)',
+      D: 'Địa chỉ IP máy chủ'
+    },
+    correctAnswer: 'B',
+    explanation: 'Siêu liên kết (Hyperlink) là thành phần trong trang web liên kết đến một vị trí khác hoặc một trang web khác khi được nháy chuột.',
+    bloomLevel: 'Nhận biết',
+    difficulty: 'Dễ'
+  },
+  {
+    id: 'Q_05',
+    questionText: 'Phần mềm nào dưới đây KHÔNG PHẢI là trình duyệt web?',
+    options: {
+      A: 'Google Chrome',
+      B: 'Microsoft Edge',
+      C: 'Microsoft Word',
+      D: 'Cốc Cốc'
+    },
+    correctAnswer: 'C',
+    explanation: 'Microsoft Word là phần mềm soạn thảo văn bản, không phải là trình duyệt web.',
+    bloomLevel: 'Vận dụng',
+    difficulty: 'Dễ'
+  }
+];
+
+export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion = null, onOpenPhoneConnect = null }) {
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [activeQuestion, setActiveQuestion] = useState(currentQuestion || LESSON_6_QUESTIONS[0]);
 
   const [questionState, setQuestionState] = useState('COLLECTING'); // 'COLLECTING' | 'LOCKED' | 'REVEALED'
   const [classes, setClasses] = useState([]);
@@ -169,6 +231,27 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
     handleSetQuestion(activeQuestion);
   };
 
+  const handleSelectQuestionByIndex = (idx) => {
+    if (idx >= 0 && idx < LESSON_6_QUESTIONS.length) {
+      setCurrentQIndex(idx);
+      const q = LESSON_6_QUESTIONS[idx];
+      setActiveQuestion(q);
+      handleSetQuestion(q);
+    }
+  };
+
+  const handlePrevQuestion = () => {
+    if (currentQIndex > 0) {
+      handleSelectQuestionByIndex(currentQIndex - 1);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQIndex < LESSON_6_QUESTIONS.length - 1) {
+      handleSelectQuestionByIndex(currentQIndex + 1);
+    }
+  };
+
   // Run BitOne AI Pedagogical Analysis
   const handleAnalyzeWithBitOne = async () => {
     setIsAnalyzingAi(true);
@@ -253,8 +336,53 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           </div>
         </div>
 
-        {/* Action Controls for Teacher */}
-        <div className="flex items-center gap-2">
+        {/* Action Controls & Question Switcher for Teacher */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Question Navigator Strip (5 Bài 6 Questions) */}
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl text-xs">
+            <button
+              onClick={handlePrevQuestion}
+              disabled={currentQIndex === 0}
+              className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Câu trước"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {LESSON_6_QUESTIONS.map((q, idx) => (
+              <button
+                key={q.id}
+                onClick={() => handleSelectQuestionByIndex(idx)}
+                className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                  currentQIndex === idx 
+                    ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                Câu {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={handleNextQuestion}
+              disabled={currentQIndex === LESSON_6_QUESTIONS.length - 1}
+              className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Câu tiếp theo"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Connect Phone Button */}
+          {onOpenPhoneConnect && (
+            <button
+              onClick={onOpenPhoneConnect}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20"
+              title="Mở mã QR để kết nối camera điện thoại quét thẻ"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              Kết nối điện thoại
+            </button>
+          )}
+
           {/* Timer pill */}
           <button
             onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -265,7 +393,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
             }`}
           >
             <Clock className="w-3.5 h-3.5 text-cyan-400" />
-            {timerSeconds}s {isTimerRunning ? '(Đang chạy)' : '(Tạm dừng)'}
+            {timerSeconds}s {isTimerRunning ? '(Chạy)' : '(Dừng)'}
           </button>
 
           {questionState === 'COLLECTING' && (
@@ -289,20 +417,12 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           ) : (
             <button
               onClick={handleResetQuestion}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 transition-all border border-slate-700 shadow-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-md shadow-emerald-500/20"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Làm lại câu này
+              <PlayCircle className="w-3.5 h-3.5" />
+              Bắt đầu thu bài lại
             </button>
           )}
-
-          <button
-            onClick={handleResetQuestion}
-            className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
-            title="Làm lại câu hỏi này"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
         </div>
       </div>
 

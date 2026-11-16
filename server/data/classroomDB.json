@@ -2484,132 +2484,38 @@
       "className": "Lớp 6B",
       "school": "THCS Đắk Trôi",
       "currentQuestion": {
-        "id": "Q_SYNC_01",
-        "questionText": "Mạng toàn cầu World Wide Web (WWW) hoạt động trên nền tảng nào?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
         "options": {
-          "A": "Mạng LAN cục bộ trường học",
-          "B": "Nền tảng Internet",
-          "C": "Đĩa mềm máy tính",
-          "D": "Mạng Bluetooth"
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
         },
         "correctAnswer": "B",
-        "explanation": "WWW hoạt động trên nền tảng Internet."
+        "explanation": "WWW là dịch vụ thông tin toàn cầu chạy trên Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
       "activeQuestion": {
-        "id": "Q_SYNC_01",
-        "questionText": "Mạng toàn cầu World Wide Web (WWW) hoạt động trên nền tảng nào?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
         "options": {
-          "A": "Mạng LAN cục bộ trường học",
-          "B": "Nền tảng Internet",
-          "C": "Đĩa mềm máy tính",
-          "D": "Mạng Bluetooth"
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
         },
         "correctAnswer": "B",
-        "explanation": "WWW hoạt động trên nền tảng Internet."
+        "explanation": "WWW là dịch vụ thông tin toàn cầu chạy trên Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
-      "questionState": "REVEALED",
+      "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
       "totalStudents": 33,
-      "studentResponses": {
-        "STU_CLASS_6B_01": {
-          "studentId": "STU_CLASS_6B_01",
-          "studentCode": "64629602-00-1567",
-          "fullName": "BÙI THỊ VÂN ANH",
-          "studentName": "BÙI THỊ VÂN ANH",
-          "cardId": "CARD_0001",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 1,
-          "previousAnswer": null,
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.893Z",
-          "timestamp": "2026-11-16T14:58:51.893Z"
-        },
-        "STU_CLASS_6B_02": {
-          "studentId": "STU_CLASS_6B_02",
-          "studentCode": "64629602-00-1569",
-          "fullName": "BLEN",
-          "studentName": "BLEN",
-          "cardId": "CARD_0002",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 2,
-          "previousAnswer": "A",
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.900Z",
-          "timestamp": "2026-11-16T14:58:51.900Z"
-        },
-        "STU_CLASS_6B_03": {
-          "studentId": "STU_CLASS_6B_03",
-          "studentCode": "64629602-00-1571",
-          "fullName": "CHIU",
-          "studentName": "CHIU",
-          "cardId": "CARD_0003",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 1,
-          "previousAnswer": null,
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.893Z",
-          "timestamp": "2026-11-16T14:58:51.893Z"
-        }
-      },
-      "responses": {
-        "CARD_0001": {
-          "studentId": "STU_CLASS_6B_01",
-          "studentCode": "64629602-00-1567",
-          "fullName": "BÙI THỊ VÂN ANH",
-          "studentName": "BÙI THỊ VÂN ANH",
-          "cardId": "CARD_0001",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 1,
-          "previousAnswer": null,
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.893Z",
-          "timestamp": "2026-11-16T14:58:51.893Z"
-        },
-        "CARD_0002": {
-          "studentId": "STU_CLASS_6B_02",
-          "studentCode": "64629602-00-1569",
-          "fullName": "BLEN",
-          "studentName": "BLEN",
-          "cardId": "CARD_0002",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 2,
-          "previousAnswer": "A",
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.900Z",
-          "timestamp": "2026-11-16T14:58:51.900Z"
-        },
-        "CARD_0003": {
-          "studentId": "STU_CLASS_6B_03",
-          "studentCode": "64629602-00-1571",
-          "fullName": "CHIU",
-          "studentName": "CHIU",
-          "cardId": "CARD_0003",
-          "rotation": 90,
-          "angle": 90,
-          "answer": "B",
-          "isCorrect": true,
-          "revision": 1,
-          "previousAnswer": null,
-          "scannedAt": "2026-11-16T14:58:51.893Z",
-          "updatedAt": "2026-11-16T14:58:51.893Z",
-          "timestamp": "2026-11-16T14:58:51.893Z"
-        }
-      },
+      "studentResponses": {},
+      "responses": {},
       "groupSubmissions": {
         "group_1": {
           "groupNumber": 1,
@@ -2649,8 +2555,8 @@
         }
       },
       "status": "ACTIVE",
-      "startedAt": "2026-11-16T14:58:51.882Z",
-      "lastUpdated": "2026-11-16T14:58:51.917Z"
+      "startedAt": "2026-11-16T15:18:20.529Z",
+      "lastUpdated": "2026-11-16T15:18:26.617Z"
     }
   }
 }
