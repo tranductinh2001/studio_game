@@ -241,11 +241,14 @@ class ClassroomStore {
   }
 
   saveClassStudents(classId, studentsList) {
-    const cls = (this.data.classes || []).find((c) => c.id === classId);
-    if (!cls) return [];
+    let cls = (this.data.classes || []).find((c) => c.id === classId || c.code === classId || c.id === `CLASS_${classId}`);
+    if (!cls) {
+      const cleanCode = classId.replace(/^CLASS_/, '');
+      cls = this.addClass({ name: `Lớp ${cleanCode}`, code: cleanCode });
+    }
 
     // Remove existing students of this class
-    this.data.students = (this.data.students || []).filter((s) => s.classId !== classId);
+    this.data.students = (this.data.students || []).filter((s) => s.classId !== cls.id);
 
     const newStudents = studentsList.map((item, idx) => {
       const num = idx + 1;
@@ -256,22 +259,24 @@ class ClassroomStore {
       const studentCode = typeof item === 'object' && item.studentCode ? item.studentCode : `HS${cls.code || '6'}${numStr}`;
 
       return {
-        id: `STU_${classId}_${numStr}`,
+        id: `STU_${cls.id}_${numStr}`,
         studentCode,
         fullName,
-        classId,
+        classId: cls.id,
         cardId,
         status: 'active',
+        group: `Nhóm ${((num - 1) % 4) + 1}`,
         createdAt: new Date().toISOString()
       };
     });
 
+    if (!this.data.students) this.data.students = [];
     this.data.students.push(...newStudents);
     cls.totalStudents = newStudents.length;
 
     // Update active room if this class is currently in use
     Object.values(this.data.activeRooms || {}).forEach((room) => {
-      if (room.classId === classId) {
+      if (room.classId === cls.id) {
         room.totalStudents = newStudents.length;
         this.broadcast(room.roomCode, 'ROOM_STATE', room);
       }
@@ -279,6 +284,125 @@ class ClassroomStore {
 
     this.save();
     return newStudents;
+  }
+
+  // Add a single student to a class
+  addStudent(classId, { fullName, studentCode, cardId }) {
+    let cls = (this.data.classes || []).find((c) => c.id === classId || c.code === classId || c.id === `CLASS_${classId}`);
+    if (!cls) {
+      const cleanCode = classId.replace(/^CLASS_/, '');
+      cls = this.addClass({ name: `Lớp ${cleanCode}`, code: cleanCode });
+    }
+
+    const currentStudents = (this.data.students || []).filter((s) => s.classId === cls.id);
+    const num = currentStudents.length + 1;
+    const numStr = num < 10 ? `0${num}` : `${num}`;
+    const cardNum = num < 10 ? `000${num}` : `00${num}`;
+
+    const newStudent = {
+      id: `STU_${cls.id}_${Date.now()}_${numStr}`,
+      studentCode: studentCode || `HS${cls.code || '6'}${numStr}`,
+      fullName: (fullName || `Học sinh ${num}`).trim(),
+      classId: cls.id,
+      cardId: cardId || `CARD_${cardNum}`,
+      status: 'active',
+      group: `Nhóm ${((num - 1) % 4) + 1}`,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!this.data.students) this.data.students = [];
+    this.data.students.push(newStudent);
+    cls.totalStudents = currentStudents.length + 1;
+
+    Object.values(this.data.activeRooms || {}).forEach((room) => {
+      if (room.classId === cls.id) {
+        room.totalStudents = cls.totalStudents;
+        this.broadcast(room.roomCode, 'ROOM_STATE', room);
+      }
+    });
+
+    this.save();
+    return newStudent;
+  }
+
+  // Append a list of students to existing roster
+  appendClassStudents(classId, studentsList) {
+    let cls = (this.data.classes || []).find((c) => c.id === classId || c.code === classId || c.id === `CLASS_${classId}`);
+    if (!cls) {
+      const cleanCode = classId.replace(/^CLASS_/, '');
+      cls = this.addClass({ name: `Lớp ${cleanCode}`, code: cleanCode });
+    }
+
+    const currentStudents = (this.data.students || []).filter((s) => s.classId === cls.id);
+    const startIdx = currentStudents.length;
+
+    const newStudents = studentsList.map((item, idx) => {
+      const num = startIdx + idx + 1;
+      const numStr = num < 10 ? `0${num}` : `${num}`;
+      const cardNum = num < 10 ? `000${num}` : `00${num}`;
+      const fullName = typeof item === 'string' ? item.trim() : (item.fullName || item.name || `Học sinh ${num}`).trim();
+      const cardId = typeof item === 'object' && item.cardId ? item.cardId : `CARD_${cardNum}`;
+      const studentCode = typeof item === 'object' && item.studentCode ? item.studentCode : `HS${cls.code || '6'}${numStr}`;
+
+      return {
+        id: `STU_${cls.id}_${numStr}`,
+        studentCode,
+        fullName,
+        classId: cls.id,
+        cardId,
+        status: 'active',
+        group: `Nhóm ${((num - 1) % 4) + 1}`,
+        createdAt: new Date().toISOString()
+      };
+    });
+
+    if (!this.data.students) this.data.students = [];
+    this.data.students.push(...newStudents);
+    cls.totalStudents = currentStudents.length + newStudents.length;
+
+    Object.values(this.data.activeRooms || {}).forEach((room) => {
+      if (room.classId === cls.id) {
+        room.totalStudents = cls.totalStudents;
+        this.broadcast(room.roomCode, 'ROOM_STATE', room);
+      }
+    });
+
+    this.save();
+    return (this.data.students || []).filter((s) => s.classId === cls.id);
+  }
+
+  // Delete a student from class and re-sequence QR cards
+  deleteStudent(studentId) {
+    const student = (this.data.students || []).find((s) => s.id === studentId);
+    if (!student) return { success: false, error: 'Học sinh không tồn tại' };
+
+    const classId = student.classId;
+    this.data.students = (this.data.students || []).filter((s) => s.id !== studentId);
+
+    // Re-index remaining students
+    const remaining = (this.data.students || []).filter((s) => s.classId === classId);
+    remaining.forEach((s, idx) => {
+      const num = idx + 1;
+      const numStr = num < 10 ? `0${num}` : `${num}`;
+      const cardNum = num < 10 ? `000${num}` : `00${num}`;
+      s.cardId = `CARD_${cardNum}`;
+      s.group = `Nhóm ${((num - 1) % 4) + 1}`;
+    });
+
+    const cls = (this.data.classes || []).find((c) => c.id === classId);
+    if (cls) {
+      cls.totalStudents = remaining.length;
+    }
+
+    Object.values(this.data.activeRooms || {}).forEach((room) => {
+      if (room.classId === classId) {
+        room.totalStudents = remaining.length;
+        this.broadcast(room.roomCode, 'ROOM_STATE', room);
+      }
+    });
+
+    this.save();
+    return { success: true, remaining };
   }
 
   updateStudent(studentId, { fullName, cardId, studentCode }) {
@@ -528,7 +652,7 @@ class ClassroomStore {
   }
 
   // ==========================================
-  // SMAS EXCEL PARSER & AUTO-IMPORT
+  // SMAS & UNIVERSAL EXCEL PARSER & AUTO-IMPORT
   // ==========================================
   parseSmasWorkbook(workbook) {
     const result = [];
@@ -538,67 +662,119 @@ class ClassroomStore {
       const ws = workbook.Sheets[sheetName];
       if (!ws) continue;
       const rawData = xlsx.utils.sheet_to_json(ws, { header: 1 });
-      if (!rawData || rawData.length < 14) continue;
+      if (!rawData || rawData.length === 0) continue;
 
-      // School name (Row 4, Col 1)
+      // School name
       let school = schoolDefault;
       if (rawData[3] && rawData[3][0] && typeof rawData[3][0] === 'string') {
         school = rawData[3][0].trim();
       }
 
-      // Class code (Row 1, Col 4 or parsed from sheet name)
+      // Class code & name
       let classCode = '';
-      if (rawData[0] && rawData[0][3]) {
+      const match = sheetName.match(/(\d+[A-Za-z]*)/);
+      if (match) {
+        classCode = match[1];
+      } else if (rawData[0] && rawData[0][3]) {
         classCode = String(rawData[0][3]).trim();
+      } else {
+        classCode = sheetName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8) || 'Lop1';
       }
-      if (!classCode) {
-        const match = sheetName.match(/(\d+[A-Za-z]*)/);
-        classCode = match ? match[1] : sheetName.replace(/\s+/g, '_');
-      }
-
-      const className = `Lớp ${classCode}`;
+      const className = classCode.toLowerCase().startsWith('lớp') ? classCode : (`Lớp ${classCode}`);
       const classId = `CLASS_${classCode.toUpperCase()}`;
 
-      // Find start row: row 14 (0-index 13) by default, or look for 'STT' & 'Họ và tên'
-      let startRow = 13;
-      for (let r = 0; r < Math.min(20, rawData.length); r++) {
+      // Detect column indices dynamically
+      let nameCol = -1;
+      let hoCol = -1;
+      let tenCol = -1;
+      let codeCol = -1;
+      let startRow = -1;
+
+      for (let r = 0; r < Math.min(25, rawData.length); r++) {
         const row = rawData[r];
-        if (Array.isArray(row)) {
-          const textJoined = row.map((c) => String(c || '').toLowerCase()).join(' ');
-          if (textJoined.includes('stt') && textJoined.includes('họ và tên')) {
-            startRow = r + 2;
-            break;
+        if (!Array.isArray(row)) continue;
+        for (let c = 0; c < row.length; c++) {
+          const val = String(row[c] || '').trim().toLowerCase();
+          if (val.includes('họ và tên') || val === 'họ tên' || val === 'họ và tên học sinh' || val === 'tên học sinh' || val === 'fullname' || val === 'full name') {
+            nameCol = c;
+            startRow = r + 1;
+          } else if (val.includes('họ đệm') || val.includes('họ và đệm') || val.includes('họ và chữ đệm') || val === 'họ') {
+            hoCol = c;
+            startRow = r + 1;
+          } else if ((val === 'tên' || val === 'ten') && nameCol === -1) {
+            tenCol = c;
+            startRow = r + 1;
+          } else if (val.includes('mã học sinh') || val.includes('mã định danh') || val.includes('mã số') || val === 'studentid' || val === 'code') {
+            codeCol = c;
           }
+        }
+        if (startRow !== -1) {
+          if (rawData[startRow] && Array.isArray(rawData[startRow])) {
+            const nextRowText = rawData[startRow].map(x => String(x || '').trim()).join('');
+            if (/^(\d+|tx\d+|đđg.*)$/i.test(nextRowText) || nextRowText.length < 5) {
+              startRow++;
+            }
+          }
+          break;
+        }
+      }
+
+      // Fallback: scan columns for name-like strings if no header found
+      if (nameCol === -1 && hoCol === -1 && tenCol === -1) {
+        let bestCol = -1;
+        let maxNames = 0;
+        for (let c = 0; c < 10; c++) {
+          let count = 0;
+          for (let r = 0; r < Math.min(30, rawData.length); r++) {
+            const cell = String(rawData[r]?.[c] || '').trim();
+            if (cell.length > 2 && cell.includes(' ') && !/^\d+$/.test(cell)) {
+              count++;
+            }
+          }
+          if (count > maxNames) {
+            maxNames = count;
+            bestCol = c;
+          }
+        }
+        if (maxNames >= 2) {
+          nameCol = bestCol;
+          startRow = 0;
         }
       }
 
       const students = [];
-      for (let r = startRow; r < rawData.length; r++) {
+      const beginRow = startRow !== -1 ? startRow : 0;
+
+      for (let r = beginRow; r < rawData.length; r++) {
         const row = rawData[r];
         if (!row || !Array.isArray(row)) continue;
-        const stt = row[0];
-        const code = row[2];
-        const name = row[3];
 
-        if (name && String(name).trim() && String(name).trim() !== 'None') {
-          const studentIndex = students.length + 1;
-          const num = Number(stt) || studentIndex;
-          const numStr = num < 10 ? `0${num}` : `${num}`;
-          const cardNum = num < 10 ? `000${num}` : `00${num}`;
-          const cleanName = String(name).trim();
-          const cleanCode = code ? String(code).trim() : `HS${classCode}${numStr}`;
-
-          students.push({
-            id: `STU_${classCode}_${numStr}`,
-            studentCode: cleanCode,
-            fullName: cleanName,
-            classId: classId,
-            cardId: `CARD_${cardNum}`,
-            status: 'active',
-            group: `Nhóm ${((num - 1) % 4) + 1}`,
-            createdAt: new Date().toISOString()
-          });
+        let fullName = '';
+        if (nameCol !== -1 && row[nameCol]) {
+          fullName = String(row[nameCol]).trim();
+        } else if (hoCol !== -1 && tenCol !== -1 && (row[hoCol] || row[tenCol])) {
+          fullName = `${String(row[hoCol] || '').trim()} ${String(row[tenCol] || '').trim()}`.trim();
         }
+
+        if (!fullName || fullName === 'None' || fullName.toLowerCase().includes('tổng số') || fullName.toLowerCase().includes('học kỳ') || fullName.toLowerCase().includes('họ và tên') || /^\d+$/.test(fullName)) {
+          continue;
+        }
+
+        const num = students.length + 1;
+        const numStr = num < 10 ? `0${num}` : `${num}`;
+        const cardNum = num < 10 ? `000${num}` : `00${num}`;
+        const stuCode = (codeCol !== -1 && row[codeCol]) ? String(row[codeCol]).trim() : (`HS${classCode}${numStr}`);
+
+        students.push({
+          id: `STU_${classCode}_${numStr}`,
+          studentCode: stuCode,
+          fullName,
+          classId,
+          cardId: `CARD_${cardNum}`,
+          status: 'active',
+          group: `Nhóm ${((num - 1) % 4) + 1}`,
+          createdAt: new Date().toISOString()
+        });
       }
 
       if (students.length > 0) {

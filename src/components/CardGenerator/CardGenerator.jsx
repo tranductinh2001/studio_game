@@ -3,7 +3,7 @@ import {
   Printer, Download, Eye, Users, FileText, CheckCircle2, 
   RotateCw, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, RefreshCw,
   Plus, Edit3, Trash2, Clipboard, Save, X, School, Check, AlertCircle,
-  FileSpreadsheet, FolderSync, Upload, CheckSquare, Square
+  FileSpreadsheet, FolderSync, Upload, CheckSquare, Square, UserPlus
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
@@ -19,6 +19,9 @@ export default function CardGenerator() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
 
+  // Quick single student add bar
+  const [quickAddName, setQuickAddName] = useState('');
+
   // Modals state
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -28,6 +31,7 @@ export default function CardGenerator() {
 
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [bulkStudentsText, setBulkStudentsText] = useState('');
+  const [bulkImportMode, setBulkImportMode] = useState('append'); // 'append' or 'replace'
   const [saveStatus, setSaveStatus] = useState('');
 
   // SMAS Import Modal state
@@ -184,7 +188,7 @@ export default function CardGenerator() {
     }
   };
 
-  // Client-side parser for SMAS Excel workbooks
+  // Universal client-side parser for ANY Excel student file (SMAS, vnEdu, or custom list)
   const parseSmasWorkbookClient = (wb) => {
     const result = [];
     const schoolDefault = 'TRƯỜNG TH & THCS ĐĂK TRÔI';
@@ -193,7 +197,7 @@ export default function CardGenerator() {
       const ws = wb.Sheets[sheetName];
       if (!ws) continue;
       const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      if (!rawData || rawData.length < 14) continue;
+      if (!rawData || rawData.length === 0) continue;
 
       let school = schoolDefault;
       if (rawData[3] && rawData[3][0] && typeof rawData[3][0] === 'string') {
@@ -201,56 +205,110 @@ export default function CardGenerator() {
       }
 
       let classCode = '';
-      if (rawData[0] && rawData[0][3]) {
+      const match = sheetName.match(/(\d+[A-Za-z]*)/);
+      if (match) {
+        classCode = match[1];
+      } else if (rawData[0] && rawData[0][3]) {
         classCode = String(rawData[0][3]).trim();
-      }
-      if (!classCode) {
-        const match = sheetName.match(/(\d+[A-Za-z]*)/);
-        classCode = match ? match[1] : sheetName.replace(/\s+/g, '_');
+      } else {
+        classCode = sheetName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8) || 'Lop1';
       }
 
-      const className = `Lớp ${classCode}`;
+      const className = classCode.toLowerCase().startsWith('lớp') ? classCode : (`Lớp ${classCode}`);
       const classId = `CLASS_${classCode.toUpperCase()}`;
 
-      let startRow = 13;
-      for (let r = 0; r < Math.min(20, rawData.length); r++) {
+      // Dynamic column headers detection
+      let nameCol = -1;
+      let hoCol = -1;
+      let tenCol = -1;
+      let codeCol = -1;
+      let startRow = -1;
+
+      for (let r = 0; r < Math.min(25, rawData.length); r++) {
         const row = rawData[r];
-        if (Array.isArray(row)) {
-          const textJoined = row.map((c) => String(c || '').toLowerCase()).join(' ');
-          if (textJoined.includes('stt') && textJoined.includes('họ và tên')) {
-            startRow = r + 2;
-            break;
+        if (!Array.isArray(row)) continue;
+        for (let c = 0; c < row.length; c++) {
+          const val = String(row[c] || '').trim().toLowerCase();
+          if (val.includes('họ và tên') || val === 'họ tên' || val === 'họ và tên học sinh' || val === 'tên học sinh' || val === 'fullname' || val === 'full name') {
+            nameCol = c;
+            startRow = r + 1;
+          } else if (val.includes('họ đệm') || val.includes('họ và đệm') || val.includes('họ và chữ đệm') || val === 'họ') {
+            hoCol = c;
+            startRow = r + 1;
+          } else if ((val === 'tên' || val === 'ten') && nameCol === -1) {
+            tenCol = c;
+            startRow = r + 1;
+          } else if (val.includes('mã học sinh') || val.includes('mã định danh') || val.includes('mã số') || val === 'studentid' || val === 'code') {
+            codeCol = c;
           }
+        }
+        if (startRow !== -1) {
+          if (rawData[startRow] && Array.isArray(rawData[startRow])) {
+            const nextRowText = rawData[startRow].map(x => String(x || '').trim()).join('');
+            if (/^(\d+|tx\d+|đđg.*)$/i.test(nextRowText) || nextRowText.length < 5) {
+              startRow++;
+            }
+          }
+          break;
+        }
+      }
+
+      // Fallback: scan columns for name-like strings if no header found
+      if (nameCol === -1 && hoCol === -1 && tenCol === -1) {
+        let bestCol = -1;
+        let maxNames = 0;
+        for (let c = 0; c < 10; c++) {
+          let count = 0;
+          for (let r = 0; r < Math.min(30, rawData.length); r++) {
+            const cell = String(rawData[r]?.[c] || '').trim();
+            if (cell.length > 2 && cell.includes(' ') && !/^\d+$/.test(cell)) {
+              count++;
+            }
+          }
+          if (count > maxNames) {
+            maxNames = count;
+            bestCol = c;
+          }
+        }
+        if (maxNames >= 2) {
+          nameCol = bestCol;
+          startRow = 0;
         }
       }
 
       const parsedStudents = [];
-      for (let r = startRow; r < rawData.length; r++) {
+      const beginRow = startRow !== -1 ? startRow : 0;
+
+      for (let r = beginRow; r < rawData.length; r++) {
         const row = rawData[r];
         if (!row || !Array.isArray(row)) continue;
-        const stt = row[0];
-        const code = row[2];
-        const name = row[3];
 
-        if (name && String(name).trim() && String(name).trim() !== 'None') {
-          const studentIndex = parsedStudents.length + 1;
-          const num = Number(stt) || studentIndex;
-          const numStr = num < 10 ? `0${num}` : `${num}`;
-          const cardNum = num < 10 ? `000${num}` : `00${num}`;
-          const cleanName = String(name).trim();
-          const cleanCode = code ? String(code).trim() : `HS${classCode}${numStr}`;
-
-          parsedStudents.push({
-            id: `STU_${classCode}_${numStr}`,
-            studentCode: cleanCode,
-            fullName: cleanName,
-            classId: classId,
-            cardId: `CARD_${cardNum}`,
-            status: 'active',
-            group: `Nhóm ${((num - 1) % 4) + 1}`,
-            createdAt: new Date().toISOString()
-          });
+        let fullName = '';
+        if (nameCol !== -1 && row[nameCol]) {
+          fullName = String(row[nameCol]).trim();
+        } else if (hoCol !== -1 && tenCol !== -1 && (row[hoCol] || row[tenCol])) {
+          fullName = `${String(row[hoCol] || '').trim()} ${String(row[tenCol] || '').trim()}`.trim();
         }
+
+        if (!fullName || fullName === 'None' || fullName.toLowerCase().includes('tổng số') || fullName.toLowerCase().includes('học kỳ') || fullName.toLowerCase().includes('họ và tên') || /^\d+$/.test(fullName)) {
+          continue;
+        }
+
+        const num = parsedStudents.length + 1;
+        const numStr = num < 10 ? `0${num}` : `${num}`;
+        const cardNum = num < 10 ? `000${num}` : `00${num}`;
+        const stuCode = (codeCol !== -1 && row[codeCol]) ? String(row[codeCol]).trim() : (`HS${classCode}${numStr}`);
+
+        parsedStudents.push({
+          id: `STU_${classCode}_${numStr}`,
+          studentCode: stuCode,
+          fullName,
+          classId,
+          cardId: `CARD_${cardNum}`,
+          status: 'active',
+          group: `Nhóm ${((num - 1) % 4) + 1}`,
+          createdAt: new Date().toISOString()
+        });
       }
 
       if (parsedStudents.length > 0) {
@@ -285,24 +343,19 @@ export default function CardGenerator() {
           const parsedClasses = parseSmasWorkbookClient(wb);
 
           if (!parsedClasses || parsedClasses.length === 0) {
-            alert('Không tìm thấy danh sách học sinh hợp lệ trong tệp Excel. Vui lòng kiểm tra định dạng SMAS!');
+            alert('Không tìm thấy danh sách học sinh trong tệp Excel. Vui lòng đảm bảo tệp có cột Họ và tên học sinh!');
             return;
           }
 
           setUploadProgress('Đang đồng bộ dữ liệu vào hệ thống...');
-          // Try backend sync via base64 upload
+          // Save each parsed class into system
           try {
-            const bytes = new Uint8Array(buffer);
-            let binary = '';
-            for (let i = 0; i < bytes.byteLength; i++) {
-              binary += String.fromCharCode(bytes[i]);
+            for (const pc of parsedClasses) {
+              await classroomService.saveClassStudents(pc.id, pc.students);
             }
-            const base64 = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + window.btoa(binary);
-            await classroomService.uploadSmasFile(base64, selectedSmasCodes.length > 0 ? selectedSmasCodes : null);
             await loadClasses();
           } catch (syncErr) {
             console.warn('Backend sync note, applying client-side roster directly:', syncErr);
-            // Even if server is temporarily unreachable, apply classes directly!
             setClasses(prev => {
               const map = new Map(prev.map(c => [c.id, c]));
               parsedClasses.forEach(c => map.set(c.id, { id: c.id, code: c.code, name: c.name, school: c.school, totalStudents: c.students.length }));
@@ -310,7 +363,7 @@ export default function CardGenerator() {
             });
           }
 
-          // Select primary class (default to 6A if present)
+          // Select primary class (default to 6A if present, otherwise first parsed class)
           const targetClass = parsedClasses.find(c => c.code === '6A') || parsedClasses[0];
           setSelectedClassId(targetClass.id);
           setStudents(targetClass.students);
@@ -318,7 +371,7 @@ export default function CardGenerator() {
             setSelectedStudent(targetClass.students[0]);
           }
 
-          setSaveStatus(`Đã nạp thành công ${parsedClasses.length} lớp học (${parsedClasses.reduce((acc, c) => acc + c.totalStudents, 0)} học sinh) từ tệp Excel SMAS!`);
+          setSaveStatus(`Đã nạp thành công ${parsedClasses.length} lớp (${parsedClasses.reduce((acc, c) => acc + c.totalStudents, 0)} học sinh) từ tệp Excel!`);
           setShowSmasModal(false);
         } catch (err) {
           console.error('Lỗi phân tích Excel:', err);
@@ -337,7 +390,78 @@ export default function CardGenerator() {
     }
   };
 
-  // Handle Bulk Import Students
+  // Quick single student add handler
+  const handleQuickAddStudent = async (e) => {
+    e.preventDefault();
+    const name = quickAddName.trim();
+    if (!name) return;
+
+    try {
+      const added = await classroomService.addStudent(selectedClassId, { fullName: name });
+      if (added) {
+        setStudents(prev => [...prev, added]);
+        setSelectedStudent(added);
+      }
+    } catch (err) {
+      console.warn('Backend add note, applying local student:', err);
+      const num = students.length + 1;
+      const numStr = num < 10 ? `0${num}` : `${num}`;
+      const cardNum = num < 10 ? `000${num}` : `00${num}`;
+      const localStudent = {
+        id: `STU_${selectedClassId}_${Date.now()}_${numStr}`,
+        studentCode: `HS${selectedClassObj.code || '6'}${numStr}`,
+        fullName: name,
+        classId: selectedClassId,
+        cardId: `CARD_${cardNum}`,
+        status: 'active',
+        group: `Nhóm ${((num - 1) % 4) + 1}`,
+        createdAt: new Date().toISOString()
+      };
+      setStudents(prev => [...prev, localStudent]);
+      setSelectedStudent(localStudent);
+    }
+
+    setQuickAddName('');
+    setSaveStatus(`Đã thêm học sinh "${name}" vào ${selectedClassObj.name}!`);
+    setTimeout(() => setSaveStatus(''), 3000);
+    loadClasses();
+  };
+
+  // Delete student handler
+  const handleDeleteStudent = async (studentId, studentName) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa học sinh "${studentName}" khỏi lớp?`)) {
+      return;
+    }
+
+    try {
+      await classroomService.deleteStudent(selectedClassId, studentId);
+    } catch (err) {
+      console.warn('Backend delete note:', err);
+    }
+
+    setStudents(prev => {
+      const remaining = prev.filter(s => s.id !== studentId);
+      return remaining.map((s, idx) => {
+        const num = idx + 1;
+        const cardNum = num < 10 ? `000${num}` : `00${num}`;
+        return {
+          ...s,
+          cardId: `CARD_${cardNum}`,
+          group: `Nhóm ${((num - 1) % 4) + 1}`
+        };
+      });
+    });
+
+    if (selectedStudent?.id === studentId) {
+      setSelectedStudent(students[0] || null);
+    }
+
+    setSaveStatus(`Đã xóa học sinh "${studentName}" khỏi lớp!`);
+    setTimeout(() => setSaveStatus(''), 3000);
+    loadClasses();
+  };
+
+  // Handle Bulk Import Students (with Append vs Overwrite choice)
   const handleBulkImport = async () => {
     if (!bulkStudentsText.trim()) return;
     const lines = bulkStudentsText
@@ -348,37 +472,65 @@ export default function CardGenerator() {
     if (lines.length === 0) return;
 
     try {
-      const saved = await classroomService.saveClassStudents(selectedClassId, lines);
+      let saved = [];
+      if (bulkImportMode === 'append') {
+        saved = await classroomService.appendStudents(selectedClassId, lines);
+      } else {
+        saved = await classroomService.saveClassStudents(selectedClassId, lines);
+      }
+
       if (saved && saved.length > 0) {
         setStudents(saved);
         setSelectedStudent(saved[0]);
       }
       setShowBulkImportModal(false);
       setBulkStudentsText('');
-      setSaveStatus(`Đã cập nhật danh sách ${lines.length} học sinh & tự động gán mã thẻ QR!`);
+      setSaveStatus(`Đã cập nhật danh sách ${saved.length || lines.length} học sinh & tự động gán mã thẻ QR!`);
       setTimeout(() => setSaveStatus(''), 4000);
-      loadClasses(); // update student count badge
+      loadClasses();
     } catch (err) {
       console.warn('Backend save note, applying local student roster fallback:', err);
-      // Offline / Local client fallback: create student objects and map to QR cards directly
-      const clientStudents = lines.map((name, idx) => {
-        const num = idx + 1;
-        const numStr = num < 10 ? `0${num}` : `${num}`;
-        const cardNum = num < 10 ? `000${num}` : `00${num}`;
-        return {
-          id: `STU_${selectedClassId}_${numStr}`,
-          studentCode: `HS${numStr}`,
-          fullName: name,
-          classId: selectedClassId,
-          cardId: `CARD_${cardNum}`,
-          status: 'active'
-        };
-      });
-      setStudents(clientStudents);
-      if (clientStudents.length > 0) setSelectedStudent(clientStudents[0]);
+      if (bulkImportMode === 'append') {
+        const startIdx = students.length;
+        const newStudents = lines.map((name, idx) => {
+          const num = startIdx + idx + 1;
+          const numStr = num < 10 ? `0${num}` : `${num}`;
+          const cardNum = num < 10 ? `000${num}` : `00${num}`;
+          return {
+            id: `STU_${selectedClassId}_${numStr}`,
+            studentCode: `HS${numStr}`,
+            fullName: name,
+            classId: selectedClassId,
+            cardId: `CARD_${cardNum}`,
+            group: `Nhóm ${((num - 1) % 4) + 1}`,
+            status: 'active'
+          };
+        });
+        const combined = [...students, ...newStudents];
+        setStudents(combined);
+        if (combined.length > 0) setSelectedStudent(combined[0]);
+        setSaveStatus(`Đã thêm ${newStudents.length} học sinh vào lớp (tổng ${combined.length} HS)!`);
+      } else {
+        const clientStudents = lines.map((name, idx) => {
+          const num = idx + 1;
+          const numStr = num < 10 ? `0${num}` : `${num}`;
+          const cardNum = num < 10 ? `000${num}` : `00${num}`;
+          return {
+            id: `STU_${selectedClassId}_${numStr}`,
+            studentCode: `HS${numStr}`,
+            fullName: name,
+            classId: selectedClassId,
+            cardId: `CARD_${cardNum}`,
+            group: `Nhóm ${((num - 1) % 4) + 1}`,
+            status: 'active'
+          };
+        });
+        setStudents(clientStudents);
+        if (clientStudents.length > 0) setSelectedStudent(clientStudents[0]);
+        setSaveStatus(`Đã cập nhật danh sách ${clientStudents.length} học sinh & tự động gán mã thẻ QR!`);
+      }
       setShowBulkImportModal(false);
       setBulkStudentsText('');
-      setSaveStatus(`Đã cập nhật danh sách ${clientStudents.length} học sinh & tự động gán mã thẻ QR!`);
       setTimeout(() => setSaveStatus(''), 4000);
     }
   };
@@ -651,6 +803,25 @@ export default function CardGenerator() {
             </span>
           </div>
 
+          {/* Quick Add Single Student Bar */}
+          <form onSubmit={handleQuickAddStudent} className="flex items-center gap-2 py-2 border-b border-slate-800 shrink-0">
+            <input
+              type="text"
+              placeholder="+ Nhập họ và tên học sinh mới (ví dụ: Nguyễn Thị Mai)..."
+              value={quickAddName}
+              onChange={(e) => setQuickAddName(e.target.value)}
+              className="flex-1 bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-500 outline-none transition-all"
+            />
+            <button
+              type="submit"
+              disabled={!quickAddName.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs transition-all shadow-md shrink-0 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Thêm vào lớp
+            </button>
+          </form>
+
           {/* Student Table */}
           <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-1.5 pr-1">
             {students.length === 0 ? (
@@ -727,18 +898,30 @@ export default function CardGenerator() {
                           <Save className="w-3.5 h-3.5" />
                         </button>
                       ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingStudentId(stu.id);
-                            setEditFullName(stu.fullName);
-                            setEditCardId(stu.cardId);
-                          }}
-                          className="p-1 rounded text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10"
-                          title="Đổi tên hoặc mã thẻ"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingStudentId(stu.id);
+                              setEditFullName(stu.fullName);
+                              setEditCardId(stu.cardId);
+                            }}
+                            className="p-1 rounded text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10"
+                            title="Đổi tên hoặc mã thẻ"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteStudent(stu.id, stu.fullName);
+                            }}
+                            className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                            title={`Xóa học sinh ${stu.fullName} khỏi lớp`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -928,8 +1111,39 @@ export default function CardGenerator() {
                 NHẬP NHANH DANH SÁCH {selectedClassObj.name.toUpperCase()}
               </h3>
               <p className="text-xs text-slate-400">
-                Dán danh sách họ và tên học sinh (mỗi dòng 1 tên). Hệ thống sẽ tự động gán từ Thẻ 1 (`CARD_0001`) trở đi!
+                {bulkImportMode === 'append'
+                  ? `Dán danh sách học sinh để thêm tiếp vào sau ${students.length} học sinh hiện tại (bắt đầu từ Thẻ CARD_${students.length + 1 < 10 ? '000' + (students.length + 1) : '00' + (students.length + 1)}).`
+                  : `Dán danh sách học sinh để thay thế mới toàn bộ lớp (bắt đầu lại từ Thẻ CARD_0001).`}
               </p>
+            </div>
+
+            {/* Mode selection: Nối tiếp vs Ghi đè */}
+            <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">Chế độ nạp:</span>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-emerald-400 transition-colors">
+                  <input
+                    type="radio"
+                    name="bulkImportMode"
+                    value="append"
+                    checked={bulkImportMode === 'append'}
+                    onChange={() => setBulkImportMode('append')}
+                    className="accent-emerald-500"
+                  />
+                  <span>Nối tiếp (+ Thêm vào {students.length} HS)</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-rose-400 transition-colors">
+                  <input
+                    type="radio"
+                    name="bulkImportMode"
+                    value="replace"
+                    checked={bulkImportMode === 'replace'}
+                    onChange={() => setBulkImportMode('replace')}
+                    className="accent-rose-500"
+                  />
+                  <span>Ghi đè (Thay thế mới)</span>
+                </label>
+              </div>
             </div>
 
             <textarea

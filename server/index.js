@@ -338,6 +338,29 @@ app.post('/api/classroom/classes/:classId/students/bulk', (req, res) => {
   res.json({ students: result });
 });
 
+app.post('/api/classroom/classes/:classId/students/append', (req, res) => {
+  const { students = [] } = req.body;
+  const result = classroomStore.appendClassStudents(req.params.classId, students);
+  res.json({ students: result });
+});
+
+app.post('/api/classroom/classes/:classId/students', (req, res) => {
+  const { fullName, studentCode, cardId } = req.body || {};
+  if (!fullName) return res.status(400).json({ error: 'Thiếu họ và tên học sinh' });
+  const newStudent = classroomStore.addStudent(req.params.classId, { fullName, studentCode, cardId });
+  res.json({ student: newStudent });
+});
+
+app.delete('/api/classroom/classes/:classId/students/:studentId', (req, res) => {
+  const result = classroomStore.deleteStudent(req.params.studentId);
+  res.json(result);
+});
+
+app.post('/api/classroom/classes/:classId/students/:studentId/delete', (req, res) => {
+  const result = classroomStore.deleteStudent(req.params.studentId);
+  res.json(result);
+});
+
 app.put('/api/classroom/classes/:classId/students/:studentId', (req, res) => {
   const updated = classroomStore.updateStudent(req.params.studentId, req.body);
   if (!updated) return res.status(404).json({ error: 'Không tìm thấy học sinh' });

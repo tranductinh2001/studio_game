@@ -110,6 +110,59 @@ class ClassroomService {
     }
   }
 
+  // Add 1 student to class
+  async addStudent(classId, studentData) {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/classes/${classId}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentData)
+      });
+      const data = await res.json();
+      return data.student;
+    } catch (err) {
+      console.error('Error adding student:', err);
+      throw err;
+    }
+  }
+
+  // Append list of students to class
+  async appendStudents(classId, studentsList) {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/classes/${classId}/students/append`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ students: studentsList })
+      });
+      const data = await res.json();
+      return data.students || [];
+    } catch (err) {
+      console.error('Error appending students:', err);
+      throw err;
+    }
+  }
+
+  // Delete student
+  async deleteStudent(classId, studentId) {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/classes/${classId}/students/${studentId}`, {
+        method: 'DELETE'
+      });
+      return await res.json();
+    } catch (err) {
+      console.warn('DELETE failed, trying POST fallback:', err);
+      try {
+        const fallbackRes = await fetch(`${this.getBaseUrl()}/classroom/classes/${classId}/students/${studentId}/delete`, {
+          method: 'POST'
+        });
+        return await fallbackRes.json();
+      } catch (e) {
+        console.error('Error deleting student:', e);
+        throw e;
+      }
+    }
+  }
+
   // Update single student
   async updateStudent(classId, studentId, studentData) {
     try {
