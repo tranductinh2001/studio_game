@@ -7,6 +7,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { classroomStore } from './data/classroomStore.js';
 import { generateQuestionsWithBitOne, analyzeResultsWithBitOne } from './services/bitoneService.js';
+import { matchCurriculumResponse } from '../src/data/curriculumIntents.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const BITONE_API_KEY = process.env.BITONE_API_KEY || process.env.BEE_API_KEY || '';
+const BITONE_BASE_URL = process.env.BITONE_BASE_URL || process.env.BEE_BASE_URL || 'https://platform.beeknoee.com/api/v1';
+const BITONE_MODEL = process.env.BITONE_MODEL || 'google/gemini-3.1-flash-lite';
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -91,100 +95,93 @@ QUY TẮC BẮT BUỘC VỀ NỘI DUNG & PHONG CÁCH:
 7. ĐẦU RA THUẦN VĂN BẢN TIẾNG VIỆT: Không dùng ký tự markdown hay ký hiệu đặc biệt để Text-to-Speech đọc mượt mà.
 `;
 
-// Helper: Intelligent local offline fallback response matcher
+// Helper: Detect appropriate avatar emotion based on response text
+function detectEmotionFromReply(text) {
+  let emotion = 'SPEAKING';
+  const textLower = (text || '').toLowerCase();
+  if (textLower.includes('chính xác') || textLower.includes('tuyệt vời') || textLower.includes('xuất sắc') || textLower.includes('giỏi quá') || textLower.includes('hoan hô')) {
+    emotion = 'HAPPY';
+  } else if (textLower.includes('gần đúng') || textLower.includes('cố lên') || textLower.includes('suy nghĩ thêm') || textLower.includes('tự tin')) {
+    emotion = 'ENCOURAGING';
+  } else if (textLower.includes('đố các bạn') || textLower.includes('thử nghĩ xem') || textLower.includes('tại sao')) {
+    emotion = 'THINKING';
+  } else if (textLower.includes('xin chào') || textLower.includes('chào các bạn') || textLower.includes('chào bạn')) {
+    emotion = 'GREETING';
+  } else if (textLower.includes('tạm biệt') || textLower.includes('hẹn gặp lại') || textLower.includes('bye bye')) {
+    emotion = 'GOODBYE';
+  }
+  return emotion;
+}
+
+// Call BitOne / Beeknoee AI Gateway for live intelligent conversation
+async function callBitOneChat(message, history = []) {
+  if (!BITONE_API_KEY) return null;
+
+  const messages = [
+    { role: 'system', content: SYSTEM_INSTRUCTION }
+  ];
+
+  if (Array.isArray(history)) {
+    for (const h of history.slice(-6)) {
+      messages.push({
+        role: h.sender === 'user' ? 'user' : 'assistant',
+        content: h.text
+      });
+    }
+  }
+
+  messages.push({ role: 'user', content: message });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    const res = await fetch(`${BITONE_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${BITONE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: BITONE_MODEL,
+        messages,
+        temperature: 0.7,
+        max_tokens: 300,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (content && content.trim()) {
+        return content.trim();
+      }
+    } else {
+      const errText = await res.text();
+      console.warn(`BitOne API notice (${res.status}): ${errText.slice(0, 100)}`);
+    }
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.warn('BitOne AI chat notice:', err.message);
+  }
+  return null;
+}
+
+// Helper: Intelligent Super Curriculum Knowledge Engine (26+ Grade 6 intents + FAQ + Topics)
 function getLocalFallbackResponse(query, history = []) {
-  if (!query || typeof query !== 'string') {
-    return {
-      text: "Xin chào bạn! Mình là WEBBY. Bạn có thắc mắc gì về thế giới Mạng thông tin toàn cầu không nào?",
-      emotion: "GREETING",
-      source: "local-fallback"
-    };
-  }
+  const matched = matchCurriculumResponse(
+    query,
+    lessonKnowledge ? lessonKnowledge.faq : [],
+    lessonKnowledge ? lessonKnowledge.topics : []
+  );
 
-  const clean = query.toLowerCase().trim();
-
-  // Who are you / Identity
-  if (/^(bạn là ai|bạn tên là gì|cậu là ai|webby là ai|giới thiệu|ai tạo ra bạn)/i.test(clean)) {
-    return {
-      text: "Mình là WEBBY, đại sứ AI đến từ thế giới Mạng thông tin toàn cầu! Mình rất thích đồng hành cùng các bạn học sinh lớp 6 khám phá Internet và các trang web kỳ diệu!",
-      emotion: "HAPPY",
-      source: "local-identity"
-    };
-  }
-
-  // Greetings
-  if (/^(xin chào|chào|hello|hi|webby ơi|ê webby|chào bạn)/i.test(clean) && clean.length < 25) {
-    return {
-      text: "Xin chào bạn! Mình là WEBBY đây. Rất vui được gặp các bạn học sinh lớp 6 thông minh! Bạn muốn hỏi mình điều gì về thế giới Internet hôm nay nào?",
-      emotion: "HAPPY",
-      source: "local-greeting"
-    };
-  }
-
-  // Ready response
-  if (/(sẵn sàng|rồi|sẵn sàng rồi|ok|yes|dạ)/i.test(clean) && clean.length < 25) {
-    return {
-      text: "Tuyệt vời! Tinh thần lớp mình thật hào hứng! Các bạn muốn hỏi mình điều gì đầu tiên về thế giới Web nào?",
-      emotion: "HAPPY",
-      source: "local-rule"
-    };
-  }
-
-  // Internet vs Web difference
-  if ((clean.includes('khác nhau') || clean.includes('phân biệt') || clean.includes('giống nhau')) &&
-      (clean.includes('internet') || clean.includes('mạng')) &&
-      (clean.includes('web') || clean.includes('www'))) {
-    return {
-      text: "Internet và WWW không phải là một đâu nhé! Internet là hạ tầng mạng lưới toàn cầu kết nối các máy tính, giống như đường cao tốc. Còn WWW là dịch vụ thông tin chứa các trang web chạy trên con đường Internet đó!",
-      emotion: "SPEAKING",
-      source: "knowledge-internet-vs-web"
-    };
-  }
-
-  // Common student answers during conversation: e.g. "xem phim", "xem video", "học bài", "chơi game"
-  if (/^(xem video|xem phim|xem youtube|học tập|tìm bài tập|học bài|tra cứu|nghe nhạc)/i.test(clean)) {
-    return {
-      text: "Thật tuyệt vời! Internet giúp chúng ta học tập và giải trí mọi lúc mọi nơi. Vậy bạn có biết làm thế nào để máy tính tìm được đúng video hay bài học đó trên mạng không?",
-      emotion: "HAPPY",
-      source: "local-followup"
-    };
-  }
-
-  // Match in FAQ
-  if (lessonKnowledge && lessonKnowledge.faq) {
-    for (const item of lessonKnowledge.faq) {
-      const qWords = item.question.toLowerCase().replace(/[?.,]/g, '').split(' ');
-      const matchCount = qWords.filter(w => w.length > 2 && clean.includes(w)).length;
-      if (matchCount >= 2 || clean.includes(item.question.toLowerCase().slice(0, 15))) {
-        return {
-          text: `${item.answer} ${item.followup}`,
-          emotion: "SPEAKING",
-          source: "knowledge-base"
-        };
-      }
-    }
-  }
-
-  // Match topics keywords
-  if (lessonKnowledge && lessonKnowledge.topics) {
-    for (const topic of lessonKnowledge.topics) {
-      for (const kw of topic.keywords) {
-        if (clean.includes(kw)) {
-          return {
-            text: `${topic.dialogue} Bạn thấy khái niệm này có dễ hiểu không?`,
-            emotion: "SPEAKING",
-            source: "knowledge-topic"
-          };
-        }
-      }
-    }
-  }
-
-  // Off-topic generic friendly redirection
   return {
-    text: "Đó là một câu hỏi rất thú vị! Nhưng hôm nay mình đến đây để cùng các bạn khám phá thế giới Mạng thông tin toàn cầu. Bạn có thắc mắc gì về Website, Trình duyệt hay Internet không?",
-    emotion: "THINKING",
-    source: "local-fallback"
+    text: matched.text,
+    emotion: matched.emotion || 'SPEAKING',
+    source: matched.source || 'curriculum-engine'
   };
 }
 
@@ -193,12 +190,13 @@ app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
     hasApiKey: !!GEMINI_API_KEY,
-    model: GEMINI_MODEL,
+    hasBitOneKey: !!BITONE_API_KEY,
+    model: BITONE_API_KEY ? BITONE_MODEL : (GEMINI_API_KEY ? GEMINI_MODEL : 'curriculum-engine'),
     serverTime: new Date().toISOString()
   });
 });
 
-// Chat endpoint
+// Chat endpoint with 3-tier intelligence: BitOne AI -> Gemini API -> Super Curriculum Engine
 app.post('/api/chat', async (req, res) => {
   const { message, history = [] } = req.body;
 
@@ -206,114 +204,92 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Nội dung tin nhắn không hợp lệ' });
   }
 
-  // If no Gemini API key, use intelligent local fallback directly
-  if (!GEMINI_API_KEY) {
-    const fallback = getLocalFallbackResponse(message);
-    return res.json({
-      reply: fallback.text,
-      emotion: fallback.emotion,
-      mode: 'offline-rule-based'
-    });
+  // TIER 1: Try BitOne / Beeknoee AI Gateway (Preferred)
+  if (BITONE_API_KEY) {
+    try {
+      const bitOneReply = await callBitOneChat(message, history);
+      if (bitOneReply) {
+        return res.json({
+          reply: bitOneReply,
+          emotion: detectEmotionFromReply(bitOneReply),
+          mode: 'online-bitone',
+          provider: 'BitOne AI'
+        });
+      }
+    } catch (err) {
+      console.warn('BitOne chat error, attempting next tier:', err.message);
+    }
   }
 
-  // If API key is present, call Gemini API
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-    
-    // Build Gemini contents payload with history
-    const contents = [
-      {
+  // TIER 2: Try Google Gemini API (if key available)
+  if (GEMINI_API_KEY) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const contents = [
+        {
+          role: 'user',
+          parts: [{ text: `[HƯỚNG DẪN HỆ THỐNG]: ${SYSTEM_INSTRUCTION}` }]
+        },
+        {
+          role: 'model',
+          parts: [{ text: 'Tôi đã hiểu rõ vai trò WEBBY - Đại sứ Mạng thông tin toàn cầu cho học sinh lớp 6. Tôi sẽ luôn nói ngắn gọn, thân thiện bằng tiếng Việt, giải thích dễ hiểu và bám sát Bài 6.' }]
+        }
+      ];
+
+      if (Array.isArray(history)) {
+        for (const h of history.slice(-6)) {
+          if (h.sender === 'user') {
+            contents.push({ role: 'user', parts: [{ text: h.text }] });
+          } else if (h.sender === 'webby') {
+            contents.push({ role: 'model', parts: [{ text: h.text }] });
+          }
+        }
+      }
+
+      contents.push({
         role: 'user',
-        parts: [{ text: `[HƯỚNG DẪN HỆ THỐNG]: ${SYSTEM_INSTRUCTION}` }]
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Tôi đã hiểu rõ vai trò WEBBY - Đại sứ Mạng thông tin toàn cầu cho học sinh lớp 6. Tôi sẽ luôn nói ngắn gọn, thân thiện bằng tiếng Việt, giải thích dễ hiểu và bám sát Bài 6.' }]
-      }
-    ];
+        parts: [{ text: message }]
+      });
 
-    // Add conversation history
-    if (Array.isArray(history)) {
-      for (const h of history.slice(-6)) {
-        if (h.sender === 'user') {
-          contents.push({ role: 'user', parts: [{ text: h.text }] });
-        } else if (h.sender === 'webby') {
-          contents.push({ role: 'model', parts: [{ text: h.text }] });
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 250,
+            topP: 0.9
+          }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (candidate && candidate.trim()) {
+          return res.json({
+            reply: candidate.trim(),
+            emotion: detectEmotionFromReply(candidate),
+            mode: 'online-gemini',
+            provider: 'Gemini AI'
+          });
         }
       }
+    } catch (error) {
+      console.warn('Gemini API call failed, falling back to Super Curriculum Engine:', error.message);
     }
-
-    // Add current user prompt
-    contents.push({
-      role: 'user',
-      parts: [{ text: message }]
-    });
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 250,
-          topP: 0.9
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.warn(`Gemini API error status: ${response.status}: ${errText}`);
-      // Gracefully fall back to local rule-based response
-      const fallback = getLocalFallbackResponse(message);
-      return res.json({
-        reply: fallback.text,
-        emotion: fallback.emotion,
-        mode: 'fallback-after-api-error',
-        warning: `Gemini API returned status ${response.status}`
-      });
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!candidate) {
-      const fallback = getLocalFallbackResponse(message);
-      return res.json({
-        reply: fallback.text,
-        emotion: fallback.emotion,
-        mode: 'fallback-empty-candidate'
-      });
-    }
-
-    // Determine emotion based on reply content
-    let emotion = 'SPEAKING';
-    const textLower = candidate.toLowerCase();
-    if (textLower.includes('chính xác') || textLower.includes('tuyệt vời') || textLower.includes('xuất sắc') || textLower.includes('giỏi quá')) {
-      emotion = 'HAPPY';
-    } else if (textLower.includes('gần đúng') || textLower.includes('cố lên') || textLower.includes('suy nghĩ thêm')) {
-      emotion = 'ENCOURAGING';
-    } else if (textLower.includes('đố các bạn') || textLower.includes('thử nghĩ xem')) {
-      emotion = 'THINKING';
-    } else if (textLower.includes('xin chào') || textLower.includes('chào các bạn')) {
-      emotion = 'GREETING';
-    }
-
-    return res.json({
-      reply: candidate.trim(),
-      emotion,
-      mode: 'online-gemini'
-    });
-  } catch (error) {
-    console.error('Error contacting Gemini API:', error.message);
-    const fallback = getLocalFallbackResponse(message);
-    return res.json({
-      reply: fallback.text,
-      emotion: fallback.emotion,
-      mode: 'fallback-exception'
-    });
   }
+
+  // TIER 3: Super Curriculum Knowledge Engine (100% Reliable, 26+ Intents, Zero Error)
+  const fallback = getLocalFallbackResponse(message, history);
+  return res.json({
+    reply: fallback.text,
+    emotion: fallback.emotion,
+    mode: 'curriculum-engine',
+    provider: 'Webby Smart Curriculum Engine'
+  });
 });
 
 // ==========================================
