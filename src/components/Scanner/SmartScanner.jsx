@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import jsQR from 'jsqr';
 import { 
   Camera, CameraOff, CheckCircle2, RotateCw, RefreshCw, Send, 
-  Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers
+  Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers, Image as ImageIcon
 } from 'lucide-react';
 import { classroomService } from '../../services/classroomService';
 import { detectQuizizzCards } from '../../utils/quizizzArucoDetector';
@@ -18,18 +18,79 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   const [syncStatus, setSyncStatus] = useState('');
 
   const [classes, setClasses] = useState([]);
-  const [activeClassId, setActiveClassId] = useState('CLASS_6A');
-  const [activeClassName, setActiveClassName] = useState('Lớp 6A');
+  const [activeClassId, setActiveClassId] = useState('CLASS_6B');
+  const [activeClassName, setActiveClassName] = useState('Lớp 6B');
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const requestRef = useRef(null);
   const streamRef = useRef(null);
+  const isScanningRef = useRef(false);
+  const lastProcessTimeRef = useRef(0);
 
   // Auto-streaming queue to instantly push detected responses to Teacher Desktop in real time
   const pendingSyncQueueRef = useRef(new Map());
   const syncTimeoutRef = useRef(null);
   const syncedCardsRef = useRef(new Map()); // cardId -> last synced answer
+
+  // Helper: Normalize any card code format into canonical CARD_xxxx
+  const normalizeCardId = (str) => {
+    if (!str) return null;
+    const s = String(str).trim();
+    if (s.startsWith('CARD_')) return s;
+    if (s.startsWith('WEBBY_')) return s.replace('WEBBY_', 'CARD_');
+    const pMatch = s.match(/^P\s*(\d+)$/i);
+    if (pMatch) {
+      const num = parseInt(pMatch[1], 10);
+      return `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
+    }
+    if (/^\d+$/.test(s)) {
+      const num = parseInt(s, 10);
+      return `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
+    }
+    return s;
+  };
+
+  // Helper: Parse code data from JSON or raw text
+  const parseCardData = (data) => {
+    if (!data) return null;
+    try {
+      const parsed = JSON.parse(data);
+      const id = parsed.cardId || parsed.studentCode || parsed.id || parsed.code;
+      if (id) return normalizeCardId(id);
+    } catch {}
+
+    return normalizeCardId(data);
+  };
+
+  // Helper: Resolve student details from map with fallback
+  const resolveStudent = (cardId, quizizzCode = null) => {
+    if (studentsMap[cardId]) return studentsMap[cardId];
+    if (quizizzCode && studentsMap[quizizzCode]) return studentsMap[quizizzCode];
+
+    const numMatch = String(cardId).match(/(\d+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      const padded = `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
+      if (studentsMap[padded]) return studentsMap[padded];
+      if (studentsMap[`P ${num}`]) return studentsMap[`P ${num}`];
+      if (studentsMap[`P${num}`]) return studentsMap[`P${num}`];
+
+      return {
+        id: padded,
+        cardId: padded,
+        studentCode: `HS${num < 10 ? '0' + num : num}`,
+        fullName: `Học sinh ${num}`
+      };
+    }
+
+    return {
+      id: cardId,
+      cardId: cardId,
+      studentCode: cardId,
+      fullName: `Học sinh (${cardId})`
+    };
+  };
 
   const queueResponseForAutoSync = (respItem) => {
     const lastAnswer = syncedCardsRef.current.get(respItem.cardId);
@@ -73,10 +134,11 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
         list.forEach((s, idx) => {
           map[s.cardId] = s;
           const pNum = idx + 1;
-          const cardKey = `CARD_${String(pNum).padStart(4, '0')}`;
+          const cardKey = `CARD_${pNum < 10 ? '000' + pNum : (pNum < 100 ? '00' + pNum : '0' + pNum)}`;
           map[cardKey] = s;
           map[`P ${pNum}`] = s;
           map[`P${pNum}`] = s;
+          map[`${pNum}`] = s;
         });
         setTotalStudents(list.length);
       }
@@ -91,9 +153,9 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
 
     classroomService.getRoom(roomCode).then((room) => {
       if (room) {
-        const cId = room.classId || 'CLASS_6A';
+        const cId = room.classId || 'CLASS_6B';
         setActiveClassId(cId);
-        setActiveClassName(room.className || 'Lớp 6A');
+        setActiveClassName(room.className || 'Lớp 6B');
         loadStudentsForClass(cId);
       }
     });
@@ -102,7 +164,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       if (event.type === 'ROOM_CLASS_CHANGED' || (event.type === 'ROOM_STATE' && event.payload?.classId)) {
         const newClassId = event.payload.classId;
         setActiveClassId(newClassId);
-        setActiveClassName(event.payload.className || 'Lớp 6A');
+        setActiveClassName(event.payload.className || 'Lớp 6B');
         loadStudentsForClass(newClassId);
         setDetectedResponses({});
         syncedCardsRef.current.clear();
@@ -178,18 +240,25 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        await videoRef.current.play();
+        isScanningRef.current = true;
         setIsScanning(true);
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
         requestRef.current = requestAnimationFrame(scanFrame);
       }
     } catch (err) {
       console.warn('Camera error:', err.message);
+      isScanningRef.current = false;
+      setIsScanning(false);
       setCameraError('Không thể mở camera video trực tiếp. Vui lòng bấm nút "📸 Chụp ảnh quét thẻ" bên cạnh để chụp thẻ ngay!');
     }
   };
 
   // Stop Camera
   const stopCamera = () => {
+    isScanningRef.current = false;
+    setIsScanning(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -198,7 +267,6 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       cancelAnimationFrame(requestRef.current);
       requestRef.current = null;
     }
-    setIsScanning(false);
   };
 
   // Handle Scan from Photo Capture / File Upload (Works on 100% of mobile phones on any HTTP/HTTPS network!)
@@ -225,11 +293,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
           const qCards = detectQuizizzCards(imageData);
           if (qCards && qCards.length > 0) {
             qCards.forEach((q) => {
-              const student = studentsMap[q.cardId] || studentsMap[q.quizizzCode] || {
-                fullName: `Học sinh Thẻ ${q.quizizzCode}`,
-                studentCode: q.quizizzCode,
-                cardId: q.cardId
-              };
+              const student = resolveStudent(q.cardId, q.quizizzCode);
               const targetKey = student.cardId || q.cardId;
               const respItem = {
                 cardId: targetKey,
@@ -250,22 +314,19 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
           console.warn('Quizizz scan error from photo:', err);
         }
 
-        // 2. Try Webby QR
+        // 2. Try Webby QR (jsQR)
         try {
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'attemptBoth'
+          });
           if (code) {
             const { answer, angle } = calculateAnswerFromCorners(code.location);
-            let cId = null;
-            try {
-              const parsed = JSON.parse(code.data);
-              cId = parsed.cardId || parsed.studentCode;
-            } catch (err) {
-              cId = code.data;
-            }
+            const cId = parseCardData(code.data);
             if (cId) {
-              const student = studentsMap[cId] || { fullName: `Học sinh (${cId})`, studentCode: cId };
+              const student = resolveStudent(cId);
+              const targetKey = student.cardId || cId;
               const respItem = {
-                cardId: cId,
+                cardId: targetKey,
                 studentCode: student.studentCode,
                 studentName: student.fullName,
                 answer,
@@ -273,7 +334,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
                 cardType: 'Webby QR',
                 detectedAt: new Date().toISOString()
               };
-              setDetectedResponses((prev) => ({ ...prev, [cId]: respItem }));
+              setDetectedResponses((prev) => ({ ...prev, [targetKey]: respItem }));
               queueResponseForAutoSync(respItem);
               detectedInPhoto++;
             }
@@ -293,150 +354,151 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     reader.readAsDataURL(file);
   };
 
-  // Scan frame loop
+  // Continuous frame loop using isScanningRef to prevent stale closure loop termination
   const scanFrame = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!isScanningRef.current) return;
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    if (!video || !canvas) {
+      if (isScanningRef.current) {
+        requestRef.current = requestAnimationFrame(scanFrame);
+      }
+      return;
+    }
 
-    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: 'dontInvert'
-      });
-
-      if (code) {
-        // Draw green bounding polygon
-        const { topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner } = code.location;
-        ctx.beginPath();
-        ctx.moveTo(topLeftCorner.x, topLeftCorner.y);
-        ctx.lineTo(topRightCorner.x, topRightCorner.y);
-        ctx.lineTo(bottomRightCorner.x, bottomRightCorner.y);
-        ctx.lineTo(bottomLeftCorner.x, bottomLeftCorner.y);
-        ctx.closePath();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#10b981'; // Green
-        ctx.stroke();
-
-        // Parse cardId
-        let cardId = null;
-        try {
-          const parsed = JSON.parse(code.data);
-          cardId = parsed.cardId;
-        } catch {
-          if (typeof code.data === 'string' && code.data.startsWith('CARD_')) {
-            cardId = code.data.trim();
-          }
-        }
-
-        if (cardId) {
-          const { answer, angle } = calculateAnswerFromCorners(code.location);
-          const student = studentsMap[cardId] || { fullName: `Học sinh (${cardId})`, studentCode: cardId };
-
-          // Overlay student info & detected answer on camera feed
-          ctx.fillStyle = '#10b981';
-          ctx.font = 'bold 20px Orbitron, sans-serif';
-          ctx.fillText(`[${student.fullName}] -> Đáp án ${answer} (${angle}°)`, topLeftCorner.x, topLeftCorner.y - 10);
-
-          const respItem = {
-            cardId,
-            studentCode: student.studentCode,
-            studentName: student.fullName,
-            answer,
-            angle,
-            cardType: 'Webby QR',
-            detectedAt: new Date().toISOString()
-          };
-
-          // Update detected responses
-          setDetectedResponses((prev) => ({
-            ...prev,
-            [cardId]: respItem
-          }));
-
-          setLastScannedStudent({ name: student.fullName, answer, angle });
-
-          // Auto-stream to server in real-time
-          queueResponseForAutoSync(respItem);
-
-          // Haptic feedback if supported
-          if (navigator.vibrate) {
-            navigator.vibrate(50);
-          }
-        }
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
       }
 
-      // 2. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
-      try {
-        const qCards = detectQuizizzCards(imageData);
-        if (qCards && qCards.length > 0) {
-          qCards.forEach((q) => {
-            const { participant, cardId, quizizzCode, answer, visualAngle, corners } = q;
-            const student = studentsMap[cardId] || studentsMap[quizizzCode] || {
-              fullName: `Học sinh Thẻ ${quizizzCode}`,
-              studentCode: quizizzCode,
-              cardId: cardId
-            };
+      const ctx = canvas.getContext('2d');
+      // Draw fresh video frame into canvas view
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Draw glowing violet/purple polygon
+      const now = performance.now();
+      // Scan every 75ms to guarantee smooth 60fps video feed and low mobile temperature
+      if (now - lastProcessTimeRef.current >= 75) {
+        lastProcessTimeRef.current = now;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        // 1. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
+        try {
+          const qCards = detectQuizizzCards(imageData);
+          if (qCards && qCards.length > 0) {
+            qCards.forEach((q) => {
+              const { participant, cardId, quizizzCode, answer, visualAngle, corners } = q;
+              const student = resolveStudent(cardId, quizizzCode);
+              const targetKey = student.cardId || cardId;
+
+              // Glowing purple polygon
+              ctx.beginPath();
+              ctx.moveTo(corners[0].x, corners[0].y);
+              ctx.lineTo(corners[1].x, corners[1].y);
+              ctx.lineTo(corners[2].x, corners[2].y);
+              ctx.lineTo(corners[3].x, corners[3].y);
+              ctx.closePath();
+              ctx.lineWidth = 5;
+              ctx.strokeStyle = '#c084fc';
+              ctx.stroke();
+
+              // Overlay pill
+              ctx.fillStyle = 'rgba(88, 28, 135, 0.9)';
+              ctx.fillRect(corners[0].x - 4, Math.max(10, corners[0].y - 32), 240, 28);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 15px Orbitron, sans-serif';
+              ctx.fillText(
+                `[${quizizzCode} • ${student.fullName}] -> ${answer}`,
+                corners[0].x + 4,
+                Math.max(28, corners[0].y - 12)
+              );
+
+              const respItem = {
+                cardId: targetKey,
+                quizizzCode,
+                studentCode: student.studentCode,
+                studentName: student.fullName,
+                answer,
+                angle: visualAngle,
+                cardType: 'Quizizz Q-Card',
+                detectedAt: new Date().toISOString()
+              };
+
+              setDetectedResponses((prev) => ({
+                ...prev,
+                [targetKey]: respItem
+              }));
+
+              setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
+              queueResponseForAutoSync(respItem);
+
+              if (navigator.vibrate) navigator.vibrate(30);
+            });
+          }
+        } catch (err) {
+          // ignore scan error
+        }
+
+        // 2. Scan Webby QR (jsQR with both normal and inverted attempt)
+        try {
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'attemptBoth'
+          });
+
+          if (code) {
+            const { topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner } = code.location;
             ctx.beginPath();
-            ctx.moveTo(corners[0].x, corners[0].y);
-            ctx.lineTo(corners[1].x, corners[1].y);
-            ctx.lineTo(corners[2].x, corners[2].y);
-            ctx.lineTo(corners[3].x, corners[3].y);
+            ctx.moveTo(topLeftCorner.x, topLeftCorner.y);
+            ctx.lineTo(topRightCorner.x, topRightCorner.y);
+            ctx.lineTo(bottomRightCorner.x, bottomRightCorner.y);
+            ctx.lineTo(bottomLeftCorner.x, bottomLeftCorner.y);
             ctx.closePath();
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#c084fc'; // Purple 400
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#10b981';
             ctx.stroke();
 
-            // Text overlay
-            ctx.fillStyle = '#c084fc';
-            ctx.font = 'bold 18px Orbitron, sans-serif';
-            ctx.fillText(
-              `[Quizizz ${quizizzCode} • ${student.fullName}] -> Đáp án ${answer} (${visualAngle}°)`,
-              corners[0].x,
-              Math.max(22, corners[0].y - 8)
-            );
+            const cId = parseCardData(code.data);
+            if (cId) {
+              const { answer, angle } = calculateAnswerFromCorners(code.location);
+              const student = resolveStudent(cId);
+              const targetKey = student.cardId || cId;
 
-            // Record response
-            const targetKey = student.cardId || cardId;
-            const respItem = {
-              cardId: targetKey,
-              quizizzCode,
-              studentCode: student.studentCode,
-              studentName: student.fullName,
-              answer,
-              angle: visualAngle,
-              cardType: 'Quizizz Q-Card',
-              detectedAt: new Date().toISOString()
-            };
+              // Green overlay pill
+              ctx.fillStyle = 'rgba(6, 78, 59, 0.9)';
+              ctx.fillRect(topLeftCorner.x - 4, Math.max(10, topLeftCorner.y - 32), 240, 28);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 15px Orbitron, sans-serif';
+              ctx.fillText(`[${student.fullName}] -> ${answer} (${angle}°)`, topLeftCorner.x + 4, Math.max(28, topLeftCorner.y - 12));
 
-            setDetectedResponses((prev) => ({
-              ...prev,
-              [targetKey]: respItem
-            }));
+              const respItem = {
+                cardId: targetKey,
+                studentCode: student.studentCode,
+                studentName: student.fullName,
+                answer,
+                angle,
+                cardType: 'Webby QR',
+                detectedAt: new Date().toISOString()
+              };
 
-            setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
+              setDetectedResponses((prev) => ({
+                ...prev,
+                [targetKey]: respItem
+              }));
 
-            // Auto-stream to server in real-time
-            queueResponseForAutoSync(respItem);
+              setLastScannedStudent({ name: student.fullName, answer, angle });
+              queueResponseForAutoSync(respItem);
 
-            if (navigator.vibrate) {
-              navigator.vibrate(40);
+              if (navigator.vibrate) navigator.vibrate(40);
             }
-          });
+          }
+        } catch (err) {
+          // ignore scan error
         }
-      } catch (err) {
-        // Safe scan fallback
       }
     }
 
-    if (isScanning) {
+    if (isScanningRef.current) {
       requestRef.current = requestAnimationFrame(scanFrame);
     }
   };
@@ -475,9 +537,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     const simulated = {};
 
     Object.keys(studentsMap).forEach((cId, idx) => {
-      // 90% students answer
       if (idx < 29) {
-        // Most pick correct B or C
         const choice = idx % 5 === 0 ? 'A' : (idx % 7 === 0 ? 'C' : 'B');
         const stu = studentsMap[cId];
         simulated[cId] = {
@@ -494,7 +554,6 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     setDetectedResponses(simulated);
     setLastScannedStudent({ name: '29 Học sinh', answer: 'A/B/C/D', angle: 0 });
 
-    // Auto submit to server
     classroomService.submitResponses(roomCode, Object.values(simulated)).then(() => {
       setSyncStatus('Đã giả lập quét thành công 29 học sinh!');
       setTimeout(() => setSyncStatus(''), 3000);
@@ -614,11 +673,11 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               ref={videoRef} 
               playsInline 
               muted 
-              className={`max-w-full max-h-full object-contain ${isScanning ? 'block' : 'hidden'}`}
+              className="hidden"
             />
             <canvas 
               ref={canvasRef} 
-              className={`absolute inset-0 w-full h-full object-contain pointer-events-none ${isScanning ? 'block' : 'hidden'}`}
+              className={`max-w-full max-h-full object-contain ${isScanning ? 'block' : 'hidden'}`}
             />
 
             {!isScanning && (
@@ -680,6 +739,9 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
                 <CheckCircle2 className="w-10 h-10 stroke-[1.2] text-slate-700 mb-2" />
                 <p className="text-xs">Chưa có thẻ nào được quét trong lượt này.</p>
+                <p className="text-[11px] text-slate-600 mt-1">
+                  Đưa thẻ Quizizz Q-Card hoặc mã QR trước camera hoặc chụp ảnh để nạp đáp án ngay!
+                </p>
               </div>
             ) : (
               Object.values(detectedResponses).map((res) => {
@@ -723,4 +785,3 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     </div>
   );
 }
-

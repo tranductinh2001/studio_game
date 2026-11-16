@@ -426,16 +426,16 @@ class ClassroomStore {
 
   findStudentByCardId(cardId, classId = null) {
     if (!cardId) return null;
+    const rawId = String(cardId).trim();
+
+    // 1. First priority: match within active class
     const list = classId 
       ? (this.data.students || []).filter((s) => s.classId === classId)
       : (this.data.students || []);
 
-    const rawId = String(cardId).trim();
-    // 1. Direct match on cardId (e.g. CARD_0001)
     let found = list.find((s) => s.cardId === rawId || s.cardId === `CARD_${rawId}`);
     if (found) return found;
 
-    // 2. Numeric match (e.g. 1 -> CARD_0001, or P 1 -> CARD_0001)
     const numMatch = rawId.match(/(\d+)/);
     if (numMatch) {
       const pNum = parseInt(numMatch[1], 10);
@@ -443,13 +443,38 @@ class ClassroomStore {
       found = list.find((s) => s.cardId === paddedCardId);
       if (found) return found;
 
-      // 3. Match by student position in class roster (STT 1 = P 1, STT 2 = P 2)
+      // Match by student position in class roster (STT 1 = P 1, STT 2 = P 2)
       if (pNum >= 1 && pNum <= list.length) {
         return list[pNum - 1];
       }
     }
 
-    return null;
+    // 2. Second priority: search across ALL students in database (if class mismatch)
+    if (classId) {
+      found = (this.data.students || []).find((s) => s.cardId === rawId || s.cardId === `CARD_${rawId}`);
+      if (found) return found;
+
+      if (numMatch) {
+        const pNum = parseInt(numMatch[1], 10);
+        const paddedCardId = `CARD_${pNum < 10 ? '000' + pNum : '00' + pNum}`;
+        found = (this.data.students || []).find((s) => s.cardId === paddedCardId);
+        if (found) return found;
+      }
+    }
+
+    // 3. Fallback: Guaranteed Student Record so NO scan is ever lost
+    const num = numMatch ? parseInt(numMatch[1], 10) : 1;
+    const padded = `CARD_${num < 10 ? '000' + num : '00' + num}`;
+    return {
+      id: `STU_${padded}`,
+      studentCode: `HS${num < 10 ? '0' + num : num}`,
+      fullName: `Học sinh ${num}`,
+      classId: classId || 'CLASS_6B',
+      cardId: padded,
+      status: 'active',
+      group: `Nhóm ${((num - 1) % 4) + 1}`,
+      createdAt: new Date().toISOString()
+    };
   }
 
   // ==========================================
@@ -636,7 +661,9 @@ class ClassroomStore {
       };
 
       room.studentResponses[student.id] = respObj;
-      room.responses[student.cardId] = respObj; // Map directly by cardId for UI
+      room.responses[student.cardId] = respObj; // Map by standard cardId
+      room.responses[student.id] = respObj;     // Map by student id
+      if (item.cardId) room.responses[item.cardId] = respObj;
     });
 
     room.lastUpdated = nowIso;

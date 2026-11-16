@@ -458,9 +458,9 @@ class ClassroomService {
       isSseActive = false;
     }
 
-    // 3. Resilient Polling Fallback (runs every 1.2s - activates automatically if SSE is down or on serverless)
+    // 3. Resilient Polling Fallback (runs every 1.2s - activates on serverless production or when SSE is down)
     this.pollingInterval = setInterval(async () => {
-      if (isSseActive) return;
+      if (isSseActive && detectAppEnv() !== 'production') return;
 
       try {
         const room = await this.getRoom(roomCode);

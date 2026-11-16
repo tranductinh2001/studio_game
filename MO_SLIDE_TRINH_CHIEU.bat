@@ -10,3 +10,4 @@ echo.
 echo Đang mở Slide trình chiếu tương tác trên trình duyệt...
 start "" "%~dp0slide_trinh_chieu_tinhoc6_bai06.html"
 exit
+
