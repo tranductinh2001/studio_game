@@ -4,15 +4,15 @@ import {
   RotateCw, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, RefreshCw,
   Plus, Edit3, Trash2, Clipboard, Save, X, School, Check, AlertCircle,
   FileSpreadsheet, FolderSync, Upload, CheckSquare, Square, UserPlus,
-  ExternalLink, Layers
+  ExternalLink, Layers, Gamepad2, Play
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { classroomService } from '../../services/classroomService';
-import { renderQuizizzMarkerSVG, QUIZIZZ_CARDS } from '../../utils/quizizzArucoDetector';
+import { renderQuizizzMarkerSVG, getQuizizzMarkerMatrix, QUIZIZZ_CARDS } from '../../utils/quizizzArucoDetector';
 
-export default function CardGenerator() {
+export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessment }) {
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState('CLASS_6A');
   const [students, setStudents] = useState([]);
@@ -52,6 +52,35 @@ export default function CardGenerator() {
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [editFullName, setEditFullName] = useState('');
   const [editCardId, setEditCardId] = useState('');
+
+  // Save & Quick Switch to Live Paper Mode State
+  const [isSavingClass, setIsSavingClass] = useState(false);
+
+  // Handle Save and Switch directly to Paper Mode Assessment
+  const handleSaveAndPlayAssessment = async () => {
+    setIsSavingClass(true);
+    try {
+      if (roomCode) {
+        await classroomService.setRoomClass(roomCode, selectedClassId);
+      }
+      if (students && students.length > 0) {
+        classroomService.saveClassStudents(selectedClassId, students).catch(err => {
+          console.warn('Background save students note:', err);
+        });
+      }
+      setSaveStatus(`Đã kích hoạt ${selectedClassObj.name} và chuyển sang Chế độ Đánh giá Giấy!`);
+      if (onSwitchToAssessment) {
+        onSwitchToAssessment(selectedClassId);
+      }
+    } catch (err) {
+      console.warn('Lỗi lưu & chuyển phòng học:', err);
+      if (onSwitchToAssessment) {
+        onSwitchToAssessment(selectedClassId);
+      }
+    } finally {
+      setIsSavingClass(false);
+    }
+  };
 
   // 1. Load Classes list
   const loadClasses = async () => {
@@ -170,20 +199,26 @@ export default function CardGenerator() {
     );
   };
 
-  const handleImportLocalSmas = async () => {
+  const handleImportLocalSmas = async (andPlay = false) => {
     setIsImportingSmas(true);
     try {
       const res = await classroomService.importLocalSmas(selectedSmasCodes);
       if (res && res.success) {
         setSaveStatus(`Đã nhập thành công ${res.importedCount} lớp học (${res.totalStudents} học sinh) từ SMAS!`);
         await loadClasses();
-        const has6A = res.classes?.find(c => c.code === '6A');
-        if (has6A) {
-          setSelectedClassId(has6A.id);
-        } else if (res.classes && res.classes.length > 0) {
-          setSelectedClassId(res.classes[0].id);
+        const targetClass = res.classes?.find(c => c.code === '6A') || (res.classes && res.classes[0]);
+        if (targetClass) {
+          setSelectedClassId(targetClass.id);
+          await loadStudents(targetClass.id);
         }
         setShowSmasModal(false);
+
+        if (andPlay && targetClass) {
+          if (roomCode) await classroomService.setRoomClass(roomCode, targetClass.id);
+          if (onSwitchToAssessment) {
+            setTimeout(() => onSwitchToAssessment(targetClass.id), 300);
+          }
+        }
       }
     } catch (err) {
       console.error('Lỗi nạp SMAS:', err);
@@ -377,6 +412,14 @@ export default function CardGenerator() {
             setSelectedStudent(targetClass.students[0]);
           }
 
+          if (roomCode && targetClass) {
+            try {
+              await classroomService.setRoomClass(roomCode, targetClass.id);
+            } catch (rErr) {
+              console.warn('Room class sync note:', rErr);
+            }
+          }
+
           setSaveStatus(`Đã nạp thành công ${parsedClasses.length} lớp (${parsedClasses.reduce((acc, c) => acc + c.totalStudents, 0)} học sinh) từ tệp Excel!`);
           setShowSmasModal(false);
         } catch (err) {
@@ -467,8 +510,8 @@ export default function CardGenerator() {
     loadClasses();
   };
 
-  // Handle Bulk Import Students (with Append vs Overwrite choice)
-  const handleBulkImport = async () => {
+  // Handle Bulk Import Students (with Append vs Overwrite choice and optional immediate Play)
+  const handleBulkImport = async (andPlay = false) => {
     if (!bulkStudentsText.trim()) return;
     const lines = bulkStudentsText
       .split('\n')
@@ -491,9 +534,17 @@ export default function CardGenerator() {
       }
       setShowBulkImportModal(false);
       setBulkStudentsText('');
-      setSaveStatus(`Đã cập nhật danh sách ${saved.length || lines.length} học sinh & tự động gán mã thẻ QR!`);
-      setTimeout(() => setSaveStatus(''), 4000);
+      setSaveStatus(`Đã cập nhật danh sách ${saved.length || lines.length} học sinh & tự động gán thẻ!`);
       loadClasses();
+
+      if (andPlay) {
+        if (roomCode) await classroomService.setRoomClass(roomCode, selectedClassId);
+        if (onSwitchToAssessment) {
+          setTimeout(() => onSwitchToAssessment(selectedClassId), 300);
+        }
+      } else {
+        setTimeout(() => setSaveStatus(''), 4000);
+      }
     } catch (err) {
       console.warn('Backend save note, applying local student roster fallback:', err);
       if (bulkImportMode === 'append') {
@@ -533,11 +584,19 @@ export default function CardGenerator() {
         });
         setStudents(clientStudents);
         if (clientStudents.length > 0) setSelectedStudent(clientStudents[0]);
-        setSaveStatus(`Đã cập nhật danh sách ${clientStudents.length} học sinh & tự động gán mã thẻ QR!`);
+        setSaveStatus(`Đã cập nhật danh sách ${clientStudents.length} học sinh & tự động gán thẻ!`);
       }
       setShowBulkImportModal(false);
       setBulkStudentsText('');
-      setTimeout(() => setSaveStatus(''), 4000);
+
+      if (andPlay) {
+        if (roomCode) await classroomService.setRoomClass(roomCode, selectedClassId);
+        if (onSwitchToAssessment) {
+          setTimeout(() => onSwitchToAssessment(selectedClassId), 300);
+        }
+      } else {
+        setTimeout(() => setSaveStatus(''), 4000);
+      }
     }
   };
 
@@ -559,7 +618,43 @@ export default function CardGenerator() {
     }
   };
 
-  // Generate and Download Full Printable A4 PDF for current class
+  // Helper to render crisp accented Vietnamese student banner onto canvas for jsPDF
+  const createStudentHeaderCanvasUrl = (school, className, studentName, studentCode, pNum) => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 900;
+      canvas.height = 140;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // School & Class
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 22px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${school.toUpperCase()} • ${className.toUpperCase()}`, canvas.width / 2, 38);
+
+      // Student Name
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Học sinh: ${studentName}`, canvas.width / 2, 85);
+
+      // Code & Card
+      ctx.fillStyle = '#475569';
+      ctx.font = '24px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Mã số: ${studentCode}  |  Thẻ Quizizz: P ${pNum}`, canvas.width / 2, 125);
+
+      return canvas.toDataURL('image/png');
+    } catch (err) {
+      console.warn('Canvas header fallback:', err);
+      return null;
+    }
+  };
+
+  // Generate and Download Full Printable A4 PDF for current class (supports exact Quizizz ArUco vector & Webby QR)
   const handleGenerateFullPdf = async () => {
     if (!students || students.length === 0) return;
     setIsGeneratingPdf(true);
@@ -579,6 +674,8 @@ export default function CardGenerator() {
       for (let i = 0; i < total; i++) {
         setPdfProgress(Math.round(((i + 1) / total) * 100));
         const student = students[i];
+        const cardMatch = (student.cardId || '').match(/(\d+)/);
+        const pNum = cardMatch ? parseInt(cardMatch[1], 10) : (i + 1);
         
         // 2 cards per page: index % 2 === 0 is Top card, index % 2 === 1 is Bottom card
         const cardSlot = i % 2; 
@@ -586,82 +683,207 @@ export default function CardGenerator() {
           doc.addPage();
         }
 
-        const topOffset = cardSlot === 0 ? 10 : 155;
-        const leftOffset = 15;
-        const cardWidth = 180;
+        // Cut line between the two cards on the A4 page
+        if (cardSlot === 1) {
+          doc.setDrawColor(148, 163, 184);
+          doc.setLineWidth(0.3);
+          doc.setLineDash([2, 3], 0);
+          doc.line(8, 148.5, 202, 148.5);
+          doc.setLineDash([]);
+          doc.setFontSize(7);
+          doc.setTextColor(148, 163, 184);
+          doc.setFont(undefined, 'normal');
+          doc.text('✂ CẮT ĐÔI TRANG A4 THEO ĐƯỜNG KẺ NÀY ĐỂ ĐƯỢC 2 THẺ QUIZIZZ RIÊNG BIỆT', 105, 147.5, { align: 'center' });
+        }
+
+        const topOffset = cardSlot === 0 ? 8 : 154;
+        const leftOffset = 10;
+        const cardWidth = 190;
         const cardHeight = 135;
 
-        // Card Border
+        // Outer Card Border
         doc.setDrawColor(30, 41, 59);
-        doc.setLineWidth(1.2);
-        doc.roundedRect(leftOffset, topOffset, cardWidth, cardHeight, 5, 5);
+        doc.setLineWidth(0.8);
+        doc.roundedRect(leftOffset, topOffset, cardWidth, cardHeight, 4, 4);
 
-        // Header strip
-        doc.setFillColor(15, 23, 42);
-        doc.rect(leftOffset, topOffset, cardWidth, 14, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.text(`${currentClass.school.toUpperCase()} - ${currentClass.name.toUpperCase()} | THE TRAC NGHIEM QR`, leftOffset + 5, topOffset + 9);
+        if (cardStandard === 'quizizz') {
+          // --- QUIZIZZ PAPER MODE Q-CARDS (EXACT ARUCO 4X4 VECTOR RENDERING) ---
+          
+          // 4 Corner Participant Badges (P 1..P 60)
+          doc.setFontSize(22);
+          doc.setTextColor(15, 23, 42);
+          doc.setFont(undefined, 'bold');
+          doc.text(`P ${pNum}`, leftOffset + 6, topOffset + 14);
+          doc.text(`P ${pNum}`, leftOffset + cardWidth - 6, topOffset + 14, { align: 'right' });
+          doc.text(`P ${pNum}`, leftOffset + 6, topOffset + cardHeight - 6);
+          doc.text(`P ${pNum}`, leftOffset + cardWidth - 6, topOffset + cardHeight - 6, { align: 'right' });
 
-        // Student Info
-        doc.setFontSize(14);
-        doc.setTextColor(15, 23, 42);
-        doc.text(`Hoc sinh: ${student.fullName}`, leftOffset + 8, topOffset + 24);
-        doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139);
-        doc.text(`Ma so: ${student.studentCode}  |  The: ${student.cardId}`, leftOffset + 8, topOffset + 30);
+          // Top Center Student Banner (with accented Vietnamese support)
+          const bannerImgUrl = createStudentHeaderCanvasUrl(
+            currentClass.school || 'THCS ĐẮK TRÔI',
+            currentClass.name || 'LỚP 6A',
+            student.fullName,
+            student.studentCode,
+            pNum
+          );
+          if (bannerImgUrl) {
+            const bannerW = 120;
+            const bannerH = 18.5;
+            const bannerX = leftOffset + (cardWidth - bannerW) / 2;
+            doc.addImage(bannerImgUrl, 'PNG', bannerX, topOffset + 2.5, bannerW, bannerH);
+          } else {
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.setFont(undefined, 'bold');
+            doc.text(`${(currentClass.school || 'THCS DAK TROI').toUpperCase()} • ${(currentClass.name || 'LOP 6A').toUpperCase()}`, leftOffset + cardWidth / 2, topOffset + 7, { align: 'center' });
+            doc.setFontSize(12);
+            doc.setTextColor(15, 23, 42);
+            doc.text(`Hoc sinh: ${student.fullName} | Ma so: ${student.studentCode} | The: P ${pNum}`, leftOffset + cardWidth / 2, topOffset + 14, { align: 'center' });
+          }
 
-        // Directions on 4 borders
-        // TOP: A
-        doc.setFontSize(18);
-        doc.setTextColor(220, 38, 38);
-        doc.text("A", leftOffset + (cardWidth / 2) - 3, topOffset + 38);
-        doc.setFontSize(9);
-        doc.text("^ (Dap an A huong len tren)", leftOffset + (cardWidth / 2) - 22, topOffset + 43);
+          // Center Exact ArUco 4x4 Vector Marker (72mm x 72mm)
+          const markerSize = 72;
+          const markerX = leftOffset + (cardWidth - markerSize) / 2;
+          const markerY = topOffset + 32;
 
-        // RIGHT: B
-        doc.setFontSize(18);
-        doc.setTextColor(37, 99, 235);
-        doc.text("B >", leftOffset + cardWidth - 18, topOffset + (cardHeight / 2) + 5);
+          const matrix = getQuizizzMarkerMatrix(pNum);
+          if (matrix && matrix.length === 6) {
+            // 1. Draw solid black 6x6 marker box
+            doc.setFillColor(0, 0, 0);
+            doc.rect(markerX, markerY, markerSize, markerSize, 'F');
 
-        // BOTTOM: C
-        doc.setFontSize(18);
-        doc.setTextColor(22, 163, 74);
-        doc.text("C", leftOffset + (cardWidth / 2) - 3, topOffset + cardHeight - 12);
-        doc.setFontSize(9);
-        doc.text("v (Dap an C huong len tren)", leftOffset + (cardWidth / 2) - 22, topOffset + cardHeight - 6);
+            // 2. Draw white inner bits
+            doc.setFillColor(255, 255, 255);
+            const cellSize = markerSize / 6;
+            for (let r = 0; r < 6; r++) {
+              for (let c = 0; c < 6; c++) {
+                if (matrix[r][c] === 1) {
+                  doc.rect(markerX + c * cellSize, markerY + r * cellSize, cellSize + 0.05, cellSize + 0.05, 'F');
+                }
+              }
+            }
+          }
 
-        // LEFT: D
-        doc.setFontSize(18);
-        doc.setTextColor(217, 119, 6);
-        doc.text("< D", leftOffset + 6, topOffset + (cardHeight / 2) + 5);
+          // Directions A, B, C, D around the 4 borders
+          // TOP: A
+          doc.setFontSize(28);
+          doc.setTextColor(220, 38, 38);
+          doc.setFont(undefined, 'bold');
+          doc.text('A', leftOffset + cardWidth / 2, markerY - 4, { align: 'center' });
+          doc.setFontSize(7.5);
+          doc.setTextColor(148, 163, 184);
+          doc.setFont(undefined, 'normal');
+          doc.text('^ HUONG DAP AN A LEN TREN ^', leftOffset + cardWidth / 2, markerY - 0.5, { align: 'center' });
 
-        // Center QR Code
-        const qrData = JSON.stringify({
-          cardId: student.cardId,
-          studentCode: student.studentCode,
-          classId: student.classId
-        });
+          // RIGHT: B
+          doc.setFontSize(28);
+          doc.setTextColor(37, 99, 235);
+          doc.setFont(undefined, 'bold');
+          doc.text('B', markerX + markerSize + 11, markerY + markerSize / 2 + 5, { align: 'center' });
+          doc.setFontSize(7.5);
+          doc.setTextColor(148, 163, 184);
+          doc.setFont(undefined, 'normal');
+          doc.text('> B', markerX + markerSize + 11, markerY + markerSize / 2 + 10, { align: 'center' });
 
-        const qrDataUrl = await QRCode.toDataURL(qrData, {
-          width: 250,
-          margin: 1,
-          color: { dark: '#000000', light: '#ffffff' },
-          errorCorrectionLevel: 'H'
-        });
+          // BOTTOM: C
+          doc.setFontSize(28);
+          doc.setTextColor(22, 163, 74);
+          doc.setFont(undefined, 'bold');
+          doc.text('C', leftOffset + cardWidth / 2, markerY + markerSize + 13, { align: 'center' });
+          doc.setFontSize(7.5);
+          doc.setTextColor(148, 163, 184);
+          doc.setFont(undefined, 'normal');
+          doc.text('v HUONG DAP AN C LEN TREN v', leftOffset + cardWidth / 2, markerY + markerSize + 17, { align: 'center' });
 
-        const qrSize = 65;
-        const qrX = leftOffset + (cardWidth - qrSize) / 2;
-        const qrY = topOffset + 46;
-        doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+          // LEFT: D
+          doc.setFontSize(28);
+          doc.setTextColor(217, 119, 6);
+          doc.setFont(undefined, 'bold');
+          doc.text('D', markerX - 11, markerY + markerSize / 2 + 5, { align: 'center' });
+          doc.setFontSize(7.5);
+          doc.setTextColor(148, 163, 184);
+          doc.setFont(undefined, 'normal');
+          doc.text('< D', markerX - 11, markerY + markerSize / 2 + 10, { align: 'center' });
 
-        // Orientation guide box
-        doc.setDrawColor(203, 213, 225);
-        doc.setLineWidth(0.3);
-        doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+          // Footer
+          doc.setFontSize(7.5);
+          doc.setTextColor(100, 116, 139);
+          doc.setFont(undefined, 'normal');
+          doc.text('Chuan the Quizizz Paper Mode (ArUco 4x4) - Khop 100% voi bo the in tu Quizizz vi.pdf', leftOffset + cardWidth / 2, topOffset + cardHeight - 2.5, { align: 'center' });
+
+        } else {
+          // --- WEBBY QR CODE MODE ---
+          // Header strip
+          doc.setFillColor(15, 23, 42);
+          doc.rect(leftOffset, topOffset, cardWidth, 14, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(10);
+          doc.text(`${currentClass.school.toUpperCase()} - ${currentClass.name.toUpperCase()} | THẺ TRẮC NGHIỆM QR`, leftOffset + 5, topOffset + 9);
+
+          // Student Info
+          doc.setFontSize(14);
+          doc.setTextColor(15, 23, 42);
+          doc.text(`Hoc sinh: ${student.fullName}`, leftOffset + 8, topOffset + 24);
+          doc.setFontSize(10);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Ma so: ${student.studentCode}  |  The: ${student.cardId}`, leftOffset + 8, topOffset + 30);
+
+          // Directions on 4 borders
+          // TOP: A
+          doc.setFontSize(18);
+          doc.setTextColor(220, 38, 38);
+          doc.text("A", leftOffset + (cardWidth / 2) - 3, topOffset + 38);
+          doc.setFontSize(9);
+          doc.text("^ (Dap an A huong len tren)", leftOffset + (cardWidth / 2) - 22, topOffset + 43);
+
+          // RIGHT: B
+          doc.setFontSize(18);
+          doc.setTextColor(37, 99, 235);
+          doc.text("B >", leftOffset + cardWidth - 18, topOffset + (cardHeight / 2) + 5);
+
+          // BOTTOM: C
+          doc.setFontSize(18);
+          doc.setTextColor(22, 163, 74);
+          doc.text("C", leftOffset + (cardWidth / 2) - 3, topOffset + cardHeight - 12);
+          doc.setFontSize(9);
+          doc.text("v (Dap an C huong len tren)", leftOffset + (cardWidth / 2) - 22, topOffset + cardHeight - 6);
+
+          // LEFT: D
+          doc.setFontSize(18);
+          doc.setTextColor(217, 119, 6);
+          doc.text("< D", leftOffset + 6, topOffset + (cardHeight / 2) + 5);
+
+          // Center QR Code
+          const qrData = JSON.stringify({
+            cardId: student.cardId,
+            studentCode: student.studentCode,
+            classId: student.classId
+          });
+
+          const qrDataUrl = await QRCode.toDataURL(qrData, {
+            width: 250,
+            margin: 1,
+            color: { dark: '#000000', light: '#ffffff' },
+            errorCorrectionLevel: 'H'
+          });
+
+          const qrSize = 65;
+          const qrX = leftOffset + (cardWidth - qrSize) / 2;
+          const qrY = topOffset + 46;
+          doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+
+          // Orientation guide box
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.3);
+          doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+        }
       }
 
-      doc.save(`The_QR_${currentClass.name.replace(/\s+/g, '_')}_${currentClass.school.replace(/\s+/g, '_')}.pdf`);
+      const cleanClassName = (currentClass.name || 'Lop').replace(/\s+/g, '_');
+      const outFileName = cardStandard === 'quizizz'
+        ? `The_Quizizz_QCards_${cleanClassName}.pdf`
+        : `The_QR_${cleanClassName}.pdf`;
+      doc.save(outFileName);
     } catch (err) {
       console.error('Lỗi xuất PDF thẻ:', err);
       alert('Đã xảy ra lỗi khi tạo tệp PDF!');
@@ -723,6 +945,25 @@ export default function CardGenerator() {
           </button>
 
           <button
+            onClick={handleSaveAndPlayAssessment}
+            disabled={isSavingClass || students.length === 0}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-600/30 border border-purple-400/40"
+            title="Lưu danh sách lớp hiện tại và chuyển ngay vào Chế độ Chơi Giấy (Paper Mode)"
+          >
+            {isSavingClass ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
+                Đang chuyển...
+              </>
+            ) : (
+              <>
+                <Gamepad2 className="w-4 h-4 text-yellow-300" />
+                🎮 Lưu & Vào Chơi Chế Độ Giấy ({selectedClassObj.name})
+              </>
+            )}
+          </button>
+
+          <button
             onClick={handleGenerateFullPdf}
             disabled={isGeneratingPdf || students.length === 0}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-950 transition-all shadow-lg ${
@@ -739,7 +980,9 @@ export default function CardGenerator() {
             ) : (
               <>
                 <Download className="w-4 h-4 text-slate-950" />
-                In toàn bộ thẻ {selectedClassObj.name} (PDF A4)
+                {cardStandard === 'quizizz'
+                  ? `In thẻ Quizizz ${selectedClassObj.name} (PDF A4)`
+                  : `In thẻ QR ${selectedClassObj.name} (PDF A4)`}
               </>
             )}
           </button>
@@ -790,8 +1033,8 @@ export default function CardGenerator() {
         <div className="flex items-center gap-2 text-xs">
           {cardStandard === 'quizizz' ? (
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-purple-300 hidden sm:inline font-medium">
-                🎯 Thầy/Cô dùng trực tiếp bộ thẻ Quizizz (P 1 - P 60) đã in sẵn từ vi.pdf!
+              <span className="text-[11px] text-emerald-300 font-semibold bg-emerald-950/60 px-2.5 py-0.5 rounded-lg border border-emerald-500/40">
+                ✅ Khớp 100% bộ thẻ vi.pdf Thầy đã in sẵn (P 1 - P 60) • Camera quét nhận diện tức thì!
               </span>
               <a
                 href="https://cf.quizizz.com/pdf/Wayground-QCards/vi.pdf"
@@ -800,7 +1043,7 @@ export default function CardGenerator() {
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-500/40 text-[11px] font-semibold transition-all shadow-sm"
               >
                 <ExternalLink className="w-3 h-3" />
-                Mở file Quizizz vi.pdf gốc
+                Mở vi.pdf gốc
               </a>
             </div>
           ) : (
@@ -1381,18 +1624,25 @@ export default function CardGenerator() {
                 Số học sinh phát hiện: <span className="font-bold text-cyan-300">{bulkStudentsText.split('\n').filter(l => l.trim().length > 0).length}</span>
               </span>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setShowBulkImportModal(false)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
                 >
                   Hủy
                 </button>
                 <button
-                  onClick={handleBulkImport}
-                  className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md shadow-emerald-500/20"
+                  onClick={() => handleBulkImport(false)}
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20"
                 >
-                  Lưu & Tự động gán mã thẻ QR
+                  Lưu danh sách
+                </button>
+                <button
+                  onClick={() => handleBulkImport(true)}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-600/30"
+                >
+                  <Gamepad2 className="w-3.5 h-3.5 text-yellow-300" />
+                  🎮 Lưu & Vào Chơi Chế Độ Giấy Ngay
                 </button>
               </div>
             </div>
@@ -1516,28 +1766,38 @@ export default function CardGenerator() {
                     </div>
                   </div>
 
-                  {/* 1-Click Import Button */}
-                  <button
-                    onClick={handleImportLocalSmas}
-                    disabled={isImportingSmas || selectedSmasCodes.length === 0}
-                    className={`w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
-                      isImportingSmas || selectedSmasCodes.length === 0
-                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-emerald-500/25'
-                    }`}
-                  >
-                    {isImportingSmas ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                        Đang đồng bộ dữ liệu vào hệ thống...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 text-slate-950" />
-                        🚀 NẠP NGAY {selectedSmasCodes.length} LỚP VÀO HỆ THỐNG (1-CLICK)
-                      </>
-                    )}
-                  </button>
+                  {/* Import Action Buttons: Import Only vs Import & Play Now */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button
+                      onClick={() => handleImportLocalSmas(false)}
+                      disabled={isImportingSmas || selectedSmasCodes.length === 0}
+                      className="flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
+                    >
+                      {isImportingSmas ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
+                          Đang đồng bộ...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          Nạp {selectedSmasCodes.length} lớp vào hệ thống
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleImportLocalSmas(true)}
+                      disabled={isImportingSmas || selectedSmasCodes.length === 0}
+                      className={`flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
+                        isImportingSmas || selectedSmasCodes.length === 0
+                          ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/30 border border-purple-400/40'
+                      }`}
+                    >
+                      <Gamepad2 className="w-4 h-4 text-yellow-300" />
+                      🎮 Nạp & Vào Chơi Chế Độ Giấy Ngay
+                    </button>
+                  </div>
                 </>
               ) : (
                 <div className="text-xs text-slate-400 p-2 text-center">

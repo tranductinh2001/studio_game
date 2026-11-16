@@ -548,7 +548,12 @@ export default function App() {
 
         {/* TAB 5: STUDENT ROSTER & PRINTABLE QR CARDS */}
         {currentTab === 'card-generator' && (
-          <CardGenerator />
+          <CardGenerator 
+            roomCode={roomCode}
+            onSwitchToAssessment={(classId) => {
+              setCurrentTab('qr-assessment');
+            }}
+          />
         )}
 
         {/* TAB 6: MOBILE COMPANION SCANNER & CONTROLLER */}
