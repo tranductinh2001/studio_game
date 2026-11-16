@@ -9,19 +9,20 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-  // Quick activity jumps mapped to slide indexes in slide_trinh_chieu_tinhoc6_bai06.html:
-  // Slide 0: Bìa tiết dạy
-  // Slide 1: Hoạt động 1 - Khởi động với AI
-  // Slide 3: Hoạt động 2 - Thảo luận nhóm & Timer SGK
-  // Slide 6: Hoạt động 3 - Luyện tập Đấu trường Quiz
-  // Slide 20: Hoạt động 4 - Vận dụng về nhà
+  // Quick activity jumps mapped to slide indexes:
+  // Slide 0: Bìa tiết dạy Bài 6
+  // Slide 1 (2.1): Tiến trình 1 - Giao việc Mục 1 & Đồng hồ đếm ngược 60/40 (Nhóm 1&2)
+  // Slide 2 (2.2): Tiến trình 1 - Báo cáo & Chuẩn hóa Mục 1 (Cổng TT Đắk Trôi)
+  // Slide 3 (2.3): Tiến trình 2 - Giao việc Mục 2 & Đồng hồ đếm ngược 60/40 (Nhóm 3&4)
+  // Slide 4 (2.4): Tiến trình 2 - Báo cáo & Chuẩn hóa Mục 2 (Simulator gõ URL thật)
+  // Slide 5 (2.5): Chuẩn hóa toàn bài 6 (Ghi vở 2 cột 50/50) ➜ Quizizz Q-Cards
   const ACTIVITIES = [
     { label: 'Trang Bìa', index: 0, tag: 'Bìa' },
-    { label: 'Giao Việc Nhóm', index: 1, tag: '1. Nhóm' },
-    { label: 'Đếm Ngược (8p)', index: 2, tag: '2. Timer' },
-    { label: 'Mục 1: Tổ Chức Web', index: 3, tag: '3. Mục 1' },
-    { label: 'Mục 2: Trình Duyệt', index: 4, tag: '4. Mục 2' },
-    { label: 'Chuẩn Hóa Ghi Vở', index: 5, tag: '5. Ghi Vở' }
+    { label: '2.1: Mục 1 + Timer', index: 1, tag: '2.1' },
+    { label: '2.2: Báo Cáo Mục 1', index: 2, tag: '2.2' },
+    { label: '2.3: Mục 2 + Timer', index: 3, tag: '2.3' },
+    { label: '2.4: Báo Cáo Mục 2', index: 4, tag: '2.4' },
+    { label: '2.5: Chuẩn Hóa Ghi Vở', index: 5, tag: '2.5' }
   ];
 
   // Send message to slide iframe
