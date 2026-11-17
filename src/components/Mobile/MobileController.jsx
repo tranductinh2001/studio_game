@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Camera, Image as ImageIcon, Send, RotateCw, Lock, Eye, 
-  CheckCircle2, Sparkles, Smartphone, ChevronRight, Upload, RefreshCw
+  CheckCircle2, Sparkles, Smartphone, ChevronRight, Upload, RefreshCw, X
 } from 'lucide-react';
 import SmartScanner from '../Scanner/SmartScanner';
 import { classroomService } from '../../services/classroomService';
 
-export default function MobileController({ roomCode: propRoomCode = 'WB-601' }) {
+export default function MobileController({ roomCode: propRoomCode = 'WB-601', onExitMobile }) {
   const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const roomCode = urlParams.get('room') || propRoomCode;
 
@@ -106,32 +106,44 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601' }) 
           </div>
         </div>
 
-        {/* Tab Switcher Pills */}
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-          <button
-            onClick={() => setActiveTab('scanner')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-              activeTab === 'scanner' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
-            }`}
-          >
-            Quét QR
-          </button>
-          <button
-            onClick={() => setActiveTab('groupPhoto')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-              activeTab === 'groupPhoto' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
-            }`}
-          >
-            Chụp A3/A4
-          </button>
-          <button
-            onClick={() => setActiveTab('quizControl')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-              activeTab === 'quizControl' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
-            }`}
-          >
-            Câu hỏi
-          </button>
+        {/* Tab Switcher Pills & Exit */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <button
+              onClick={() => setActiveTab('scanner')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                activeTab === 'scanner' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
+              }`}
+            >
+              Quét QR
+            </button>
+            <button
+              onClick={() => setActiveTab('groupPhoto')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                activeTab === 'groupPhoto' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
+              }`}
+            >
+              Chụp A3/A4
+            </button>
+            <button
+              onClick={() => setActiveTab('quizControl')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                activeTab === 'quizControl' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400'
+              }`}
+            >
+              Câu hỏi
+            </button>
+          </div>
+
+          {onExitMobile && (
+            <button
+              onClick={onExitMobile}
+              title="Quay lại Slide"
+              className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all border border-slate-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

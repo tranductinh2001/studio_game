@@ -28,6 +28,41 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   const isScanningRef = useRef(false);
   const lastProcessTimeRef = useRef(0);
 
+  // Web Audio API offline sound synthesizer for instant audio feedback
+  const playScanChime = (answer = 'A') => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      const freqMap = { A: 880, B: 987.77, C: 1108.73, D: 1318.51 };
+      const baseFreq = freqMap[answer] || 880;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.1);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch (e) {
+      // Audio context might be restricted before interaction
+    }
+  };
+
+  // Persistent overlay storage so bounding boxes don't vanish after 16ms
+  const activeOverlaysRef = useRef(new Map()); // cardKey -> { corners, studentName, answer, color, bgColor, expiresAt }
+
   // Auto-streaming queue to instantly push detected responses to Teacher Desktop in real time
   const pendingSyncQueueRef = useRef(new Map());
   const syncTimeoutRef = useRef(null);
@@ -39,28 +74,41 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     const s = String(str).trim();
     if (s.startsWith('CARD_')) return s;
     if (s.startsWith('WEBBY_')) return s.replace('WEBBY_', 'CARD_');
-    const pMatch = s.match(/^P\s*(\d+)$/i);
+    const pMatch = s.match(/^[P|HS]\s*(\d+)$/i);
     if (pMatch) {
       const num = parseInt(pMatch[1], 10);
       return `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
     }
-    if (/^\d+$/.test(s)) {
-      const num = parseInt(s, 10);
+    const numOnly = s.match(/(\d+)/);
+    if (numOnly) {
+      const num = parseInt(numOnly[1], 10);
       return `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
     }
     return s;
   };
 
-  // Helper: Parse code data from JSON or raw text
+  // Helper: Parse code data from JSON, URL parameters, or raw text
   const parseCardData = (data) => {
     if (!data) return null;
+    const str = String(data).trim();
+    // 1. JSON format
     try {
-      const parsed = JSON.parse(data);
-      const id = parsed.cardId || parsed.studentCode || parsed.id || parsed.code;
+      const parsed = JSON.parse(str);
+      const id = parsed.cardId || parsed.studentCode || parsed.id || parsed.code || parsed.card;
       if (id) return normalizeCardId(id);
     } catch {}
 
-    return normalizeCardId(data);
+    // 2. URL format (e.g. https://...?card=1 or ?cardId=CARD_0001)
+    if (str.includes('?') || str.startsWith('http')) {
+      try {
+        const url = new URL(str, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+        const cardParam = url.searchParams.get('card') || url.searchParams.get('cardId') || url.searchParams.get('id');
+        if (cardParam) return normalizeCardId(cardParam);
+      } catch {}
+    }
+
+    // 3. Raw text fallback
+    return normalizeCardId(str);
   };
 
   // Helper: Resolve student details from map with fallback
@@ -287,6 +335,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
         const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
         let detectedInPhoto = 0;
+        let lastStudentInfo = null;
 
         // 1. Try Quizizz ArUco Q-Cards
         try {
@@ -308,6 +357,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               setDetectedResponses((prev) => ({ ...prev, [targetKey]: respItem }));
               queueResponseForAutoSync(respItem);
               detectedInPhoto++;
+              lastStudentInfo = { name: `${student.fullName} (${q.quizizzCode})`, answer: q.answer, angle: q.visualAngle };
             });
           }
         } catch (err) {
@@ -337,6 +387,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               setDetectedResponses((prev) => ({ ...prev, [targetKey]: respItem }));
               queueResponseForAutoSync(respItem);
               detectedInPhoto++;
+              lastStudentInfo = { name: student.fullName, answer, angle };
             }
           }
         } catch (err) {
@@ -344,7 +395,10 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
         }
 
         if (detectedInPhoto > 0) {
-          setSyncStatus(`🎉 Đã quét thành công ${detectedInPhoto} thẻ từ ảnh chụp!`);
+          playScanChime(lastStudentInfo?.answer || 'A');
+          if (lastStudentInfo) setLastScannedStudent(lastStudentInfo);
+          if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+          setSyncStatus(`🎉 ĐÃ QUÉT TRÚNG ${detectedInPhoto} THẺ HỌC SINH TỪ ẢNH CHỤP!`);
         } else {
           setSyncStatus('⚠️ Không nhận diện được thẻ trong ảnh. Vui lòng chụp rõ mã vuông trên giấy!');
         }
@@ -354,7 +408,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     reader.readAsDataURL(file);
   };
 
-  // Continuous frame loop using isScanningRef to prevent stale closure loop termination
+  // Continuous frame loop with persistent visual overlay rendering
   const scanFrame = () => {
     if (!isScanningRef.current) return;
 
@@ -374,16 +428,65 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       }
 
       const ctx = canvas.getContext('2d');
-      // Draw fresh video frame into canvas view
+      // 1. Draw fresh camera video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const now = performance.now();
-      // Scan every 75ms to guarantee smooth 60fps video feed and low mobile temperature
+
+      // 2. Render all active persistent overlays (re-drawn on every frame so they never flicker or disappear)
+      activeOverlaysRef.current.forEach((overlay, key) => {
+        if (now < overlay.expiresAt) {
+          const timeLeft = overlay.expiresAt - now;
+          const alpha = Math.min(1, timeLeft / 200); // smooth fade during final 200ms
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+
+          // Glowing bounding polygon
+          ctx.beginPath();
+          ctx.moveTo(overlay.corners[0].x, overlay.corners[0].y);
+          ctx.lineTo(overlay.corners[1].x, overlay.corners[1].y);
+          ctx.lineTo(overlay.corners[2].x, overlay.corners[2].y);
+          ctx.lineTo(overlay.corners[3].x, overlay.corners[3].y);
+          ctx.closePath();
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = overlay.color || '#10b981';
+          ctx.shadowColor = overlay.color || '#10b981';
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+
+          // High-visibility overlay badge
+          const cx = Math.min(Math.max(10, overlay.corners[0].x), canvas.width - 260);
+          const cy = Math.max(38, overlay.corners[0].y);
+          ctx.fillStyle = overlay.bgColor || 'rgba(6, 78, 59, 0.95)';
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(cx - 4, cy - 36, 250, 32, 8);
+          } else {
+            ctx.rect(cx - 4, cy - 36, 250, 32);
+          }
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px "Be Vietnam Pro", Orbitron, sans-serif';
+          ctx.shadowBlur = 0;
+          ctx.fillText(`✓ ${overlay.studentName} ➔ [ ${overlay.answer} ]`, cx + 6, cy - 14);
+
+          ctx.restore();
+        } else {
+          activeOverlaysRef.current.delete(key);
+        }
+      });
+
+      // 3. Scan every 75ms to guarantee smooth 60fps video feed and low mobile temperature
       if (now - lastProcessTimeRef.current >= 75) {
         lastProcessTimeRef.current = now;
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        // 1. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
+        // A. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
         try {
           const qCards = detectQuizizzCards(imageData);
           if (qCards && qCards.length > 0) {
@@ -392,27 +495,15 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               const student = resolveStudent(cardId, quizizzCode);
               const targetKey = student.cardId || cardId;
 
-              // Glowing purple polygon
-              ctx.beginPath();
-              ctx.moveTo(corners[0].x, corners[0].y);
-              ctx.lineTo(corners[1].x, corners[1].y);
-              ctx.lineTo(corners[2].x, corners[2].y);
-              ctx.lineTo(corners[3].x, corners[3].y);
-              ctx.closePath();
-              ctx.lineWidth = 5;
-              ctx.strokeStyle = '#c084fc';
-              ctx.stroke();
-
-              // Overlay pill
-              ctx.fillStyle = 'rgba(88, 28, 135, 0.9)';
-              ctx.fillRect(corners[0].x - 4, Math.max(10, corners[0].y - 32), 240, 28);
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 15px Orbitron, sans-serif';
-              ctx.fillText(
-                `[${quizizzCode} • ${student.fullName}] -> ${answer}`,
-                corners[0].x + 4,
-                Math.max(28, corners[0].y - 12)
-              );
+              // Store overlay to persist for 850ms
+              activeOverlaysRef.current.set(targetKey, {
+                corners,
+                studentName: `${student.fullName} (${quizizzCode})`,
+                answer,
+                color: '#c084fc',
+                bgColor: 'rgba(88, 28, 135, 0.95)',
+                expiresAt: now + 850
+              });
 
               const respItem = {
                 cardId: targetKey,
@@ -431,16 +522,17 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               }));
 
               setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
+              playScanChime(answer);
               queueResponseForAutoSync(respItem);
 
-              if (navigator.vibrate) navigator.vibrate(30);
+              if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
             });
           }
         } catch (err) {
           // ignore scan error
         }
 
-        // 2. Scan Webby QR (jsQR with both normal and inverted attempt)
+        // B. Scan Webby QR (jsQR with both normal and inverted attempt)
         try {
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: 'attemptBoth'
@@ -448,28 +540,21 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
 
           if (code) {
             const { topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner } = code.location;
-            ctx.beginPath();
-            ctx.moveTo(topLeftCorner.x, topLeftCorner.y);
-            ctx.lineTo(topRightCorner.x, topRightCorner.y);
-            ctx.lineTo(bottomRightCorner.x, bottomRightCorner.y);
-            ctx.lineTo(bottomLeftCorner.x, bottomLeftCorner.y);
-            ctx.closePath();
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = '#10b981';
-            ctx.stroke();
-
             const cId = parseCardData(code.data);
             if (cId) {
               const { answer, angle } = calculateAnswerFromCorners(code.location);
               const student = resolveStudent(cId);
               const targetKey = student.cardId || cId;
 
-              // Green overlay pill
-              ctx.fillStyle = 'rgba(6, 78, 59, 0.9)';
-              ctx.fillRect(topLeftCorner.x - 4, Math.max(10, topLeftCorner.y - 32), 240, 28);
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 15px Orbitron, sans-serif';
-              ctx.fillText(`[${student.fullName}] -> ${answer} (${angle}°)`, topLeftCorner.x + 4, Math.max(28, topLeftCorner.y - 12));
+              // Store overlay to persist for 850ms
+              activeOverlaysRef.current.set(targetKey, {
+                corners: [topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner],
+                studentName: student.fullName,
+                answer,
+                color: '#10b981',
+                bgColor: 'rgba(6, 78, 59, 0.95)',
+                expiresAt: now + 850
+              });
 
               const respItem = {
                 cardId: targetKey,
@@ -487,9 +572,10 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               }));
 
               setLastScannedStudent({ name: student.fullName, answer, angle });
+              playScanChime(answer);
               queueResponseForAutoSync(respItem);
 
-              if (navigator.vibrate) navigator.vibrate(40);
+              if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
             }
           }
         } catch (err) {
@@ -679,6 +765,29 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               ref={canvasRef} 
               className={`max-w-full max-h-full object-contain ${isScanning ? 'block' : 'hidden'}`}
             />
+
+            {/* Live Heads-Up Display (HUD) banner when scanning a card */}
+            {lastScannedStudent && (
+              <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none w-[92%] max-w-sm">
+                <div className="bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-emerald-950/95 border-2 border-emerald-400 text-white p-3 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.7)] flex items-center gap-3 backdrop-blur-md animate-bounce">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-xl shrink-0 shadow-lg shadow-emerald-500/40">
+                    ✓
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      ĐÃ QUÉT TRÚNG MÃ QR!
+                    </div>
+                    <div className="text-sm font-black text-white truncate">
+                      {lastScannedStudent.name}
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-tr from-yellow-400 to-amber-300 text-slate-950 px-3.5 py-1 rounded-xl font-black text-lg shadow-md shrink-0">
+                    {lastScannedStudent.answer}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {!isScanning && (
               <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">

@@ -33,6 +33,11 @@ export default function App() {
 
   // Phone Connect Modal state
   const [showPhoneConnectModal, setShowPhoneConnectModal] = useState(false);
+  const [phoneConnectMode, setPhoneConnectMode] = useState('cloud'); // 'cloud' | 'lan'
+  const [cloudQr, setCloudQr] = useState('');
+  const [lanQr, setLanQr] = useState('');
+  const [cloudUrl, setCloudUrl] = useState('');
+  const [lanUrl, setLanUrl] = useState('');
   const [phoneConnectQr, setPhoneConnectQr] = useState('');
   const [mobileConnectUrl, setMobileConnectUrl] = useState('');
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
@@ -99,39 +104,62 @@ export default function App() {
       setCurrentTab(urlParams.get('tab'));
     }
 
-    // Determine correct environment URL & dynamic LAN IP for room join
-    const updateMobileConnectUrl = async () => {
+    // Generate both Cloud (Vercel) and LAN (Wi-Fi) URLs and standard ISO QR codes
+    const updateMobileConnectUrls = async () => {
+      // 1. Cloud Vercel Join URL (Always accessible from any phone 4G/5G/Wi-Fi worldwide)
+      const cloudBase = (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1'))
+        ? window.location.origin
+        : 'https://studio-game.vercel.app';
+      const cUrl = `${cloudBase}/?room=${encodeURIComponent(roomCode)}&mode=mobile`;
+      setCloudUrl(cUrl);
+      setMobileConnectUrl(cUrl);
+
+      try {
+        const cQr = await QRCode.toDataURL(cUrl, {
+          width: 320,
+          margin: 4,
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'M'
+        });
+        setCloudQr(cQr);
+        setPhoneConnectQr(cQr);
+      } catch (e) {
+        console.warn('Error generating cloud QR:', e);
+      }
+
+      // 2. LAN Wi-Fi Join URL (For offline local school intranet)
       try {
         const netInfo = await classroomService.getNetworkInfo();
-        const joinUrl = buildRoomJoinUrl(roomCode, netInfo?.lanIp);
-        setMobileConnectUrl(joinUrl);
+        const lUrl = buildRoomJoinUrl(roomCode, netInfo?.lanIp);
+        setLanUrl(lUrl);
 
-        const qrData = await QRCode.toDataURL(joinUrl, {
-          width: 280,
-          margin: 2,
+        const lQr = await QRCode.toDataURL(lUrl, {
+          width: 320,
+          margin: 4,
           color: { dark: '#000000', light: '#ffffff' },
-          errorCorrectionLevel: 'H'
+          errorCorrectionLevel: 'M'
         });
-        setPhoneConnectQr(qrData);
+        setLanQr(lQr);
       } catch (err) {
-        console.warn('Network info fallback for QR:', err);
-        const fallbackUrl = buildRoomJoinUrl(roomCode);
-        setMobileConnectUrl(fallbackUrl);
-        QRCode.toDataURL(fallbackUrl, {
-          width: 280,
-          margin: 2,
+        console.warn('Network info fallback for LAN QR:', err);
+        const fallbackLanUrl = `http://localhost:5173/?room=${encodeURIComponent(roomCode)}&mode=mobile`;
+        setLanUrl(fallbackLanUrl);
+        QRCode.toDataURL(fallbackLanUrl, {
+          width: 320,
+          margin: 4,
           color: { dark: '#000000', light: '#ffffff' },
-          errorCorrectionLevel: 'H'
-        }).then(setPhoneConnectQr).catch(console.warn);
+          errorCorrectionLevel: 'M'
+        }).then(setLanQr).catch(console.warn);
       }
     };
 
-    updateMobileConnectUrl();
+    updateMobileConnectUrls();
   }, []);
 
   const handleCopyMobileLink = () => {
-    if (navigator.clipboard && mobileConnectUrl) {
-      navigator.clipboard.writeText(mobileConnectUrl);
+    const activeUrl = phoneConnectMode === 'cloud' ? (cloudUrl || mobileConnectUrl) : (lanUrl || mobileConnectUrl);
+    if (navigator.clipboard && activeUrl) {
+      navigator.clipboard.writeText(activeUrl);
       setHasCopiedLink(true);
       setTimeout(() => setHasCopiedLink(false), 2500);
     }
@@ -451,6 +479,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Dedicated Fullscreen Mobile Experience (When opening on smartphone via QR code: /?mode=mobile)
+  if (currentTab === 'mobile-controller') {
+    return (
+      <main className="w-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-slate-950 font-sans text-white flex flex-col select-none">
+        <MobileController 
+          roomCode={roomCode} 
+          onExitMobile={() => setCurrentTab('lesson-slide')} 
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="relative w-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-slate-950 font-sans text-white flex flex-col justify-between select-none">
       {/* 1. BACKGROUND: 3D Procedural Globe Scene */}
@@ -729,20 +769,48 @@ export default function App() {
                 KẾT NỐI ĐIỆN THOẠI GIÁO VIÊN
               </h3>
               <p className="text-xs text-slate-400">
-                Dùng camera điện thoại quét mã QR bên dưới để mở giao diện điều khiển
+                Dùng camera điện thoại (hoặc Zalo/Google Lens) quét mã QR bên dưới
               </p>
             </div>
 
-            {/* QR Code Container */}
-            <div className="bg-white p-3 rounded-2xl inline-block border-4 border-cyan-400 shadow-xl mx-auto">
-              {phoneConnectQr ? (
+            {/* Mode Switcher Tabs: Cloud Vercel vs LAN Wi-Fi */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setPhoneConnectMode('cloud')}
+                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                  phoneConnectMode === 'cloud'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-lg shadow-cyan-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>1. Vercel Cloud (4G/Wi-Fi)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPhoneConnectMode('lan')}
+                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                  phoneConnectMode === 'lan'
+                    ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black shadow-lg shadow-amber-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Wifi className="w-3.5 h-3.5" />
+                <span>2. Mạng LAN Wi-Fi</span>
+              </button>
+            </div>
+
+            {/* High Contrast Standard ISO QR Code Container with 4-module quiet zone */}
+            <div className="bg-white p-3.5 rounded-2xl inline-block shadow-2xl mx-auto border-4 border-slate-200">
+              {(phoneConnectMode === 'cloud' ? (cloudQr || phoneConnectQr) : (lanQr || phoneConnectQr)) ? (
                 <img
-                  src={phoneConnectQr}
+                  src={phoneConnectMode === 'cloud' ? (cloudQr || phoneConnectQr) : (lanQr || phoneConnectQr)}
                   alt="QR Code kết nối điện thoại"
-                  className="w-52 h-52 object-contain"
+                  className="w-56 h-56 object-contain"
                 />
               ) : (
-                <div className="w-52 h-52 flex items-center justify-center text-slate-400 text-xs">
+                <div className="w-56 h-56 flex items-center justify-center text-slate-500 text-xs font-semibold">
                   Đang tạo mã QR...
                 </div>
               )}
@@ -751,7 +819,7 @@ export default function App() {
             {/* Direct URL with Copy button */}
             <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2 text-xs">
               <span className="font-mono text-cyan-300 truncate text-[11px]">
-                {mobileConnectUrl}
+                {phoneConnectMode === 'cloud' ? (cloudUrl || mobileConnectUrl) : (lanUrl || mobileConnectUrl)}
               </span>
               <button
                 onClick={handleCopyMobileLink}
@@ -765,28 +833,45 @@ export default function App() {
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5 text-slate-400" />
-                    Sao chép
+                    Sao chép link
                   </>
                 )}
               </button>
             </div>
 
-            {/* Dynamic Environment & Wi-Fi Guide notes */}
+            {/* Quick Test Button on this Device */}
+            <button
+              onClick={() => {
+                setShowPhoneConnectModal(false);
+                setCurrentTab('mobile-controller');
+              }}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-md shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all"
+            >
+              <Smartphone className="w-4 h-4" />
+              <span>📱 BẬT NGAY GIAO DIỆN ĐIỀU KHIỂN TRÊN MÁY NÀY ĐỂ TRẢI NGHIỆM</span>
+            </button>
+
+            {/* Mode Specific Guide notes */}
             <div className="text-[11px] text-slate-400 text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-1">
-              <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
-                <Wifi className="w-3.5 h-3.5" />
-                Môi trường kết nối: {detectAppEnv() === 'production' ? (
-                  <span className="text-emerald-400 font-semibold">Vercel Cloud (Online 4G/Wi-Fi)</span>
-                ) : (
-                  <span className="text-amber-300 font-semibold">Mạng LAN Wi-Fi Nội Bộ</span>
-                )}
-              </div>
-              {detectAppEnv() === 'production' ? (
-                <p>• Điện thoại có thể quét mã từ bất kỳ đâu (4G hoặc Wi-Fi) để đồng bộ trực tiếp với màn hình máy chiếu.</p>
+              {phoneConnectMode === 'cloud' ? (
+                <>
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                    <Globe className="w-3.5 h-3.5" />
+                    Chế độ Vercel Cloud (Khuyên dùng khi có 4G/Internet):
+                  </div>
+                  <p>• Điện thoại quét mã bằng <b>Camera điện thoại / Zalo / Google Lens</b> từ bất kỳ mạng nào (4G, 5G hoặc Wi-Fi trường).</p>
+                  <p>• Dữ liệu đồng bộ tức thì với màn hình máy chiếu qua hệ thống Cloud.</p>
+                </>
               ) : (
-                <p>• Điện thoại và máy tính cần kết nối chung mạng Wi-Fi (hoặc phát Wi-Fi từ điện thoại sang máy tính).</p>
+                <>
+                  <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                    <Wifi className="w-3.5 h-3.5" />
+                    Chế độ Mạng LAN Wi-Fi Nội Bộ (Không cần Internet):
+                  </div>
+                  <p>• Điện thoại và máy tính cần kết nối chung một mạng Wi-Fi của trường (hoặc phát Wi-Fi từ điện thoại cho máy tính bắt).</p>
+                </>
               )}
-              <p>• Dùng điện thoại để: <span className="text-emerald-300 font-semibold">Quét thẻ QR học sinh</span> và <span className="text-cyan-300 font-semibold">Chụp ảnh bài làm nhóm (A3/A4)</span>.</p>
+              <p>• Tính năng chính: <span className="text-emerald-300 font-semibold">Quét thẻ học sinh 0.1s</span> và <span className="text-cyan-300 font-semibold">Chụp ảnh bài làm nhóm (A3/A4)</span>.</p>
             </div>
           </div>
         </div>

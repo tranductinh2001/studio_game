@@ -125,12 +125,12 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
 
     QRCode.toDataURL(qrData, {
       width: 320,
-      margin: 2,
+      margin: 3,
       color: {
         dark: '#000000',
         light: '#ffffff'
       },
-      errorCorrectionLevel: 'H'
+      errorCorrectionLevel: 'M'
     }).then(url => {
       setPreviewQrDataUrl(url);
     }).catch(err => {
@@ -861,21 +861,16 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
           });
 
           const qrDataUrl = await QRCode.toDataURL(qrData, {
-            width: 250,
-            margin: 1,
+            width: 260,
+            margin: 3,
             color: { dark: '#000000', light: '#ffffff' },
-            errorCorrectionLevel: 'H'
+            errorCorrectionLevel: 'M'
           });
 
           const qrSize = 65;
           const qrX = leftOffset + (cardWidth - qrSize) / 2;
           const qrY = topOffset + 46;
           doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
-
-          // Orientation guide box
-          doc.setDrawColor(203, 213, 225);
-          doc.setLineWidth(0.3);
-          doc.rect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
         }
       }
 
