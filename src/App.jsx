@@ -41,6 +41,8 @@ export default function App() {
   const [phoneConnectQr, setPhoneConnectQr] = useState('');
   const [mobileConnectUrl, setMobileConnectUrl] = useState('');
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
+  const [isPhoneConnected, setIsPhoneConnected] = useState(false);
+  const [connectedDeviceName, setConnectedDeviceName] = useState('');
 
   // Real-time Agent State: 'IDLE' | 'GREETING' | 'LISTENING' | 'PROCESSING' | 'SPEAKING' | 'PAUSED'
   const [agentState, setAgentState] = useState('IDLE');
@@ -164,6 +166,57 @@ export default function App() {
       setTimeout(() => setHasCopiedLink(false), 2500);
     }
   };
+
+  // Subscribe to Classroom Realtime Cloud & Local Events (Detect phone connection, chime test)
+  useEffect(() => {
+    const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
+      if (event.type === 'DEVICE_JOINED') {
+        setIsPhoneConnected(true);
+        const name = event.payload?.userAgent?.includes('iPhone') ? 'iPhone Giáo viên' : 'Điện thoại Giáo viên';
+        setConnectedDeviceName(name);
+
+        // Celebratory melodic audio chime on connection
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 - E5 - G5 - C6
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.1);
+            osc.stop(ctx.currentTime + idx * 0.1 + 0.35);
+          });
+        } catch (e) {
+          // ignore
+        }
+      } else if (event.type === 'CHIME_TEST') {
+        // Teacher pressed "Test Chime" on smartphone
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.4);
+          gain.gain.setValueAtTime(0.35, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.4);
+        } catch (e) {
+          // ignore
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomCode]);
 
   // Subscribe to SpeechSynthesis events (mouth visemes, start, end)
   useEffect(() => {
@@ -613,6 +666,13 @@ export default function App() {
 
         {/* Fullscreen & Quick Tools */}
         <div className="flex items-center gap-2">
+          {isPhoneConnected && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-xs font-bold animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="hidden sm:inline">ĐT: Đã kết nối</span>
+            </div>
+          )}
+
           <button
             onClick={() => setShowPhoneConnectModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-400/50 text-cyan-300 hover:text-white text-xs font-bold transition-all shadow-md shadow-cyan-500/10"
@@ -772,6 +832,36 @@ export default function App() {
                 Dùng camera điện thoại (hoặc Zalo/Google Lens) quét mã QR bên dưới
               </p>
             </div>
+
+            {/* Connection Success Alert Banner when phone has scanned & connected */}
+            {isPhoneConnected && (
+              <div className="bg-emerald-950/90 border-2 border-emerald-400 p-4 rounded-2xl text-center space-y-2 shadow-[0_0_25px_rgba(16,185,129,0.5)] animate-bounce">
+                <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-sm">
+                  <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>🎉 ĐÃ KẾT NỐI {connectedDeviceName.toUpperCase() || 'ĐIỆN THOẠI'} THÀNH CÔNG!</span>
+                </div>
+                <p className="text-xs text-slate-200">
+                  Điện thoại đã sẵn sàng quét mã QR học sinh và chụp ảnh bài nhóm lên máy chiếu!
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      setShowPhoneConnectModal(false);
+                      setCurrentTab('qr-assessment');
+                    }}
+                    className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/30 transition-all"
+                  >
+                    Bắt đầu Đánh giá QR
+                  </button>
+                  <button
+                    onClick={() => setShowPhoneConnectModal(false)}
+                    className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Mode Switcher Tabs: Cloud Vercel vs LAN Wi-Fi */}
             <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800 text-xs font-bold">

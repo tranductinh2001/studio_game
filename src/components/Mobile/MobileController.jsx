@@ -16,9 +16,13 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoUploadStatus, setPhotoUploadStatus] = useState('');
   const [roomState, setRoomState] = useState(null);
+  const [chimeSent, setChimeSent] = useState(false);
 
-  // Load and subscribe to room
+  // Load and subscribe to room & announce mobile presence
   useEffect(() => {
+    // Notify room immediately that mobile device has connected
+    classroomService.broadcastDeviceJoin(roomCode, 'mobile');
+
     classroomService.getRoom(roomCode).then(setRoomState);
     const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
       if (event.type === 'ROOM_STATE' || event.type === 'QUESTION_UPDATED' || event.type === 'QUESTION_LOCKED' || event.type === 'ANSWER_REVEALED') {
@@ -92,6 +96,32 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
 
   return (
     <div className="w-full h-full flex flex-col bg-slate-950 text-white overflow-hidden">
+      {/* Top Connection Banner & Test Chime */}
+      <div className="px-3 py-1.5 bg-emerald-950/90 border-b border-emerald-500/40 flex items-center justify-between text-xs shrink-0">
+        <div className="flex items-center gap-1.5 text-emerald-300 font-bold text-[11px]">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>🟢 ĐÃ KẾT NỐI VỚI MÁY CHIẾU ({roomCode})</span>
+        </div>
+        <button
+          onClick={() => {
+            classroomService.sendChimePing(roomCode);
+            setChimeSent(true);
+            setTimeout(() => setChimeSent(false), 2000);
+          }}
+          className="px-2.5 py-1 rounded-lg bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-200 text-[11px] font-bold border border-emerald-400/40 transition-all flex items-center gap-1"
+        >
+          <span>🔔</span>
+          <span>{chimeSent ? 'Đã rung chuông PC!' : 'Thử chuông PC'}</span>
+        </button>
+      </div>
+
+      {/* In-app Browser Notice (e.g. Zalo) */}
+      {typeof navigator !== 'undefined' && /Zalo|FBAN|FBAV|Instagram/i.test(navigator.userAgent) && (
+        <div className="px-3 py-2 bg-amber-500/20 border-b border-amber-500/40 text-amber-200 text-[11px] text-center font-medium shrink-0">
+          ⚠️ <b>Đang mở trong Zalo:</b> Bấm dấu <b>"..."</b> ở góc trên bên phải ➔ Chọn <b>"Mở bằng trình duyệt" (Chrome/Safari)</b> để cấp quyền Camera! Hoặc dùng nút <b>"Chụp ảnh thẻ"</b> bên dưới.
+        </div>
+      )}
+
       {/* Mobile Header */}
       <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">

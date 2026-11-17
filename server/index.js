@@ -459,6 +459,27 @@ app.post(['/api/classroom/rooms/:code/question/reveal', '/api/classroom/rooms/:c
   res.json({ room });
 });
 
+// Mobile Device Joins & Pairs with Desktop Room
+app.post('/api/classroom/rooms/:code/device/join', (req, res) => {
+  const { deviceType = 'mobile', userAgent = '' } = req.body;
+  classroomStore.broadcast(req.params.code, 'DEVICE_JOINED', {
+    roomCode: req.params.code,
+    deviceType,
+    userAgent,
+    timestamp: Date.now()
+  });
+  res.json({ success: true, roomCode: req.params.code });
+});
+
+// Test Chime Ping from Mobile to Desktop
+app.post('/api/classroom/rooms/:code/device/ping', (req, res) => {
+  classroomStore.broadcast(req.params.code, 'CHIME_TEST', {
+    roomCode: req.params.code,
+    timestamp: Date.now()
+  });
+  res.json({ success: true });
+});
+
 // Mobile QR Scanner submits student answers (single or batch)
 app.post('/api/classroom/rooms/:code/responses', (req, res) => {
   const { responses = [] } = req.body;

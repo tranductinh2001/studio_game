@@ -62,6 +62,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
 
   // Persistent overlay storage so bounding boxes don't vanish after 16ms
   const activeOverlaysRef = useRef(new Map()); // cardKey -> { corners, studentName, answer, color, bgColor, expiresAt }
+  const procCanvasRef = useRef(null); // Offscreen processing canvas for high performance QR detection
 
   // Auto-streaming queue to instantly push detected responses to Teacher Desktop in real time
   const pendingSyncQueueRef = useRef(new Map());
@@ -274,32 +275,54 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     return { answer, angle: Math.round(angle) };
   };
 
-  // Start Camera
+  // Start Camera with Multi-Tier Fallback (Mobile Back Camera -> Any Video Device)
   const startCamera = async () => {
     setCameraError(null);
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setCameraError('⚠️ Trình duyệt hạn chế video trực tiếp qua HTTP. Thầy/Cô hãy dùng nút "📸 Chụp ảnh quét thẻ" bên cạnh (hoạt động 100%), hoặc mở link Vercel HTTPS!');
       return;
     }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        await videoRef.current.play();
-        isScanningRef.current = true;
-        setIsScanning(true);
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        requestRef.current = requestAnimationFrame(scanFrame);
+
+    let stream = null;
+    const constraintTiers = [
+      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: 'environment' } },
+      { video: { facingMode: 'user' } },
+      { video: true }
+    ];
+
+    for (const constraints of constraintTiers) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (stream) break;
+      } catch (err) {
+        // try next tier
       }
-    } catch (err) {
-      console.warn('Camera error:', err.message);
+    }
+
+    if (!stream) {
       isScanningRef.current = false;
       setIsScanning(false);
       setCameraError('Không thể mở camera video trực tiếp. Vui lòng bấm nút "📸 Chụp ảnh quét thẻ" bên cạnh để chụp thẻ ngay!');
+      return;
+    }
+
+    streamRef.current = stream;
+    if (videoRef.current) {
+      const vid = videoRef.current;
+      vid.srcObject = stream;
+      vid.setAttribute('playsinline', 'true');
+      vid.setAttribute('autoplay', 'true');
+      vid.muted = true;
+      try {
+        await vid.play();
+      } catch (playErr) {
+        console.warn('video.play() wait gesture:', playErr);
+      }
+      isScanningRef.current = true;
+      setIsScanning(true);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      requestRef.current = requestAnimationFrame(scanFrame);
     }
   };
 
@@ -428,8 +451,8 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       }
 
       const ctx = canvas.getContext('2d');
-      // 1. Draw fresh camera video frame
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // 1. Clear transparent overlay canvas so video underneath remains crisp
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const now = performance.now();
 
@@ -484,7 +507,17 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       // 3. Scan every 75ms to guarantee smooth 60fps video feed and low mobile temperature
       if (now - lastProcessTimeRef.current >= 75) {
         lastProcessTimeRef.current = now;
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (!procCanvasRef.current) {
+          procCanvasRef.current = document.createElement('canvas');
+        }
+        const proc = procCanvasRef.current;
+        if (proc.width !== video.videoWidth || proc.height !== video.videoHeight) {
+          proc.width = video.videoWidth;
+          proc.height = video.videoHeight;
+        }
+        const pCtx = proc.getContext('2d');
+        pCtx.drawImage(video, 0, 0, proc.width, proc.height);
+        const imageData = pCtx.getImageData(0, 0, proc.width, proc.height);
 
         // A. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
         try {
@@ -759,11 +792,12 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               ref={videoRef} 
               playsInline 
               muted 
-              className="hidden"
+              autoPlay
+              className={`w-full h-full object-cover ${isScanning ? 'block' : 'hidden'}`}
             />
             <canvas 
               ref={canvasRef} 
-              className={`max-w-full max-h-full object-contain ${isScanning ? 'block' : 'hidden'}`}
+              className={`absolute inset-0 w-full h-full object-cover pointer-events-none ${isScanning ? 'block' : 'hidden'}`}
             />
 
             {/* Live Heads-Up Display (HUD) banner when scanning a card */}
