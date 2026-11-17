@@ -2473,7 +2473,7 @@
       "cardId": "CARD_0001",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.953Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_02",
@@ -2483,7 +2483,7 @@
       "cardId": "CARD_0002",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_03",
@@ -2493,7 +2493,7 @@
       "cardId": "CARD_0003",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_04",
@@ -2503,7 +2503,7 @@
       "cardId": "CARD_0004",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_05",
@@ -2513,7 +2513,7 @@
       "cardId": "CARD_0005",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_06",
@@ -2523,7 +2523,7 @@
       "cardId": "CARD_0006",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_07",
@@ -2533,7 +2533,7 @@
       "cardId": "CARD_0007",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_08",
@@ -2543,7 +2543,7 @@
       "cardId": "CARD_0008",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_09",
@@ -2553,7 +2553,7 @@
       "cardId": "CARD_0009",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_10",
@@ -2563,7 +2563,7 @@
       "cardId": "CARD_0010",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_11",
@@ -2573,7 +2573,7 @@
       "cardId": "CARD_0011",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_12",
@@ -2583,7 +2583,7 @@
       "cardId": "CARD_0012",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_13",
@@ -2593,7 +2593,7 @@
       "cardId": "CARD_0013",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.005Z"
     },
     {
       "id": "STU_CLASS_6A_14",
@@ -2603,7 +2603,7 @@
       "cardId": "CARD_0014",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.955Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_15",
@@ -2613,7 +2613,7 @@
       "cardId": "CARD_0015",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_16",
@@ -2623,7 +2623,7 @@
       "cardId": "CARD_0016",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_17",
@@ -2633,7 +2633,7 @@
       "cardId": "CARD_0017",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_18",
@@ -2643,7 +2643,7 @@
       "cardId": "CARD_0018",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_19",
@@ -2653,7 +2653,7 @@
       "cardId": "CARD_0019",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_20",
@@ -2663,7 +2663,7 @@
       "cardId": "CARD_0020",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_21",
@@ -2673,7 +2673,7 @@
       "cardId": "CARD_0021",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.956Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_22",
@@ -2683,7 +2683,7 @@
       "cardId": "CARD_0022",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_23",
@@ -2693,7 +2693,7 @@
       "cardId": "CARD_0023",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_24",
@@ -2703,7 +2703,7 @@
       "cardId": "CARD_0024",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_25",
@@ -2713,7 +2713,7 @@
       "cardId": "CARD_0025",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_26",
@@ -2723,7 +2723,7 @@
       "cardId": "CARD_0026",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_27",
@@ -2733,7 +2733,7 @@
       "cardId": "CARD_0027",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_28",
@@ -2743,7 +2743,7 @@
       "cardId": "CARD_0028",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_29",
@@ -2753,7 +2753,7 @@
       "cardId": "CARD_0029",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_30",
@@ -2763,7 +2763,7 @@
       "cardId": "CARD_0030",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_31",
@@ -2773,7 +2773,7 @@
       "cardId": "CARD_0031",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     },
     {
       "id": "STU_CLASS_6A_32",
@@ -2783,16 +2783,16 @@
       "cardId": "CARD_0032",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-17T22:51:51.957Z"
+      "createdAt": "2026-11-17T23:37:58.006Z"
     }
   ],
   "questionBanks": [],
   "activeRooms": {
     "WB-601": {
       "roomCode": "WB-601",
-      "classId": "CLASS_6A",
-      "className": "Lớp 6A",
-      "school": "THCS Đắk Trôi",
+      "classId": "CLASS_7B",
+      "className": "Lớp 7B",
+      "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "currentQuestion": {
         "id": "Q_02",
         "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
@@ -2821,61 +2821,11 @@
         "bloomLevel": "Thông hiểu",
         "difficulty": "Trung bình"
       },
-      "questionState": "REVEALED",
+      "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
       "totalStudents": 32,
-      "studentResponses": {
-        "STU_CLASS_6A_01": {
-          "studentId": "STU_CLASS_6A_01",
-          "studentCode": "HS6A01",
-          "fullName": "Nguyễn Hoàng An",
-          "studentName": "Nguyễn Hoàng An",
-          "cardId": "CARD_0001",
-          "rotation": 0,
-          "angle": 0,
-          "answer": "B",
-          "isCorrect": false,
-          "revision": 12,
-          "previousAnswer": "C",
-          "scannedAt": "2026-11-17T23:01:41.862Z",
-          "updatedAt": "2026-11-17T23:03:43.180Z",
-          "timestamp": "2026-11-17T23:03:43.180Z"
-        }
-      },
-      "responses": {
-        "CARD_0001": {
-          "studentId": "STU_CLASS_6A_01",
-          "studentCode": "HS6A01",
-          "fullName": "Nguyễn Hoàng An",
-          "studentName": "Nguyễn Hoàng An",
-          "cardId": "CARD_0001",
-          "rotation": 0,
-          "angle": 0,
-          "answer": "B",
-          "isCorrect": false,
-          "revision": 12,
-          "previousAnswer": "C",
-          "scannedAt": "2026-11-17T23:01:41.862Z",
-          "updatedAt": "2026-11-17T23:03:43.180Z",
-          "timestamp": "2026-11-17T23:03:43.180Z"
-        },
-        "STU_CLASS_6A_01": {
-          "studentId": "STU_CLASS_6A_01",
-          "studentCode": "HS6A01",
-          "fullName": "Nguyễn Hoàng An",
-          "studentName": "Nguyễn Hoàng An",
-          "cardId": "CARD_0001",
-          "rotation": 0,
-          "angle": 0,
-          "answer": "B",
-          "isCorrect": false,
-          "revision": 12,
-          "previousAnswer": "C",
-          "scannedAt": "2026-11-17T23:01:41.862Z",
-          "updatedAt": "2026-11-17T23:03:43.180Z",
-          "timestamp": "2026-11-17T23:03:43.180Z"
-        }
-      },
+      "studentResponses": {},
+      "responses": {},
       "groupSubmissions": {
         "group_1": {
           "groupNumber": 1,
@@ -2896,27 +2846,29 @@
       "createdAt": "2026-11-16T01:33:13.483Z",
       "analytics": {
         "roomCode": "WB-601",
-        "classId": "CLASS_6A",
-        "className": "Lớp 6A",
+        "classId": "CLASS_7B",
+        "className": "Lớp 7B",
         "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
         "correctAnswer": "C",
         "totalStudents": 32,
-        "totalAnswered": 2,
-        "totalUnanswered": 30,
+        "totalAnswered": 0,
+        "totalUnanswered": 32,
         "totalCorrect": 0,
-        "totalIncorrect": 2,
+        "totalIncorrect": 0,
         "percentageCorrectOnAnswered": 0,
         "percentageCorrectOnTotal": 0,
         "choiceDistribution": {
           "A": 0,
-          "B": 2,
+          "B": 0,
           "C": 0,
           "D": 0
         }
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-17T23:03:43.180Z"
+      "lastUpdated": "2026-11-17T23:53:40.480Z",
+      "questionBank": "LESSON_6",
+      "timerSeconds": 60
     }
   }
 }

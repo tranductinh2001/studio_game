@@ -242,6 +242,29 @@ class ClassroomService {
     }
   }
 
+  // Get all active rooms
+  async getActiveRooms() {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/classroom/rooms`);
+      const data = await res.json();
+      return data.rooms || [];
+    } catch (err) {
+      console.warn('Error fetching active rooms:', err);
+      return [
+        {
+          roomCode: this.activeRoomCode || 'WB-601',
+          classId: 'CLASS_6A',
+          className: 'Lớp 6A',
+          school: 'THCS Đắk Trôi',
+          status: 'ACTIVE',
+          questionState: 'COLLECTING',
+          totalStudents: 32,
+          submittedCount: 0
+        }
+      ];
+    }
+  }
+
   // Get active room state
   async getRoom(code = this.activeRoomCode) {
     try {
@@ -254,13 +277,19 @@ class ClassroomService {
     }
   }
 
-  // Create room
-  async createRoom(roomCode = 'WB-601', classId = 'CLASS_6A') {
+  // Create room with full configuration
+  async createRoom(roomCode = 'WB-601', classId = 'CLASS_6A', options = {}) {
     try {
+      // Broadcast to cloud for instant multi-device discovery
+      this.publishCloudEvent({
+        type: 'ROOM_CREATED',
+        payload: { roomCode, classId, options, timestamp: Date.now() }
+      }, roomCode);
+
       const res = await fetch(`${this.getBaseUrl()}/classroom/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, classId })
+        body: JSON.stringify({ roomCode, classId, options })
       });
       const data = await res.json();
       return data.room;

@@ -480,14 +480,63 @@ class ClassroomStore {
   // ==========================================
   // ROOM MANAGEMENT & SWITCHING CLASS
   // ==========================================
-  createRoom(roomCode = 'WB-601', classId = 'CLASS_6A') {
+  getActiveRooms() {
+    if (!this.data.activeRooms) this.data.activeRooms = {};
+    // Ensure default room exists
+    if (!this.data.activeRooms['WB-601']) {
+      this.createRoom('WB-601', 'CLASS_6A');
+    }
+    return Object.values(this.data.activeRooms).map(r => {
+      const cls = (this.data.classes || []).find(c => c.id === r.classId);
+      return {
+        roomCode: r.roomCode,
+        classId: r.classId,
+        className: r.className || (cls ? cls.name : 'Lớp 6A'),
+        school: r.school || 'THCS Đắk Trôi',
+        status: r.status || 'ACTIVE',
+        questionState: r.questionState || 'COLLECTING',
+        activeQuestionText: r.activeQuestion?.questionText || r.currentQuestion?.questionText || '',
+        activeQuestionIndex: r.activeQuestionIndex || 0,
+        totalStudents: r.totalStudents || 32,
+        submittedCount: Object.keys(r.responses || {}).length,
+        createdAt: r.createdAt,
+        lastUpdated: r.lastUpdated
+      };
+    });
+  }
+
+  createRoom(roomCode = 'WB-601', classId = 'CLASS_6A', options = {}) {
+    if (!this.data.activeRooms) this.data.activeRooms = {};
+    const cls = (this.data.classes || []).find((c) => c.id === classId) || { name: 'Lớp 6A' };
+    const students = this.getStudents(classId);
+
     const existing = this.data.activeRooms[roomCode];
     if (existing) {
+      existing.classId = classId;
+      existing.className = cls.name;
+      existing.school = cls.school || 'THCS Đắk Trôi';
+      existing.status = 'ACTIVE';
+      existing.totalStudents = students.length;
+      if (options.question) {
+        existing.currentQuestion = options.question;
+        existing.activeQuestion = options.question;
+      }
+      if (options.questionBank) {
+        existing.questionBank = options.questionBank;
+      }
+      if (options.timerSeconds) {
+        existing.timerSeconds = options.timerSeconds;
+      }
+      existing.studentResponses = {};
+      existing.responses = {};
+      existing.questionState = 'COLLECTING';
+      existing.lastUpdated = new Date().toISOString();
+      this.save();
+      this.broadcast(roomCode, 'ROOM_STATE', existing);
+      this.broadcast(roomCode, 'ROOM_CREATED', existing);
       return existing;
     }
 
-    const cls = (this.data.classes || []).find((c) => c.id === classId) || { name: 'Lớp 6A' };
-    const students = this.getStudents(classId);
     const room = {
       id: `ROOM_${roomCode}_${Date.now()}`,
       roomCode,
@@ -495,11 +544,13 @@ class ClassroomStore {
       className: cls.name,
       school: cls.school || 'THCS Đắk Trôi',
       status: 'ACTIVE', // Automatically active for immediate live interaction
-      currentQuestion: DEFAULT_QUESTION,
-      activeQuestion: DEFAULT_QUESTION,
+      currentQuestion: options.question || DEFAULT_QUESTION,
+      activeQuestion: options.question || DEFAULT_QUESTION,
       questionState: 'COLLECTING',
       activeQuestionIndex: 0,
       totalStudents: students.length,
+      questionBank: options.questionBank || 'LESSON_6',
+      timerSeconds: options.timerSeconds || 60,
       studentResponses: {},
       responses: {},
       groupSubmissions: {},
@@ -513,6 +564,8 @@ class ClassroomStore {
 
     this.data.activeRooms[roomCode] = room;
     this.save();
+    this.broadcast(roomCode, 'ROOM_STATE', room);
+    this.broadcast(roomCode, 'ROOM_CREATED', room);
     return room;
   }
 

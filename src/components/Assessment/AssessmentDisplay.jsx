@@ -2,83 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, XCircle, Lock, Unlock, Eye, Sparkles, Clock, 
   BarChart3, Users, ChevronLeft, ChevronRight, RotateCcw, AlertCircle,
-  Smartphone, QrCode, PlayCircle
+  Smartphone, QrCode, PlayCircle, Settings, PlusCircle, Check, X, Shield, RefreshCw, Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { classroomService } from '../../services/classroomService';
-
-export const LESSON_6_QUESTIONS = [
-  {
-    id: 'Q_01',
-    questionText: 'Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?',
-    options: {
-      A: 'Là một mạng máy tính kết nối bằng cáp ngầm dưới biển',
-      B: 'Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet',
-      C: 'Là một phần mềm dùng để soạn thảo văn bản',
-      D: 'Là chiếc máy tính chủ của Google đặt tại Mỹ'
-    },
-    correctAnswer: 'B',
-    explanation: 'WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.',
-    bloomLevel: 'Nhận biết',
-    difficulty: 'Dễ'
-  },
-  {
-    id: 'Q_02',
-    questionText: 'Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?',
-    options: {
-      A: 'Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng',
-      B: 'WWW là hạ tầng mạng phần cứng, còn Internet là trang web',
-      C: 'Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet',
-      D: 'Muốn dùng Internet thì nhất thiết phải cài đặt WWW'
-    },
-    correctAnswer: 'C',
-    explanation: 'Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.',
-    bloomLevel: 'Thông hiểu',
-    difficulty: 'Trung bình'
-  },
-  {
-    id: 'Q_03',
-    questionText: 'Trang web đầu tiên mở ra khi bạn truy cập vào một địa chỉ website được gọi là gì?',
-    options: {
-      A: 'Trang chủ (Homepage)',
-      B: 'Trang tìm kiếm',
-      C: 'Trang liên hệ',
-      D: 'Trang mạng xã hội'
-    },
-    correctAnswer: 'A',
-    explanation: 'Trang chủ (Homepage) là trang đầu tiên được tải và hiển thị khi người dùng mở một địa chỉ website.',
-    bloomLevel: 'Nhận biết',
-    difficulty: 'Dễ'
-  },
-  {
-    id: 'Q_04',
-    questionText: 'Đoạn văn bản hoặc hình ảnh mà khi nháy chuột vào đó sẽ dẫn đến một trang web khác được gọi là gì?',
-    options: {
-      A: 'Siêu văn bản (Hypertext)',
-      B: 'Siêu liên kết (Hyperlink)',
-      C: 'Trình duyệt web (Web Browser)',
-      D: 'Địa chỉ IP máy chủ'
-    },
-    correctAnswer: 'B',
-    explanation: 'Siêu liên kết (Hyperlink) là thành phần trong trang web liên kết đến một vị trí khác hoặc một trang web khác khi được nháy chuột.',
-    bloomLevel: 'Nhận biết',
-    difficulty: 'Dễ'
-  },
-  {
-    id: 'Q_05',
-    questionText: 'Phần mềm nào dưới đây KHÔNG PHẢI là trình duyệt web?',
-    options: {
-      A: 'Google Chrome',
-      B: 'Microsoft Edge',
-      C: 'Microsoft Word',
-      D: 'Cốc Cốc'
-    },
-    correctAnswer: 'C',
-    explanation: 'Microsoft Word là phần mềm soạn thảo văn bản, không phải là trình duyệt web.',
-    bloomLevel: 'Vận dụng',
-    difficulty: 'Dễ'
-  }
-];
+import { LESSON_6_QUESTIONS } from '../../data/lesson6Questions';
 
 export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion = null, onOpenPhoneConnect = null }) {
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -96,6 +24,16 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
   const [bitoneAiAnalysis, setBitoneAiAnalysis] = useState(null);
   const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
 
+  // Room Config & Creator Modal states
+  const [showRoomConfigModal, setShowRoomConfigModal] = useState(false);
+  const [configRoomCode, setConfigRoomCode] = useState(roomCode);
+  const [configClassId, setConfigClassId] = useState('CLASS_6A');
+  const [configQuestionBank, setConfigQuestionBank] = useState('LESSON_6');
+  const [configTimer, setConfigTimer] = useState(60);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [roomCreatedBanner, setRoomCreatedBanner] = useState('');
+  const [isPhoneConnected, setIsPhoneConnected] = useState(false);
+
   // Load classes, students & Room state
   useEffect(() => {
     classroomService.getClasses().then((clsList) => {
@@ -110,6 +48,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
         if (room.analytics) setAnalytics(room.analytics);
         const targetClassId = room.classId || 'CLASS_6A';
         setActiveClassId(targetClassId);
+        setConfigClassId(targetClassId);
         setActiveClassName(room.className || 'Lớp 6A');
         classroomService.getStudents(targetClassId).then(setStudents);
       }
@@ -117,9 +56,31 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
     // Subscribe to SSE
     const unsubscribe = classroomService.subscribeToRoom(roomCode, (event) => {
-      if (event.type === 'QUESTION_UPDATED') {
-        setActiveQuestion(event.payload.activeQuestion);
-        setQuestionState(event.payload.questionState);
+      if (event.type === 'DEVICE_JOINED') {
+        setIsPhoneConnected(true);
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.4);
+        } catch (e) {}
+      } else if (event.type === 'QUESTION_UPDATED') {
+        const newQ = event.payload.activeQuestion || event.payload.currentQuestion;
+        if (newQ) {
+          setActiveQuestion(newQ);
+          const foundIdx = LESSON_6_QUESTIONS.findIndex(q => q.id === newQ.id || q.questionText === newQ.questionText);
+          if (foundIdx !== -1) setCurrentQIndex(foundIdx);
+        }
+        setQuestionState(event.payload.questionState || 'COLLECTING');
+        setResponses(event.payload.responses || {});
       } else if (event.type === 'RESPONSES_UPDATED') {
         setResponses(event.payload.responses || {});
         setAnalytics(event.payload.analytics);
@@ -128,14 +89,19 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
       } else if (event.type === 'ANSWER_REVEALED') {
         setQuestionState('REVEALED');
         triggerConfetti();
-      } else if (event.type === 'ROOM_CLASS_CHANGED' || event.type === 'ROOM_STATE') {
+      } else if (event.type === 'ROOM_CLASS_CHANGED' || event.type === 'ROOM_STATE' || event.type === 'ROOM_CREATED') {
         const payload = event.payload;
-        if (payload.activeQuestion) setActiveQuestion(payload.activeQuestion);
+        if (payload.activeQuestion) {
+          setActiveQuestion(payload.activeQuestion);
+          const foundIdx = LESSON_6_QUESTIONS.findIndex(q => q.id === payload.activeQuestion.id || q.questionText === payload.activeQuestion.questionText);
+          if (foundIdx !== -1) setCurrentQIndex(foundIdx);
+        }
         if (payload.questionState) setQuestionState(payload.questionState);
         if (payload.responses) setResponses(payload.responses);
         if (payload.analytics) setAnalytics(payload.analytics);
         if (payload.classId) {
           setActiveClassId(payload.classId);
+          setConfigClassId(payload.classId);
           setActiveClassName(payload.className || 'Lớp 6A');
           classroomService.getStudents(payload.classId).then(setStudents);
         }
@@ -144,6 +110,34 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
     return () => unsubscribe();
   }, [roomCode]);
+
+  // Handle Create and Launch Room Online
+  const handleCreateRoom = async () => {
+    setIsCreatingRoom(true);
+    try {
+      const selectedQ = LESSON_6_QUESTIONS[0];
+      await classroomService.createRoom(configRoomCode, configClassId, {
+        questionBank: configQuestionBank,
+        timerSeconds: configTimer,
+        question: selectedQ
+      });
+      setActiveClassId(configClassId);
+      const cls = classes.find(c => c.id === configClassId);
+      if (cls) setActiveClassName(cls.name);
+      setActiveQuestion(selectedQ);
+      setCurrentQIndex(0);
+      setTimerSeconds(configTimer);
+      setResponses({});
+      setQuestionState('COLLECTING');
+      setShowRoomConfigModal(false);
+      setRoomCreatedBanner(`🟢 PHÒNG ONLINE: ${configRoomCode} • ${cls ? cls.name : 'Lớp 6A'} đã kích hoạt! Điện thoại giáo viên có thể vào phòng ngay.`);
+      setTimeout(() => setRoomCreatedBanner(''), 7000);
+    } catch (err) {
+      console.error('Error creating room:', err);
+    } finally {
+      setIsCreatingRoom(false);
+    }
+  };
 
   // Switch Room Class
   const handleSwitchClass = async (newClassId) => {
@@ -400,6 +394,16 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
             </button>
           </div>
 
+          {/* Create & Config Room Button */}
+          <button
+            onClick={() => setShowRoomConfigModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white transition-all shadow-md shadow-purple-600/20"
+            title="Tạo phòng chơi mới, cấu hình lớp và bộ câu hỏi"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Tạo & Cấu hình phòng</span>
+          </button>
+
           {/* Connect Phone Button */}
           {onOpenPhoneConnect && (
             <button
@@ -454,6 +458,26 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           )}
         </div>
       </div>
+
+      {/* Room Online Banner / Phone Connected Notification */}
+      {roomCreatedBanner && (
+        <div className="mt-2 px-3 py-2 bg-emerald-950/90 border border-emerald-500/60 rounded-xl text-emerald-200 text-xs font-bold flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>{roomCreatedBanner}</span>
+          </div>
+          <button onClick={() => setRoomCreatedBanner('')} className="p-1 hover:text-white">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {isPhoneConnected && !roomCreatedBanner && (
+        <div className="mt-2 px-3 py-1.5 bg-cyan-950/80 border border-cyan-500/50 rounded-xl text-cyan-200 text-xs font-bold flex items-center gap-2 shrink-0">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>🟢 ĐIỆN THOẠI GIÁO VIÊN ĐÃ VÀO PHÒNG! Đang đồng bộ điều khiển và quét thẻ trực tiếp.</span>
+        </div>
+      )}
 
       {/* Main Split: Question & Options (7 cols) vs 32-Student Grid & Analytics (5 cols) */}
       <div className="flex-1 min-h-0 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
@@ -647,6 +671,135 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           )}
         </div>
       </div>
+
+      {/* ROOM CONFIGURATION & CREATOR MODAL */}
+      {showRoomConfigModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border-2 border-indigo-500/40 rounded-3xl max-w-md w-full p-6 text-slate-100 shadow-2xl relative space-y-4 animate-scaleUp">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowRoomConfigModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <Settings className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-white to-cyan-300">
+                  TẠO & CẤU HÌNH PHÒNG CHƠI
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Thiết lập phòng online để điện thoại giáo viên vào điều khiển
+                </p>
+              </div>
+            </div>
+
+            {/* Config Form */}
+            <div className="space-y-3 pt-2 text-xs">
+              {/* Room Code */}
+              <div>
+                <label className="text-slate-300 font-bold mb-1 flex items-center justify-between">
+                  <span>MÃ PHÒNG CHƠI</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rand = Math.floor(100 + Math.random() * 900);
+                      setConfigRoomCode(`WB-${rand}`);
+                    }}
+                    className="text-cyan-400 text-[11px] font-normal hover:underline"
+                  >
+                    🎲 Tạo mã ngẫu nhiên
+                  </button>
+                </label>
+                <input
+                  type="text"
+                  value={configRoomCode}
+                  onChange={(e) => setConfigRoomCode(e.target.value.toUpperCase())}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 font-mono font-bold text-sm text-cyan-300 focus:outline-none focus:border-cyan-400"
+                  placeholder="VD: WB-601"
+                />
+              </div>
+
+              {/* Select Class */}
+              <div>
+                <label className="text-slate-300 font-bold mb-1 block">CHỌN LỚP HỌC</label>
+                <select
+                  value={configClassId}
+                  onChange={(e) => setConfigClassId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-cyan-400 cursor-pointer"
+                >
+                  {classes.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.name} ({cls.totalStudents || 0} học sinh)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Select Question Bank */}
+              <div>
+                <label className="text-slate-300 font-bold mb-1 block">BỘ CÂU HỎI</label>
+                <select
+                  value={configQuestionBank}
+                  onChange={(e) => setConfigQuestionBank(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-cyan-400 cursor-pointer"
+                >
+                  <option value="LESSON_6">Bài 6: Mạng thông tin toàn cầu (SGK KNTT - 5 câu)</option>
+                  <option value="BITONE_AI">Ngân hàng câu hỏi thông minh AI BitOne</option>
+                  <option value="REVIEW">Bộ câu hỏi Củng cố & Mở rộng</option>
+                </select>
+              </div>
+
+              {/* Timer Config */}
+              <div>
+                <label className="text-slate-300 font-bold mb-1 block">THỜI GIAN ĐẾM NGƯỢC MỖI CÂU</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[30, 60, 90, 0].map((sec) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      onClick={() => setConfigTimer(sec)}
+                      className={`py-2 rounded-xl font-bold border transition-all ${
+                        configTimer === sec
+                          ? 'bg-indigo-600 text-white border-indigo-400 shadow-md'
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {sec === 0 ? 'Vô hạn' : `${sec}s`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Launch Room Button */}
+            <div className="pt-2">
+              <button
+                onClick={handleCreateRoom}
+                disabled={isCreatingRoom}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-98"
+              >
+                {isCreatingRoom ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                    Đang thiết lập phòng...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-slate-950" />
+                    🚀 TẠO PHÒNG & MỞ ONLINE LÊN MÁY CHIẾU
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

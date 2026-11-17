@@ -405,6 +405,12 @@ app.get('/api/network-info', (req, res) => {
   });
 });
 
+// Get all active rooms
+app.get('/api/classroom/rooms', (req, res) => {
+  const rooms = classroomStore.getActiveRooms();
+  res.json({ rooms });
+});
+
 app.get('/api/classroom/rooms/:code', (req, res) => {
   const room = classroomStore.getRoom(req.params.code);
   res.json({ room });
