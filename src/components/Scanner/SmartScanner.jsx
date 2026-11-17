@@ -2,12 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import jsQR from 'jsqr';
 import { 
   Camera, CameraOff, CheckCircle2, RotateCw, RefreshCw, Send, 
-  Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers, Image as ImageIcon
+  Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers, Image as ImageIcon,
+  ArrowLeft, X, Smartphone
 } from 'lucide-react';
 import { classroomService } from '../../services/classroomService';
 import { detectQuizizzCards } from '../../utils/quizizzArucoDetector';
 
-export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }) {
+export default function SmartScanner({ 
+  roomCode = 'WB-601', 
+  onResponsesUpdated,
+  fullscreen = false,
+  onCloseScanner
+}) {
   const [isScanning, setIsScanning] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [detectedResponses, setDetectedResponses] = useState({});
@@ -261,33 +267,29 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     }
   };
 
-  // Calculate orientation and map to answer A, B, C, D
+  // Calculate orientation and map to answer A, B, C, D using physical screen UP direction
   const calculateAnswerFromCorners = (location) => {
     const { topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner } = location;
-    
-    // Vector along top edge (from topLeft to topRight)
+
+    // Physical orientation: The edge pointing UP towards the ceiling/top of the screen has minimum Y
+    // Side A = Top edge (topLeft -> topRight)
+    // Side B = Right edge (topRight -> bottomRight)
+    // Side C = Bottom edge (bottomRight -> bottomLeft)
+    // Side D = Left edge (bottomLeft -> topLeft)
+    const sides = [
+      { answer: 'A', y: (topLeftCorner.y + topRightCorner.y) / 2 },
+      { answer: 'B', y: (topRightCorner.y + bottomRightCorner.y) / 2 },
+      { answer: 'C', y: (bottomRightCorner.y + bottomLeftCorner.y) / 2 },
+      { answer: 'D', y: (bottomLeftCorner.y + topLeftCorner.y) / 2 }
+    ];
+    sides.sort((a, b) => a.y - b.y);
+    const answer = sides[0].answer;
+
+    // Visual angle along top edge for debugging
     const dx = topRightCorner.x - topLeftCorner.x;
     const dy = topRightCorner.y - topLeftCorner.y;
-
-    // Angle in degrees (0 to 360)
     let angle = (Math.atan2(dy, dx) * 180) / Math.PI;
     if (angle < 0) angle += 360;
-
-    // Direction mapping based on orientation:
-    // ~0 deg (315 to 45): Top is up -> A
-    // ~90 deg (45 to 135): Right is up -> B
-    // ~180 deg (135 to 225): Bottom is up -> C
-    // ~270 deg (225 to 315): Left is up -> D
-    let answer = 'A';
-    if (angle >= 45 && angle < 135) {
-      answer = 'B';
-    } else if (angle >= 135 && angle < 225) {
-      answer = 'C';
-    } else if (angle >= 225 && angle < 315) {
-      answer = 'D';
-    } else {
-      answer = 'A';
-    }
 
     return { answer, angle: Math.round(angle) };
   };
@@ -356,6 +358,16 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       requestRef.current = null;
     }
   };
+
+  // Auto-start camera when in fullscreen mobile mode & cleanup on unmount
+  useEffect(() => {
+    if (fullscreen) {
+      startCamera();
+    }
+    return () => {
+      stopCamera();
+    };
+  }, [fullscreen]);
 
   // Handle Scan from Photo Capture / File Upload (Works on 100% of mobile phones on any HTTP/HTTPS network!)
   const handleScanFromPhoto = (e) => {
@@ -482,38 +494,96 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
           ctx.save();
           ctx.globalAlpha = alpha;
 
-          // Glowing bounding polygon
+          // A. Ô MÀU XANH VIỀN QUANH THẺ (Translucent green quad box + glowing neon border)
           ctx.beginPath();
           ctx.moveTo(overlay.corners[0].x, overlay.corners[0].y);
           ctx.lineTo(overlay.corners[1].x, overlay.corners[1].y);
           ctx.lineTo(overlay.corners[2].x, overlay.corners[2].y);
           ctx.lineTo(overlay.corners[3].x, overlay.corners[3].y);
           ctx.closePath();
-          ctx.lineWidth = 6;
-          ctx.strokeStyle = overlay.color || '#10b981';
-          ctx.shadowColor = overlay.color || '#10b981';
-          ctx.shadowBlur = 18;
+
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
+          ctx.fill();
+
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#10b981';
+          ctx.shadowColor = '#10b981';
+          ctx.shadowBlur = 12;
           ctx.stroke();
 
-          // High-visibility overlay badge
-          const cx = Math.min(Math.max(10, overlay.corners[0].x), canvas.width - 260);
-          const cy = Math.max(38, overlay.corners[0].y);
-          ctx.fillStyle = overlay.bgColor || 'rgba(6, 78, 59, 0.95)';
+          // B. HỘP ĐÁP ÁN DÍNH LIỀN TRÊN ĐẦU THẺ (Floating AR Badge pinned directly above card)
+          let minX = Infinity, maxX = -Infinity, minY = Infinity;
+          for (let i = 0; i < 4; i++) {
+            const pt = overlay.corners[i];
+            if (pt.x < minX) minX = pt.x;
+            if (pt.x > maxX) maxX = pt.x;
+            if (pt.y < minY) minY = pt.y;
+          }
+          const centerX = (minX + maxX) / 2;
+          const topY = minY;
+
+          const studentShortName = overlay.shortName || (overlay.studentName ? overlay.studentName.split(' ').slice(-1)[0] : '');
+          const cardBadgeText = overlay.quizizzCode || `P ${overlay.pNum || ''}`;
+          const labelText = studentShortName ? `${cardBadgeText} • ${studentShortName}` : cardBadgeText;
+          const answerLetter = (overlay.answer || 'A').toUpperCase();
+
+          ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          const labelWidth = ctx.measureText(labelText).width;
+          const badgeWidth = labelWidth + 46;
+          const badgeHeight = 28;
+          const badgeX = Math.max(8, Math.min(canvas.width - badgeWidth - 8, centerX - badgeWidth / 2));
+          const badgeY = Math.max(34, topY - badgeHeight - 8);
+
+          // Draw floating pill container
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
           ctx.beginPath();
           if (ctx.roundRect) {
-            ctx.roundRect(cx - 4, cy - 36, 250, 32, 8);
+            ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 14);
           } else {
-            ctx.rect(cx - 4, cy - 36, 250, 32);
+            ctx.rect(badgeX, badgeY, badgeWidth, badgeHeight);
           }
           ctx.fill();
+
           ctx.lineWidth = 2;
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = '#10b981';
           ctx.stroke();
 
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 14px "Be Vietnam Pro", Orbitron, sans-serif';
+          // Left Text: Card & Name
           ctx.shadowBlur = 0;
-          ctx.fillText(`✓ ${overlay.studentName} ➔ [ ${overlay.answer} ]`, cx + 6, cy - 14);
+          ctx.fillStyle = '#f8fafc';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'left';
+          ctx.fillText(labelText, badgeX + 10, badgeY + badgeHeight / 2);
+
+          // Right Answer Square (Contrasting letter badge)
+          const ansBoxW = 24;
+          const ansBoxH = 20;
+          const ansBoxX = badgeX + badgeWidth - ansBoxW - 4;
+          const ansBoxY = badgeY + (badgeHeight - ansBoxH) / 2;
+
+          const ansColorMap = {
+            A: '#ef4444', // Red
+            B: '#3b82f6', // Blue
+            C: '#10b981', // Green
+            D: '#f59e0b'  // Amber
+          };
+          ctx.fillStyle = ansColorMap[answerLetter] || '#10b981';
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(ansBoxX, ansBoxY, ansBoxW, ansBoxH, 6);
+          } else {
+            ctx.rect(ansBoxX, ansBoxY, ansBoxW, ansBoxH);
+          }
+          ctx.fill();
+
+          // Answer Letter text
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(answerLetter, ansBoxX + ansBoxW / 2, ansBoxY + ansBoxH / 2 + 1);
+          ctx.textAlign = 'left';
 
           ctx.restore();
         } else {
@@ -545,14 +615,16 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               const student = resolveStudent(cardId, quizizzCode);
               const targetKey = student.cardId || cardId;
 
-              // Store overlay to persist for 850ms
+              // Store overlay to persist for 800ms
               activeOverlaysRef.current.set(targetKey, {
                 corners,
-                studentName: `${student.fullName} (${quizizzCode})`,
+                studentName: student.fullName,
+                shortName: student.fullName ? student.fullName.split(' ').slice(-1)[0] : '',
+                quizizzCode,
+                pNum: participant,
                 answer,
-                color: '#c084fc',
-                bgColor: 'rgba(88, 28, 135, 0.95)',
-                expiresAt: now + 850
+                color: '#10b981',
+                expiresAt: now + 800
               });
 
               const respItem = {
@@ -596,14 +668,17 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               const student = resolveStudent(cId);
               const targetKey = student.cardId || cId;
 
-              // Store overlay to persist for 850ms
+              const pNum = (cId || '').replace(/\D+/g, '');
+              // Store overlay to persist for 800ms
               activeOverlaysRef.current.set(targetKey, {
                 corners: [topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner],
                 studentName: student.fullName,
+                shortName: student.fullName ? student.fullName.split(' ').slice(-1)[0] : '',
+                quizizzCode: `P ${pNum || ''}`,
+                pNum,
                 answer,
                 color: '#10b981',
-                bgColor: 'rgba(6, 78, 59, 0.95)',
-                expiresAt: now + 850
+                expiresAt: now + 800
               });
 
               const respItem = {
@@ -697,6 +772,154 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
   };
 
   const detectedCount = Object.keys(detectedResponses).length;
+
+  const tally = { A: 0, B: 0, C: 0, D: 0 };
+  Object.values(detectedResponses).forEach((r) => {
+    if (r.answer && tally[r.answer] !== undefined) {
+      tally[r.answer]++;
+    }
+  });
+
+  // Fullscreen Immersive Camera Mode for Mobile View
+  if (fullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col text-white overflow-hidden select-none">
+        {/* Top Floating Glassmorphism Controls */}
+        <div className="absolute top-0 left-0 right-0 z-30 px-3 py-3 bg-gradient-to-b from-slate-950/90 via-slate-950/60 to-transparent flex items-center justify-between pointer-events-auto">
+          <button
+            onClick={() => {
+              stopCamera();
+              if (onCloseScanner) onCloseScanner();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/60 text-xs font-bold backdrop-blur-md shadow-lg active:scale-95 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 text-cyan-400" />
+            <span>Quay lại phòng</span>
+          </button>
+
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-900/80 border border-emerald-500/40 backdrop-blur-md shadow-lg">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="text-xs font-black text-emerald-300 font-mono">
+              {detectedCount} / {totalStudents} HS
+            </span>
+            <span className="text-[10px] text-slate-400">
+              ({Math.round((detectedCount / (totalStudents || 1)) * 100)}%)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <label 
+              title="Chụp ảnh quét thẻ" 
+              className="cursor-pointer p-2 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-400/50 backdrop-blur-md shadow-lg active:scale-95 transition-all flex items-center justify-center"
+            >
+              <Camera className="w-4 h-4" />
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleScanFromPhoto}
+                className="hidden"
+              />
+            </label>
+
+            {isScanning ? (
+              <button
+                onClick={stopCamera}
+                className="p-2 rounded-xl bg-rose-500/80 hover:bg-rose-500 text-white border border-rose-400/50 backdrop-blur-md shadow-lg active:scale-95 transition-all"
+                title="Tạm dừng camera"
+              >
+                <CameraOff className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={startCamera}
+                className="p-2 rounded-xl bg-emerald-500 text-slate-950 font-bold backdrop-blur-md shadow-lg active:scale-95 transition-all"
+                title="Bật lại camera"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Fullscreen Video & Canvas Feed */}
+        <div className="w-full h-full relative bg-black flex items-center justify-center overflow-hidden">
+          <video 
+            ref={videoRef} 
+            playsInline 
+            muted 
+            autoPlay
+            className={`w-full h-full object-cover ${isScanning ? 'block' : 'hidden'}`}
+          />
+          <canvas 
+            ref={canvasRef} 
+            className={`absolute inset-0 w-full h-full object-cover pointer-events-none ${isScanning ? 'block' : 'hidden'}`}
+          />
+
+          {!isScanning && (
+            <div className="flex flex-col items-center justify-center p-6 text-center space-y-4 max-w-sm z-20">
+              <div className="w-16 h-16 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center shadow-2xl">
+                <Camera className="w-8 h-8 text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-100">Camera đang tạm dừng</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Bấm nút bên dưới để tiếp tục quét thẻ học sinh
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  onClick={startCamera}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-emerald-400 text-slate-950 shadow-lg shadow-cyan-500/30 flex items-center gap-1.5"
+                >
+                  <Camera className="w-4 h-4" />
+                  Bật Camera
+                </button>
+                <button
+                  onClick={() => {
+                    stopCamera();
+                    if (onCloseScanner) onCloseScanner();
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700"
+                >
+                  Về phòng học
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Floating Stats Bar */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 px-3 py-2.5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent flex items-center justify-between pointer-events-auto backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 text-xs font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/60 text-rose-300">
+              A: {tally.A || 0}
+            </span>
+            <span className="px-2 py-0.5 rounded-lg bg-blue-950/80 border border-blue-500/60 text-blue-300">
+              B: {tally.B || 0}
+            </span>
+            <span className="px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-emerald-300">
+              C: {tally.C || 0}
+            </span>
+            <span className="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-300">
+              D: {tally.D || 0}
+            </span>
+          </div>
+
+          <button
+            onClick={() => {
+              stopCamera();
+              if (onCloseScanner) onCloseScanner();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/30 active:scale-95 transition-all"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Hoàn tất</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full flex flex-col bg-slate-950 text-white overflow-hidden p-3 sm:p-5">
@@ -816,29 +1039,6 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
               ref={canvasRef} 
               className={`absolute inset-0 w-full h-full object-cover pointer-events-none ${isScanning ? 'block' : 'hidden'}`}
             />
-
-            {/* Live Heads-Up Display (HUD) banner when scanning a card */}
-            {lastScannedStudent && (
-              <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none w-[92%] max-w-sm">
-                <div className="bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-emerald-950/95 border-2 border-emerald-400 text-white p-3 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.7)] flex items-center gap-3 backdrop-blur-md animate-bounce">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-xl shrink-0 shadow-lg shadow-emerald-500/40">
-                    ✓
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                      ĐÃ QUÉT TRÚNG MÃ QR!
-                    </div>
-                    <div className="text-sm font-black text-white truncate">
-                      {lastScannedStudent.name}
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-tr from-yellow-400 to-amber-300 text-slate-950 px-3.5 py-1 rounded-xl font-black text-lg shadow-md shrink-0">
-                    {lastScannedStudent.answer}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {!isScanning && (
               <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">

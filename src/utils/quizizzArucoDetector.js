@@ -894,6 +894,25 @@ export function detectQuizizzCards(imageData) {
           const p = match.participant;
           const pStr = p < 10 ? `000${p}` : (p < 100 ? `00${p}` : `0${p}`);
 
+          // Physical orientation determination:
+          // In homography quad, edge k is poly[k] -> poly[(k+1)%4].
+          // match.rotation gives which edge corresponds to Side A of the card.
+          const edgeMidpoint = (k) => ({
+            x: (poly[k].x + poly[(k + 1) % 4].x) / 2,
+            y: (poly[k].y + poly[(k + 1) % 4].y) / 2
+          });
+
+          const rot = match.rotation || 0;
+          const sides = [
+            { answer: 'A', mid: edgeMidpoint(rot) },
+            { answer: 'B', mid: edgeMidpoint((rot + 1) % 4) },
+            { answer: 'C', mid: edgeMidpoint((rot + 2) % 4) },
+            { answer: 'D', mid: edgeMidpoint((rot + 3) % 4) }
+          ];
+          // The edge pointing UP towards the ceiling/top of the screen has minimum Y
+          sides.sort((a, b) => a.mid.y - b.mid.y);
+          const actualAnswer = sides[0].answer;
+
           // Compute angle of top edge
           const topDx = poly[1].x - poly[0].x;
           const topDy = poly[1].y - poly[0].y;
@@ -904,7 +923,7 @@ export function detectQuizizzCards(imageData) {
             participant: p,
             cardId: `CARD_${pStr}`,
             quizizzCode: `P ${p}`,
-            answer: match.answer,
+            answer: actualAnswer,
             rotation: match.rotation,
             visualAngle,
             corners: poly // [{x,y}, {x,y}, {x,y}, {x,y}]
