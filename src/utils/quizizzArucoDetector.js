@@ -412,12 +412,15 @@ function stackBoxBlur(imageSrc, imageDst, kernelSize) {
     imageDst.data = dst;
   }
 
-  let stack = null;
+  // Circular ring buffer of size nodes
+  const nodes = [];
   for (let i = 0; i < size; ++i) {
-    const node = { color: 0, next: null };
-    node.next = stack;
-    stack = node;
+    nodes.push({ color: 0, next: null });
   }
+  for (let i = 0; i < size; ++i) {
+    nodes[i].next = nodes[(i + 1) % size];
+  }
+  let stack = nodes[0];
 
   let pos = 0;
   for (let y = 0; y < height; ++y) {
@@ -449,6 +452,7 @@ function stackBoxBlur(imageSrc, imageDst, kernelSize) {
     }
   }
 
+  stack = nodes[0];
   for (let x = 0; x < width; ++x) {
     let sum = 0;
     let pos = x;
@@ -740,9 +744,9 @@ function cvWarp(imageSrc, imageDst, contour, warpSize) {
       const dy1 = y - sy1;
       const dy2 = 1.0 - dy1;
       const p1 = sy1 * width;
-      const p3 = sy2 * width;
-      dst[pos++] = (dy2 * (dx2 * src[p1 + sx1] + dx1 * src[p2 + sx2]) +
-                    dy1 * (dx2 * src[p3 + sx1] + dx1 * src[p4 + sx2])) | 0;
+      const p2 = sy2 * width;
+      dst[pos++] = (dy2 * (dx2 * src[p1 + sx1] + dx1 * src[p1 + sx2]) +
+                    dy1 * (dx2 * src[p2 + sx1] + dx1 * src[p2 + sx2])) | 0;
     }
   }
   imageDst.width = warpSize;

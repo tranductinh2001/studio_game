@@ -269,17 +269,46 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
     }
   };
 
+  // Helper: Resilient lookup for student response across cardId, studentCode, id & Quizizz P 1..60
+  const getStudentResponse = (stu, idx) => {
+    if (!stu) return null;
+    const stt = idx + 1;
+    const cardMatch = (stu.cardId || '').match(/(\d+)/);
+    const pNum = cardMatch ? parseInt(cardMatch[1], 10) : stt;
+    return responses[stu.cardId] || 
+           responses[stu.id] || 
+           responses[stu.studentCode] || 
+           responses[`P ${pNum}`] || 
+           responses[`P${pNum}`] ||
+           responses[`CARD_${String(pNum).padStart(4, '0')}`] ||
+           responses[`P ${stt}`] || 
+           responses[`P${stt}`] ||
+           responses[`CARD_${String(stt).padStart(4, '0')}`] ||
+           responses[String(pNum)] ||
+           responses[String(stt)];
+  };
+
   const totalStudents = students.length || 32;
-  const answeredCount = Object.keys(responses).length;
+  const answeredStudents = students.filter((stu, idx) => !!getStudentResponse(stu, idx));
+  const answeredCount = Math.max(answeredStudents.length, Object.keys(responses).length > 0 && answeredStudents.length === 0 ? Object.keys(responses).length : answeredStudents.length);
   const answeredPercentage = Math.round((answeredCount / totalStudents) * 100);
 
   // Distribution counts
   const counts = { A: 0, B: 0, C: 0, D: 0 };
-  Object.values(responses).forEach(r => {
-    if (r.answer && counts[r.answer] !== undefined) {
-      counts[r.answer]++;
-    }
-  });
+  if (answeredStudents.length > 0) {
+    answeredStudents.forEach((stu, idx) => {
+      const r = getStudentResponse(stu, idx);
+      if (r && r.answer && counts[r.answer] !== undefined) {
+        counts[r.answer]++;
+      }
+    });
+  } else {
+    Object.values(responses).forEach(r => {
+      if (r && r.answer && counts[r.answer] !== undefined) {
+        counts[r.answer]++;
+      }
+    });
+  }
 
   const correctCount = counts[activeQuestion.correctAnswer] || 0;
   const accuracyOnAnswered = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
@@ -543,8 +572,8 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
           {/* 32 Student Live Grid */}
           <div className="flex-1 min-h-0 overflow-y-auto py-2 pr-1">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              {students.map((stu) => {
-                const res = responses[stu.cardId] || responses[stu.id];
+              {students.map((stu, idx) => {
+                const res = getStudentResponse(stu, idx);
                 const hasAnswered = !!res;
                 const isCorrect = hasAnswered && res.answer === activeQuestion.correctAnswer;
 

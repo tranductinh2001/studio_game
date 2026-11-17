@@ -108,11 +108,27 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
     loadClasses();
   }, []);
 
+  // Helper: Consistent Participant (P 1..60) resolution across table, preview & PDF
+  const getStudentPNum = (student, index) => {
+    if (!student) return index + 1;
+    const match = (student.cardId || '').match(/(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num >= 1 && num <= 60) return num;
+    }
+    return index + 1;
+  };
+
   useEffect(() => {
     if (selectedClassId) {
       loadStudents(selectedClassId);
+      if (roomCode) {
+        classroomService.setRoomClass(roomCode, selectedClassId).catch(err => {
+          console.warn('Sync room class error:', err);
+        });
+      }
     }
-  }, [selectedClassId]);
+  }, [selectedClassId, roomCode]);
 
   // Generate QR preview when selectedStudent changes
   useEffect(() => {
@@ -674,8 +690,7 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
       for (let i = 0; i < total; i++) {
         setPdfProgress(Math.round(((i + 1) / total) * 100));
         const student = students[i];
-        const cardMatch = (student.cardId || '').match(/(\d+)/);
-        const pNum = cardMatch ? parseInt(cardMatch[1], 10) : (i + 1);
+        const pNum = getStudentPNum(student, i);
         
         // 2 cards per page: index % 2 === 0 is Top card, index % 2 === 1 is Bottom card
         const cardSlot = i % 2; 
@@ -1192,9 +1207,9 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
                         <div className="flex items-center gap-1.5">
                           <span 
                             className="font-mono text-[11px] text-purple-200 bg-purple-900/80 px-2 py-0.5 rounded border border-purple-500/60 font-black shadow-sm"
-                            title={`Thẻ Quizizz Q-Card số ${index + 1}`}
+                            title={`Thẻ Quizizz Q-Card số ${getStudentPNum(stu, index)}`}
                           >
-                            Thẻ P {index + 1}
+                            Thẻ P {getStudentPNum(stu, index)}
                           </span>
                           <span className="font-mono text-[10px] text-slate-500 hidden sm:inline">
                             {stu.cardId}
@@ -1255,7 +1270,7 @@ export default function CardGenerator({ roomCode = 'WB-601', onSwitchToAssessmen
               /* REALISTIC QUIZIZZ Q-CARD PREVIEW */
               (() => {
                 const studentIndex = Math.max(0, students.findIndex(s => s.id === selectedStudent.id));
-                const pNum = studentIndex + 1;
+                const pNum = getStudentPNum(selectedStudent, studentIndex);
                 return (
                   <div className="w-full max-w-sm bg-white text-slate-900 rounded-2xl shadow-2xl p-4 flex flex-col border-4 border-purple-400 relative select-none">
                     {/* Switcher: Front vs Back */}

@@ -6,7 +6,7 @@
       "name": "Lớp 6A",
       "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "teacher": "Thầy Trần Đức Tình",
-      "totalStudents": 1,
+      "totalStudents": 32,
       "createdAt": "2026-11-16T01:31:36.254Z"
     },
     {
@@ -1856,16 +1856,6 @@
       "createdAt": "2026-11-16T12:45:30.368Z"
     },
     {
-      "id": "STU_CLASS_6A_01",
-      "studentCode": "HS6A01",
-      "fullName": "Nguyen Van A",
-      "classId": "CLASS_6A",
-      "cardId": "CARD_0001",
-      "status": "active",
-      "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:15:09.727Z"
-    },
-    {
       "id": "STU_CLASS_6C_01",
       "studentCode": "HS6C01",
       "fullName": "Lê Thanh Tùng",
@@ -1873,7 +1863,7 @@
       "cardId": "CARD_0001",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_02",
@@ -1883,7 +1873,7 @@
       "cardId": "CARD_0002",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_03",
@@ -1893,7 +1883,7 @@
       "cardId": "CARD_0003",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_04",
@@ -1903,7 +1893,7 @@
       "cardId": "CARD_0004",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_05",
@@ -1913,7 +1903,7 @@
       "cardId": "CARD_0005",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_06",
@@ -1923,7 +1913,7 @@
       "cardId": "CARD_0006",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_07",
@@ -1933,7 +1923,7 @@
       "cardId": "CARD_0007",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_08",
@@ -1943,7 +1933,7 @@
       "cardId": "CARD_0008",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_09",
@@ -1953,7 +1943,7 @@
       "cardId": "CARD_0009",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_10",
@@ -1963,7 +1953,7 @@
       "cardId": "CARD_0010",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_11",
@@ -1973,7 +1963,7 @@
       "cardId": "CARD_0011",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_12",
@@ -1983,7 +1973,7 @@
       "cardId": "CARD_0012",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_13",
@@ -1993,7 +1983,7 @@
       "cardId": "CARD_0013",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_14",
@@ -2003,7 +1993,7 @@
       "cardId": "CARD_0014",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_15",
@@ -2013,7 +2003,7 @@
       "cardId": "CARD_0015",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_16",
@@ -2023,7 +2013,7 @@
       "cardId": "CARD_0016",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_17",
@@ -2033,7 +2023,7 @@
       "cardId": "CARD_0017",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_18",
@@ -2043,7 +2033,7 @@
       "cardId": "CARD_0018",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_19",
@@ -2053,7 +2043,7 @@
       "cardId": "CARD_0019",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.932Z"
     },
     {
       "id": "STU_CLASS_6C_20",
@@ -2063,7 +2053,7 @@
       "cardId": "CARD_0020",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_21",
@@ -2073,7 +2063,7 @@
       "cardId": "CARD_0021",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_22",
@@ -2083,7 +2073,7 @@
       "cardId": "CARD_0022",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_23",
@@ -2093,7 +2083,7 @@
       "cardId": "CARD_0023",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_24",
@@ -2103,7 +2093,7 @@
       "cardId": "CARD_0024",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_25",
@@ -2113,7 +2103,7 @@
       "cardId": "CARD_0025",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_26",
@@ -2123,7 +2113,7 @@
       "cardId": "CARD_0026",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_27",
@@ -2133,7 +2123,7 @@
       "cardId": "CARD_0027",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6C_28",
@@ -2143,7 +2133,7 @@
       "cardId": "CARD_0028",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:36:34.934Z"
+      "createdAt": "2026-11-17T13:56:58.933Z"
     },
     {
       "id": "STU_CLASS_6B_01",
@@ -2153,7 +2143,7 @@
       "cardId": "CARD_0001",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_02",
@@ -2163,7 +2153,7 @@
       "cardId": "CARD_0002",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_03",
@@ -2173,7 +2163,7 @@
       "cardId": "CARD_0003",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_04",
@@ -2183,7 +2173,7 @@
       "cardId": "CARD_0004",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_05",
@@ -2193,7 +2183,7 @@
       "cardId": "CARD_0005",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_06",
@@ -2203,7 +2193,7 @@
       "cardId": "CARD_0006",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.924Z"
     },
     {
       "id": "STU_CLASS_6B_07",
@@ -2213,7 +2203,7 @@
       "cardId": "CARD_0007",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_08",
@@ -2223,7 +2213,7 @@
       "cardId": "CARD_0008",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_09",
@@ -2233,7 +2223,7 @@
       "cardId": "CARD_0009",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_10",
@@ -2243,7 +2233,7 @@
       "cardId": "CARD_0010",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_11",
@@ -2253,7 +2243,7 @@
       "cardId": "CARD_0011",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_12",
@@ -2263,7 +2253,7 @@
       "cardId": "CARD_0012",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_13",
@@ -2273,7 +2263,7 @@
       "cardId": "CARD_0013",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_14",
@@ -2283,7 +2273,7 @@
       "cardId": "CARD_0014",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_15",
@@ -2293,7 +2283,7 @@
       "cardId": "CARD_0015",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_16",
@@ -2303,7 +2293,7 @@
       "cardId": "CARD_0016",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_17",
@@ -2313,7 +2303,7 @@
       "cardId": "CARD_0017",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_18",
@@ -2323,7 +2313,7 @@
       "cardId": "CARD_0018",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_19",
@@ -2333,7 +2323,7 @@
       "cardId": "CARD_0019",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_20",
@@ -2343,7 +2333,7 @@
       "cardId": "CARD_0020",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_21",
@@ -2353,7 +2343,7 @@
       "cardId": "CARD_0021",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_22",
@@ -2363,7 +2353,7 @@
       "cardId": "CARD_0022",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_23",
@@ -2373,7 +2363,7 @@
       "cardId": "CARD_0023",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_24",
@@ -2383,7 +2373,7 @@
       "cardId": "CARD_0024",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_25",
@@ -2393,7 +2383,7 @@
       "cardId": "CARD_0025",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_26",
@@ -2403,7 +2393,7 @@
       "cardId": "CARD_0026",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_27",
@@ -2413,7 +2403,7 @@
       "cardId": "CARD_0027",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_28",
@@ -2423,7 +2413,7 @@
       "cardId": "CARD_0028",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_29",
@@ -2433,7 +2423,7 @@
       "cardId": "CARD_0029",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_30",
@@ -2443,7 +2433,7 @@
       "cardId": "CARD_0030",
       "status": "active",
       "group": "Nhóm 2",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_31",
@@ -2453,7 +2443,7 @@
       "cardId": "CARD_0031",
       "status": "active",
       "group": "Nhóm 3",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_32",
@@ -2463,7 +2453,7 @@
       "cardId": "CARD_0032",
       "status": "active",
       "group": "Nhóm 4",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
     },
     {
       "id": "STU_CLASS_6B_33",
@@ -2473,7 +2463,295 @@
       "cardId": "CARD_0033",
       "status": "active",
       "group": "Nhóm 1",
-      "createdAt": "2026-11-16T14:37:16.631Z"
+      "createdAt": "2026-11-17T14:27:46.925Z"
+    },
+    {
+      "id": "STU_6A_01",
+      "studentCode": "HS6A01",
+      "fullName": "Nguyễn Hoàng An",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0001",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_02",
+      "studentCode": "HS6A02",
+      "fullName": "Trần Quốc Bảo",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0002",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_03",
+      "studentCode": "HS6A03",
+      "fullName": "Lê Thị Ngọc Bích",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0003",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_04",
+      "studentCode": "HS6A04",
+      "fullName": "Phạm Minh Cường",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0004",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_05",
+      "studentCode": "HS6A05",
+      "fullName": "Đỗ Diệu Châu",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0005",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_06",
+      "studentCode": "HS6A06",
+      "fullName": "Vũ Tiến Dũng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0006",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_07",
+      "studentCode": "HS6A07",
+      "fullName": "Hoàng Thùy Dương",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0007",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_08",
+      "studentCode": "HS6A08",
+      "fullName": "Bùi Đức Đạt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0008",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_09",
+      "studentCode": "HS6A09",
+      "fullName": "Đặng Hương Giang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0009",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_10",
+      "studentCode": "HS6A10",
+      "fullName": "Ngô Gia Huy",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0010",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_11",
+      "studentCode": "HS6A11",
+      "fullName": "Dương Thu Hà",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0011",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_12",
+      "studentCode": "HS6A12",
+      "fullName": "Lý Thanh Hải",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0012",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_13",
+      "studentCode": "HS6A13",
+      "fullName": "Mai Đức Hiếu",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0013",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_14",
+      "studentCode": "HS6A14",
+      "fullName": "Trịnh Thúy Hằng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0014",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_15",
+      "studentCode": "HS6A15",
+      "fullName": "Phan Nhật Khánh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0015",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_16",
+      "studentCode": "HS6A16",
+      "fullName": "Hồ Gia Linh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0016",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_17",
+      "studentCode": "HS6A17",
+      "fullName": "Đinh Tuấn Kiệt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0017",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_18",
+      "studentCode": "HS6A18",
+      "fullName": "Lương Phương Mai",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0018",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_19",
+      "studentCode": "HS6A19",
+      "fullName": "Võ Hải Nam",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0019",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_20",
+      "studentCode": "HS6A20",
+      "fullName": "Tạ Bích Ngọc",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0020",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_21",
+      "studentCode": "HS6A21",
+      "fullName": "Nguyễn Minh Quân",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0021",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_22",
+      "studentCode": "HS6A22",
+      "fullName": "Trần Như Quỳnh",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0022",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_23",
+      "studentCode": "HS6A23",
+      "fullName": "Lê Văn Sang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0023",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_24",
+      "studentCode": "HS6A24",
+      "fullName": "Phạm Thu Thảo",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0024",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_25",
+      "studentCode": "HS6A25",
+      "fullName": "Đỗ Đức Thắng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0025",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_26",
+      "studentCode": "HS6A26",
+      "fullName": "Vũ Mai Trang",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0026",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_27",
+      "studentCode": "HS6A27",
+      "fullName": "Hoàng Trọng Tín",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0027",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_28",
+      "studentCode": "HS6A28",
+      "fullName": "Bùi Thanh Trúc",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0028",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_29",
+      "studentCode": "HS6A29",
+      "fullName": "Đặng Quốc Việt",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0029",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_30",
+      "studentCode": "HS6A30",
+      "fullName": "Ngô Tuệ Mẫn",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0030",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_31",
+      "studentCode": "HS6A31",
+      "fullName": "Dương Khắc Vượng",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0031",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
+    },
+    {
+      "id": "STU_6A_32",
+      "studentCode": "HS6A32",
+      "fullName": "Lê Cẩm Yến",
+      "classId": "CLASS_6A",
+      "cardId": "CARD_0032",
+      "status": "active",
+      "createdAt": "2026-11-16T01:31:36.254Z"
     }
   ],
   "questionBanks": [],
@@ -2511,11 +2789,61 @@
         "bloomLevel": "Nhận biết",
         "difficulty": "Dễ"
       },
-      "questionState": "COLLECTING",
+      "questionState": "REVEALED",
       "activeQuestionIndex": 0,
       "totalStudents": 33,
-      "studentResponses": {},
-      "responses": {},
+      "studentResponses": {
+        "STU_CLASS_6B_01": {
+          "studentId": "STU_CLASS_6B_01",
+          "studentCode": "64629602-00-1567",
+          "fullName": "BÙI THỊ VÂN ANH",
+          "studentName": "BÙI THỊ VÂN ANH",
+          "cardId": "CARD_0001",
+          "rotation": 0,
+          "angle": 0,
+          "answer": "A",
+          "isCorrect": false,
+          "revision": 4,
+          "previousAnswer": "A",
+          "scannedAt": "2026-11-17T14:36:02.084Z",
+          "updatedAt": "2026-11-17T14:48:37.195Z",
+          "timestamp": "2026-11-17T14:48:37.195Z"
+        }
+      },
+      "responses": {
+        "CARD_0001": {
+          "studentId": "STU_CLASS_6B_01",
+          "studentCode": "64629602-00-1567",
+          "fullName": "BÙI THỊ VÂN ANH",
+          "studentName": "BÙI THỊ VÂN ANH",
+          "cardId": "CARD_0001",
+          "rotation": 0,
+          "angle": 0,
+          "answer": "A",
+          "isCorrect": false,
+          "revision": 4,
+          "previousAnswer": "A",
+          "scannedAt": "2026-11-17T14:36:02.084Z",
+          "updatedAt": "2026-11-17T14:48:37.195Z",
+          "timestamp": "2026-11-17T14:48:37.195Z"
+        },
+        "STU_CLASS_6B_01": {
+          "studentId": "STU_CLASS_6B_01",
+          "studentCode": "64629602-00-1567",
+          "fullName": "BÙI THỊ VÂN ANH",
+          "studentName": "BÙI THỊ VÂN ANH",
+          "cardId": "CARD_0001",
+          "rotation": 0,
+          "angle": 0,
+          "answer": "A",
+          "isCorrect": false,
+          "revision": 4,
+          "previousAnswer": "A",
+          "scannedAt": "2026-11-17T14:36:02.084Z",
+          "updatedAt": "2026-11-17T14:48:37.195Z",
+          "timestamp": "2026-11-17T14:48:37.195Z"
+        }
+      },
       "groupSubmissions": {
         "group_1": {
           "groupNumber": 1,
@@ -2538,25 +2866,25 @@
         "roomCode": "WB-601",
         "classId": "CLASS_6B",
         "className": "Lớp 6B",
-        "questionText": "Mạng toàn cầu World Wide Web (WWW) hoạt động trên nền tảng nào?",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
         "correctAnswer": "B",
         "totalStudents": 33,
-        "totalAnswered": 6,
-        "totalUnanswered": 27,
-        "totalCorrect": 6,
-        "totalIncorrect": 0,
-        "percentageCorrectOnAnswered": 100,
-        "percentageCorrectOnTotal": 18,
+        "totalAnswered": 2,
+        "totalUnanswered": 31,
+        "totalCorrect": 0,
+        "totalIncorrect": 2,
+        "percentageCorrectOnAnswered": 0,
+        "percentageCorrectOnTotal": 0,
         "choiceDistribution": {
-          "A": 0,
-          "B": 6,
+          "A": 2,
+          "B": 0,
           "C": 0,
           "D": 0
         }
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-16T16:04:56.405Z"
+      "lastUpdated": "2026-11-17T14:48:37.195Z"
     }
   }
 }

@@ -183,6 +183,10 @@ class ClassroomService {
   // Switch active class for a room/session
   async setRoomClass(roomCode, classId) {
     try {
+      this.publishCloudEvent({
+        type: 'ROOM_CLASS_CHANGED',
+        payload: { roomCode, classId }
+      }, roomCode);
       const res = await fetch(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/class/set`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

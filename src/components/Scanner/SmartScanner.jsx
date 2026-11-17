@@ -117,19 +117,21 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
     if (studentsMap[cardId]) return studentsMap[cardId];
     if (quizizzCode && studentsMap[quizizzCode]) return studentsMap[quizizzCode];
 
-    const numMatch = String(cardId).match(/(\d+)/);
+    const searchKey = quizizzCode || cardId;
+    const numMatch = String(searchKey).match(/(\d+)/);
     if (numMatch) {
       const num = parseInt(numMatch[1], 10);
       const padded = `CARD_${num < 10 ? '000' + num : (num < 100 ? '00' + num : '0' + num)}`;
       if (studentsMap[padded]) return studentsMap[padded];
       if (studentsMap[`P ${num}`]) return studentsMap[`P ${num}`];
       if (studentsMap[`P${num}`]) return studentsMap[`P${num}`];
+      if (studentsMap[`${num}`]) return studentsMap[`${num}`];
 
       return {
         id: padded,
         cardId: padded,
         studentCode: `HS${num < 10 ? '0' + num : num}`,
-        fullName: `Học sinh ${num}`
+        fullName: `Học sinh ${num} (${quizizzCode || padded})`
       };
     }
 
@@ -137,7 +139,7 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       id: cardId,
       cardId: cardId,
       studentCode: cardId,
-      fullName: `Học sinh (${cardId})`
+      fullName: `Học sinh (${quizizzCode || cardId})`
     };
   };
 
@@ -181,13 +183,28 @@ export default function SmartScanner({ roomCode = 'WB-601', onResponsesUpdated }
       const map = {};
       if (Array.isArray(list)) {
         list.forEach((s, idx) => {
-          map[s.cardId] = s;
-          const pNum = idx + 1;
+          const stt = idx + 1;
+          const numMatch = (s.cardId || '').match(/(\d+)/);
+          const pNum = numMatch ? parseInt(numMatch[1], 10) : stt;
+
+          // Universal multi-key mapping for 100% hits across both card modes
+          if (s.id) map[s.id] = s;
+          if (s.cardId) map[s.cardId] = s;
+          if (s.studentCode) map[s.studentCode] = s;
+
+          // Index by parsed pNum
           const cardKey = `CARD_${pNum < 10 ? '000' + pNum : (pNum < 100 ? '00' + pNum : '0' + pNum)}`;
           map[cardKey] = s;
           map[`P ${pNum}`] = s;
           map[`P${pNum}`] = s;
           map[`${pNum}`] = s;
+
+          // Also index by STT (roster order index)
+          const sttKey = `CARD_${stt < 10 ? '000' + stt : (stt < 100 ? '00' + stt : '0' + stt)}`;
+          map[sttKey] = s;
+          map[`P ${stt}`] = s;
+          map[`P${stt}`] = s;
+          map[`${stt}`] = s;
         });
         setTotalStudents(list.length);
       }
