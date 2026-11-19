@@ -2790,8 +2790,8 @@
   "activeRooms": {
     "WB-601": {
       "roomCode": "WB-601",
-      "classId": "CLASS_7B",
-      "className": "Lớp 7B",
+      "classId": "CLASS_6A",
+      "className": "Lớp 6A",
       "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "currentQuestion": {
         "id": "Q_02",
@@ -2846,8 +2846,8 @@
       "createdAt": "2026-11-16T01:33:13.483Z",
       "analytics": {
         "roomCode": "WB-601",
-        "classId": "CLASS_7B",
-        "className": "Lớp 7B",
+        "classId": "CLASS_6A",
+        "className": "Lớp 6A",
         "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
         "correctAnswer": "C",
         "totalStudents": 32,
@@ -2866,7 +2866,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-17T23:53:40.480Z",
+      "lastUpdated": "2026-11-18T02:40:55.286Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }

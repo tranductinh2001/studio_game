@@ -10,19 +10,21 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   // Quick activity jumps mapped to slide indexes:
-  // Slide 0: Bìa tiết dạy Bài 6
+  // Slide 0: Bìa tiết dạy Bài 6 & Khởi động
   // Slide 1 (2.1): Tiến trình 1 - Giao việc Mục 1 & Đồng hồ đếm ngược 60/40 (Nhóm 1&2)
   // Slide 2 (2.2): Tiến trình 1 - Báo cáo & Chuẩn hóa Mục 1 (Cổng TT Đắk Trôi)
   // Slide 3 (2.3): Tiến trình 2 - Giao việc Mục 2 & Đồng hồ đếm ngược 60/40 (Nhóm 3&4)
   // Slide 4 (2.4): Tiến trình 2 - Báo cáo & Chuẩn hóa Mục 2 (Simulator gõ URL thật)
   // Slide 5 (2.5): Chuẩn hóa toàn bài 6 (Ghi vở 2 cột 50/50) ➜ Quizizz Q-Cards
+  // Slide 6 (HĐ 4): Hoạt động 4 - Vận dụng thực hành & 5 Bí quyết tỏa sáng
   const ACTIVITIES = [
-    { label: 'Trang Bìa', index: 0, tag: 'Bìa' },
+    { label: 'Bìa & Khởi Động', index: 0, tag: 'HĐ 1' },
     { label: '2.1: Mục 1 + Timer', index: 1, tag: '2.1' },
     { label: '2.2: Báo Cáo Mục 1', index: 2, tag: '2.2' },
     { label: '2.3: Mục 2 + Timer', index: 3, tag: '2.3' },
     { label: '2.4: Báo Cáo Mục 2', index: 4, tag: '2.4' },
-    { label: '2.5: Chuẩn Hóa Ghi Vở', index: 5, tag: '2.5' }
+    { label: '2.5: Chuẩn Hóa Ghi Vở', index: 5, tag: '2.5' },
+    { label: 'HĐ 4: Vận Dụng', index: 6, tag: 'HĐ 4' }
   ];
 
   // Send message to slide iframe
