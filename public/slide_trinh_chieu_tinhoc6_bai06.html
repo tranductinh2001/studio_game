@@ -1082,14 +1082,18 @@
     <div class="flex items-center justify-between shrink-0 pt-3 border-t-2 border-slate-800">
       <button onclick="goToSlide(4)" class="text-xs sm:text-sm font-semibold text-slate-400 hover:text-white">◀ Quay lại Mô phỏng Trình duyệt (Slide 2.4)</button>
 
-      <!-- Nút hành động nổi bật: Chuyển sang Quizizz / Đấu trường QR và Sang HĐ 4 -->
+      <!-- Nút hành động nổi bật: Chuyển sang Game Center / Quizizz và Sang HĐ 4 -->
       <div class="flex items-center gap-3">
-        <button onclick="switchParentTab('qr-assessment')" class="btn-glow px-6 sm:px-8 py-3 sm:py-3.5 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 transition-all flex items-center gap-2 shadow-2xl transform hover:scale-105">
-          <span>🚀 CHUYỂN SANG ĐẤU TRƯỜNG QUIZIZZ (CHẾ ĐỘ GIẤY)</span>
+        <button onclick="switchParentTab('game-center')" class="btn-glow px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-300 hover:to-yellow-200 transition-all flex items-center gap-2 shadow-2xl transform hover:scale-105">
+          <span>🎮 ĐẤU TRƯỜNG TRÒ CHƠI BÀI 6</span>
           <svg class="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </button>
-        <button onclick="goToSlide(6)" class="px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm text-emerald-300 bg-slate-900 border border-emerald-500/50 hover:bg-slate-800 transition-all flex items-center gap-2 shadow-md">
-          <span>Sang HĐ 4: Vận Dụng ➔</span>
+        <button onclick="switchParentTab('qr-assessment')" class="btn-glow px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 transition-all flex items-center gap-2 shadow-2xl transform hover:scale-105">
+          <span>🚀 ĐẤU TRƯỜNG QUIZIZZ</span>
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+        <button onclick="goToSlide(6)" class="px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm text-emerald-300 bg-slate-900 border border-emerald-500/50 hover:bg-slate-800 transition-all flex items-center gap-2 shadow-md">
+          <span>Sang HĐ 4 ➔</span>
         </button>
       </div>
     </div>
@@ -1230,10 +1234,16 @@
         <span>◀ Quay lại Slide 2.5 (Chuẩn hóa ghi vở)</span>
       </button>
 
-      <button onclick="switchParentTab('qr-assessment')" class="btn-glow px-7 py-3 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 transition-all flex items-center gap-2 shadow-xl">
-        <span>🚀 MỞ ĐẤU TRƯỜNG QUIZIZZ (QUÉT THẺ QR)</span>
-        <svg class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-      </button>
+      <div class="flex items-center gap-3">
+        <button onclick="switchParentTab('game-center')" class="btn-glow px-6 py-3 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-300 hover:to-yellow-200 transition-all flex items-center gap-2 shadow-xl transform hover:scale-105">
+          <span>🎮 ĐẤU TRƯỜNG TRÒ CHƠI BÀI 6 (8 GAMES)</span>
+          <svg class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+        <button onclick="switchParentTab('qr-assessment')" class="btn-glow px-6 py-3 rounded-2xl font-black text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 transition-all flex items-center gap-2 shadow-xl">
+          <span>🚀 MỞ ĐẤU TRƯỜNG QUIZIZZ</span>
+          <svg class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -1272,6 +1282,11 @@
     </select>
 
     <div class="w-px h-5 bg-slate-700 hidden sm:block"></div>
+
+    <!-- Game Center Shortcut -->
+    <button onclick="switchParentTab('game-center')" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold" title="Mở Đấu trường trò chơi Bài 6 (8 Games)">
+      <span>🎮 Game</span>
+    </button>
 
     <!-- Fullscreen Toggle -->
     <button onclick="toggleFullScreen()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all border border-slate-700 font-semibold" title="Bật/Tắt Toàn màn hình (F11 / F)">

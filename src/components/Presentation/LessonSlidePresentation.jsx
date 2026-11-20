@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Maximize2, Minimize2, ExternalLink, Bot, BarChart3, 
-  Image as ImageIcon, BookOpen, Clock, Layers, Sparkles, ChevronRight, RefreshCw
+  Image as ImageIcon, BookOpen, Clock, Layers, Sparkles, ChevronRight, RefreshCw, Gamepad2
 } from 'lucide-react';
 
 export default function LessonSlidePresentation({ onSwitchTab }) {
@@ -116,6 +116,16 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
           >
             <Bot className="w-3.5 h-3.5 text-indigo-400" />
             <span>Webby AI</span>
+          </button>
+
+          {/* Jump to Game Center */}
+          <button
+            onClick={() => onSwitchTab && onSwitchTab('game-center')}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-400/50 text-amber-300 transition-all shadow-sm"
+            title="Mở Trung Tâm Trò Chơi Thử Thách Bài 6 (8 Games)"
+          >
+            <Gamepad2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Đấu Trường Game</span>
           </button>
 
           {/* Jump to Live QR Arena */}

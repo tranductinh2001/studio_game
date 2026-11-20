@@ -13,6 +13,7 @@ import AssessmentDisplay from './components/Assessment/AssessmentDisplay';
 import BitOneQuestionGenerator from './components/BitOneQuiz/BitOneQuestionGenerator';
 import CardGenerator from './components/CardGenerator/CardGenerator';
 import MobileController from './components/Mobile/MobileController';
+import GameCenter from './components/GameCenter/GameCenter';
 
 import { speechSynth } from './services/speechSynthesis';
 import { speechRec } from './services/speechRecognition';
@@ -23,7 +24,7 @@ import conversationScripts from './data/conversationScripts.json';
 import QRCode from 'qrcode';
 import { 
   Maximize2, Minimize2, Globe, Bot, Image as ImageIcon, 
-  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink, BookOpen 
+  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink, BookOpen, Gamepad2 
 } from 'lucide-react';
 
 export default function App() {
@@ -592,6 +593,19 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setCurrentTab('game-center')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+              currentTab === 'game-center'
+                ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-md shadow-amber-500/40 ring-1 ring-amber-300'
+                : 'text-amber-300 hover:text-white hover:bg-slate-800/80'
+            }`}
+            title="Đấu Trường Trò Chơi Thử Thách Bài 6 (8 Games)"
+          >
+            <Gamepad2 className="w-3.5 h-3.5" />
+            <span>Đấu Trường Game</span>
+          </button>
+
+          <button
             onClick={() => setCurrentTab('webby-agent')}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               currentTab === 'webby-agent'
@@ -697,6 +711,11 @@ export default function App() {
         {/* TAB 0: INTERACTIVE LESSON PRESENTATION (BÀI 6 - MẠNG THÔNG TIN TOÀN CẦU) */}
         {currentTab === 'lesson-slide' && (
           <LessonSlidePresentation onSwitchTab={(tab) => setCurrentTab(tab)} />
+        )}
+
+        {/* TAB: INTERACTIVE GAME CENTER (8 EDUCATIONAL GAMESHOWS) */}
+        {currentTab === 'game-center' && (
+          <GameCenter onSwitchTab={(tab) => setCurrentTab(tab)} />
         )}
 
         {/* TAB 1: ORIGINAL 3D WEBBY AI AGENT */}
