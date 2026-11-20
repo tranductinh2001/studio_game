@@ -12,7 +12,7 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   // Quick activity jumps mapped to slide indexes:
   // Slide 0: Bìa tiết dạy Bài 6 & Khởi động
   // Slide 1 (2.1): Tiến trình 1 - Giao việc Mục 1 & Đồng hồ đếm ngược 60/40 (Nhóm 1&2)
-  // Slide 2 (2.2): Tiến trình 1 - Báo cáo & Chuẩn hóa Mục 1 (Cổng TT Đắk Trôi)
+  // Slide 2 (2.2): Tiến trình 1 - Báo cáo & Chuẩn hóa Mục 1 (Đáp án Nhóm 1&2)
   // Slide 3 (2.3): Tiến trình 2 - Giao việc Mục 2 & Đồng hồ đếm ngược 60/40 (Nhóm 3&4)
   // Slide 4 (2.4): Tiến trình 2 - Báo cáo & Chuẩn hóa Mục 2 (Simulator gõ URL thật)
   // Slide 5 (2.5): Chuẩn hóa toàn bài 6 (Ghi vở 2 cột 50/50) ➜ Quizizz Q-Cards
