@@ -22,6 +22,9 @@ export default function RocketSpaceGame({
   const [winner, setWinner] = useState(null);
   const [rankings, setRankings] = useState([]);
   const [rocketProgress, setRocketProgress] = useState([]);
+  const trackRef = useRef(null);
+  const rocketRefs = useRef([]);
+  const badgeRefs = useRef([]);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
   const [isMuted, setIsMuted] = useState(false);
@@ -31,7 +34,7 @@ export default function RocketSpaceGame({
     startTime: 0,
     pausedTime: 0,
     elapsedBeforePause: 0,
-    duration: 18000,
+    duration: 8500, // 8.5s fast exciting space race
     targetWinner: null,
     determinedWinner: null,
     isFinished: false,
@@ -39,7 +42,7 @@ export default function RocketSpaceGame({
   });
 
   const raceDuration = useMemo(() => {
-    const durSec = settings?.roundDuration || 18;
+    const durSec = settings?.roundDuration ? Math.min(settings.roundDuration, 12) : 8.5;
     const speed = settings?.gameSpeed || 1.0;
     return (durSec * 1000) / speed;
   }, [settings]);
@@ -129,20 +132,35 @@ export default function RocketSpaceGame({
     rt.isFinished = false;
     rt.duration = raceDuration;
 
+    // Measure lane travel width
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+
+    // Start 60-120 FPS GPU RAF Loop (Direct DOM update: ZERO React re-renders during race)
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      const newProgress = teams.map((team, idx) => {
+      const currentProgress = [];
+      teams.forEach((team, idx) => {
         const isWinner = team.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.8);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.8);
+        currentProgress.push(prog);
 
-      setRocketProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 1.8) * 3;
+
+        if (rocketRefs.current[idx]) {
+          rocketRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setRocketProgress(currentProgress);
         finishRace();
       }
     };
@@ -167,20 +185,33 @@ export default function RocketSpaceGame({
     setGameState(GAME_STATES.PLAYING);
     gameAudio.playTick();
 
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      const newProgress = teams.map((team, idx) => {
+      const currentProgress = [];
+      teams.forEach((team, idx) => {
         const isWinner = team.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.8);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.8);
+        currentProgress.push(prog);
 
-      setRocketProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 1.8) * 3;
+
+        if (rocketRefs.current[idx]) {
+          rocketRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setRocketProgress(currentProgress);
         finishRace();
       }
     };
@@ -235,14 +266,32 @@ export default function RocketSpaceGame({
     setRankings([]);
     setGameState(GAME_STATES.IDLE);
     gameAudio.playTick();
+
+    // Reset rocket positions directly
+    teams.forEach((_, idx) => {
+      if (rocketRefs.current[idx]) {
+        rocketRefs.current[idx].style.transform = 'translate3d(0px, 0px, 0)';
+      }
+      if (badgeRefs.current[idx]) {
+        badgeRefs.current[idx].textContent = '0%';
+      }
+    });
   };
 
   // Step advancement for question-based rocket play
   const advanceTeamRocket = (teamId, amount = 20) => {
+    const trackWidth = trackRef.current ? trackRef.current.clientWidth * 0.80 : 800;
     setRocketProgress(prev => {
       return teams.map((team, i) => {
         if (team.id === teamId) {
           const next = Math.min((prev[i] || 0) + amount, 100);
+          if (rocketRefs.current[i]) {
+            const xPx = (next / 100) * trackWidth;
+            rocketRefs.current[i].style.transform = `translate3d(${xPx}px, 0px, 0)`;
+          }
+          if (badgeRefs.current[i]) {
+            badgeRefs.current[i].textContent = `${Math.round(next)}%`;
+          }
           if (next >= 100 && !winner) {
             finishRace();
           }
@@ -356,11 +405,15 @@ export default function RocketSpaceGame({
         />
 
         {/* Lanes & Rockets */}
-        <div className="absolute top-[15%] bottom-[15%] left-0 right-0 flex flex-col justify-around px-3 z-20">
+        <div ref={trackRef} className="absolute top-[15%] bottom-[15%] left-0 right-0 flex flex-col justify-around px-3 z-20">
+          <style>{`
+            @keyframes rocketFlamePulse {
+              0%, 100% { transform: scale(1); opacity: 0.85; }
+              50% { transform: scale(1.25, 1.15) translateX(-2px); opacity: 1; }
+            }
+          `}</style>
           {teams.map((team, index) => {
             const prog = rocketProgress[index] || 0;
-            // Map 0 -> 100 progress to left percentage (6% to 83%)
-            const leftPercent = 6 + (prog / 100) * 77;
             const isFirst = winner?.id === team.id;
 
             return (
@@ -378,17 +431,23 @@ export default function RocketSpaceGame({
 
                 {/* Rocket Sprite */}
                 <div 
-                  className="absolute flex items-center will-change-[left,transform]"
+                  ref={(el) => (rocketRefs.current[index] = el)}
+                  className="absolute flex items-center will-change-transform"
                   style={{
-                    left: `${leftPercent}%`,
-                    transform: `translateY(${Math.sin((prog + index * 25) * 0.12) * 3}px)`
+                    left: '3%',
+                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.80 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team Badge above rocket */}
                   <div className="absolute -top-6 left-6 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
                     <span className="text-xs">{team.icon || '🚀'}</span>
                     <span className="text-[11px] font-bold text-white">{team.shortName || team.name}</span>
-                    <span className="text-[10px] font-mono text-cyan-300 font-bold">{Math.round(prog)}%</span>
+                    <span 
+                      ref={(el) => (badgeRefs.current[index] = el)}
+                      className="text-[10px] font-mono text-cyan-300 font-bold"
+                    >
+                      {Math.round(prog)}%
+                    </span>
                   </div>
 
                   {/* Rocket Illustration */}
@@ -407,6 +466,14 @@ export default function RocketSpaceGame({
                       className="absolute top-2 right-4 w-3 h-3 rounded-full shadow"
                       style={{ backgroundColor: team.color || '#ef4444' }}
                     />
+
+                    {/* Animated Rocket Thruster Flame during flight */}
+                    {gameState === GAME_STATES.PLAYING && (
+                      <div 
+                        className="absolute left-1 top-5 w-4 h-6 rounded-full bg-gradient-to-l from-orange-400 via-amber-300 to-transparent pointer-events-none"
+                        style={{ animation: 'rocketFlamePulse 0.15s infinite' }}
+                      />
+                    )}
                   </div>
                 </div>
 

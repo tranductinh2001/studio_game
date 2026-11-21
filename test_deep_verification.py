@@ -75,8 +75,8 @@ def run_deep_test():
 
         # Ghi nhận vị trí ban đầu của các thuyền
         pos_before = page.evaluate("""() => {
-            const boats = Array.from(document.querySelectorAll('.absolute')).filter(el => el.style.left);
-            return boats.map(b => b.style.left);
+            const boats = Array.from(document.querySelectorAll('.will-change-transform'));
+            return boats.map(b => b.style.transform || b.style.left);
         }""")
 
         # Bấm RUN
@@ -86,8 +86,8 @@ def run_deep_test():
 
         # Ghi nhận vị trí sau khi đua
         pos_during = page.evaluate("""() => {
-            const boats = Array.from(document.querySelectorAll('.absolute')).filter(el => el.style.left);
-            return boats.map(b => b.style.left);
+            const boats = Array.from(document.querySelectorAll('.will-change-transform'));
+            return boats.map(b => b.style.transform || b.style.left);
         }""")
         print(f"-> Vị trí trước: {pos_before[:3]}, Vị trí khi đang đua: {pos_during[:3]}")
 

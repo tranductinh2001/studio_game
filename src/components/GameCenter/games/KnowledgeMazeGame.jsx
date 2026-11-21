@@ -10,11 +10,10 @@ import { GAME_STATES } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
 
 const MAZE_GATES = [
-  { step: 1, title: 'Cổng Khởi Đầu', hint: 'Khái niệm WWW & Siêu văn bản' },
-  { step: 2, title: 'Cổng Trình Duyệt', hint: 'Vai trò của Web Browser' },
-  { step: 3, title: 'Cổng Siêu Liên Kết', hint: 'Đường dẫn Hyperlink' },
-  { step: 4, title: 'Cổng Tìm Kiếm', hint: 'Công cụ tra cứu thông tin' },
-  { step: 5, title: 'Đền Kho Báu', hint: 'Chinh phục Tri thức Toàn cầu' }
+  { step: 1, title: 'Cổng 1: Mạng WWW', hint: 'Khái niệm WWW & Siêu văn bản' },
+  { step: 2, title: 'Cổng 2: Trình Duyệt', hint: 'Vai trò của Web Browser' },
+  { step: 3, title: 'Cổng 3: Siêu Liên Kết', hint: 'Đường dẫn Hyperlink' },
+  { step: 4, title: 'Cổng 4: Tìm Kiếm', hint: 'Công cụ tra cứu thông tin' }
 ];
 
 export default function KnowledgeMazeGame({
@@ -167,9 +166,9 @@ export default function KnowledgeMazeGame({
           
           {/* Dynamic Hopping Pawn Adventurer */}
           <div 
-            className="absolute -top-16 z-30 flex flex-col items-center pointer-events-none transition-all duration-700 [transition-timing-function:cubic-bezier(0.34,1.4,0.64,1)] will-change-[left,transform]"
+            className="absolute -top-16 z-30 flex flex-col items-center pointer-events-none transition-all duration-700 [transition-timing-function:cubic-bezier(0.34,1.4,0.64,1)] will-change-[left,transform] -translate-x-1/2"
             style={{
-              left: `calc(${Math.min(currentStep, 5) * 20}% + 4px)`
+              left: `calc(${Math.min(currentStep, 5) * 20}% + 32px)`
             }}
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 border-2 border-white flex items-center justify-center text-2xl shadow-xl shadow-cyan-500/50 animate-bounce">
@@ -180,15 +179,32 @@ export default function KnowledgeMazeGame({
             </span>
           </div>
 
-          <div className="absolute left-[8%] right-[8%] h-3 bg-slate-800 rounded-full border border-amber-500/30 -z-0">
+          <div className="absolute left-[5%] right-[5%] h-3 bg-slate-800 rounded-full border border-amber-500/30 -z-0">
             {/* Progress filled bar */}
             <div 
-              className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-emerald-400 rounded-full transition-all duration-500 shadow-[0_0_12px_#f59e0b]"
+              className="h-full bg-gradient-to-r from-cyan-400 via-amber-400 to-emerald-400 rounded-full transition-all duration-500 shadow-[0_0_12px_#f59e0b]"
               style={{ width: `${(currentStep / 5) * 100}%` }}
             />
           </div>
 
-          {/* 5 Checkpoint Gates & Start/Finish */}
+          {/* Node 0: VẠCH XUẤT PHÁT */}
+          <div className="relative flex flex-col items-center z-10 w-16">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xs font-black border-2 transition-all ${
+              currentStep === 0 
+                ? 'bg-gradient-to-tr from-cyan-500 to-blue-600 border-white text-slate-950 shadow-lg shadow-cyan-500/40 scale-105' 
+                : 'bg-slate-900 border-slate-700 text-slate-400'
+            }`}>
+              START
+            </div>
+            <span className="mt-3 text-xs font-black text-cyan-300 text-center whitespace-nowrap">
+              Xuất Phát
+            </span>
+            <span className="text-[10px] text-slate-400 text-center whitespace-nowrap">
+              Bắt đầu
+            </span>
+          </div>
+
+          {/* 4 Checkpoint Gates */}
           {MAZE_GATES.map((gate, i) => {
             const isReached = currentStep >= gate.step;
             const isCurrent = currentStep === gate.step - 1;
@@ -196,7 +212,7 @@ export default function KnowledgeMazeGame({
             return (
               <div 
                 key={gate.step}
-                className="relative flex flex-col items-center z-10"
+                className="relative flex flex-col items-center z-10 w-16"
               >
                 {/* Gate Badge Circle */}
                 <div 
@@ -223,16 +239,19 @@ export default function KnowledgeMazeGame({
           })}
 
           {/* Treasure Chest at End (Gate 5) */}
-          <div className="relative flex flex-col items-center z-10">
-            <div className={`w-20 h-20 transition-transform ${currentStep >= 5 ? 'scale-125 filter drop-shadow-[0_0_20px_#fef08a]' : 'opacity-80'}`}>
+          <div className="relative flex flex-col items-center z-10 w-16">
+            <div className={`w-16 h-16 flex items-center justify-center transition-transform ${currentStep >= 5 ? 'scale-125 filter drop-shadow-[0_0_20px_#fef08a]' : 'opacity-80'}`}>
               <img 
                 src="/assets/games/knowledge-maze/treasure_chest.svg" 
                 alt="Treasure Chest" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="mt-2 text-xs font-black text-amber-300 uppercase tracking-wider">
-              KHO BÁU BÀI 6
+            <span className="mt-3 text-xs font-black text-amber-300 uppercase tracking-wider whitespace-nowrap">
+              KHO BÁU
+            </span>
+            <span className="text-[10px] text-amber-400/80 text-center whitespace-nowrap">
+              Đích đến
             </span>
           </div>
         </div>

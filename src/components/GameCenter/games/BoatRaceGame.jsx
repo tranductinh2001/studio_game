@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
-import { 
-  Play, Pause, RotateCcw, Trophy, Award, Zap, Flag, 
+import {
+  Play, Pause, RotateCcw, Trophy, Award, Zap, Flag,
   Sparkles, HelpCircle, ArrowRight, CheckCircle, Volume2, VolumeX
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
@@ -28,6 +28,9 @@ export default function BoatRaceGame({
 
   // Racer progress array (0 to 100 for each team)
   const [boatProgress, setBoatProgress] = useState([]);
+  const trackRef = useRef(null);
+  const boatRefs = useRef([]);
+  const badgeRefs = useRef([]);
 
   // Animation & Runtime Refs
   const runtimeRef = useRef({
@@ -35,16 +38,16 @@ export default function BoatRaceGame({
     startTime: 0,
     pausedTime: 0,
     elapsedBeforePause: 0,
-    duration: 20000, // 20s default round
+    duration: 8500, // 8.5s exciting sprint
     targetWinner: null,
     determinedWinner: null,
     isFinished: false,
     seed: Math.random() * 10
   });
 
-  // Calculate duration from settings
+  // Calculate duration from settings (optimal 8.5s - 12s for classroom mini-game excitement)
   const raceDuration = useMemo(() => {
-    const durSec = settings?.roundDuration || 20;
+    const durSec = settings?.roundDuration ? Math.min(settings.roundDuration, 12) : 8.5;
     const speed = settings?.gameSpeed || 1.0;
     return (durSec * 1000) / speed;
   }, [settings]);
@@ -143,22 +146,35 @@ export default function BoatRaceGame({
     rt.isFinished = false;
     rt.duration = raceDuration;
 
-    // Start RAF Loop
+    // Measure lane travel width
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+
+    // Start 60-120 FPS GPU RAF Loop (Direct DOM update: ZERO React re-renders during race)
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      // Compute progress for each boat
-      const newProgress = teams.map((team, idx) => {
+      const currentProgress = [];
+      teams.forEach((team, idx) => {
         const isWinner = team.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
+        currentProgress.push(prog);
 
-      setBoatProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 1.6) * 3;
+
+        if (boatRefs.current[idx]) {
+          boatRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setBoatProgress(currentProgress);
         finishRace();
       }
     };
@@ -183,20 +199,33 @@ export default function BoatRaceGame({
     setGameState(GAME_STATES.PLAYING);
     gameAudio.playTick();
 
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      const newProgress = teams.map((team, idx) => {
+      const currentProgress = [];
+      teams.forEach((team, idx) => {
         const isWinner = team.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
+        currentProgress.push(prog);
 
-      setBoatProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 1.6) * 3;
+
+        if (boatRefs.current[idx]) {
+          boatRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setBoatProgress(currentProgress);
         finishRace();
       }
     };
@@ -239,7 +268,7 @@ export default function BoatRaceGame({
         spread: 90,
         origin: { y: 0.6 }
       });
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetRace = () => {
@@ -254,6 +283,16 @@ export default function BoatRaceGame({
     setRankings([]);
     setGameState(GAME_STATES.IDLE);
     gameAudio.playTick();
+
+    // Reset boat positions directly
+    teams.forEach((_, idx) => {
+      if (boatRefs.current[idx]) {
+        boatRefs.current[idx].style.transform = 'translate3d(0px, 0px, 0)';
+      }
+      if (badgeRefs.current[idx]) {
+        badgeRefs.current[idx].textContent = '0%';
+      }
+    });
   };
 
   const toggleSound = () => {
@@ -269,10 +308,10 @@ export default function BoatRaceGame({
 
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 text-white select-none overflow-hidden font-sans">
-      
+
       {/* 1. TOP CONTROL BAR */}
       <div className="flex-none h-14 bg-slate-900/90 border-b border-slate-800 px-4 flex items-center justify-between z-30 backdrop-blur-md">
-        
+
         {/* Left: Game Title Badge */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-xl shadow-lg shadow-cyan-500/20">
@@ -353,15 +392,15 @@ export default function BoatRaceGame({
 
       {/* 2. MAIN 2D CARTOON OCEAN ARENA */}
       <div className="relative flex-1 w-full h-full overflow-hidden">
-        
+
         {/* Ocean Illustrated Background */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('/assets/games/boat-race/ocean_bg.svg')` }}
         />
 
         {/* Checkered Finish Line at Right 90% */}
-        <div 
+        <div
           className="absolute top-0 bottom-0 right-[8%] w-16 pointer-events-none z-10 opacity-90"
           style={{ backgroundImage: `url('/assets/games/boat-race/finish_line.svg')`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
         />
@@ -374,52 +413,62 @@ export default function BoatRaceGame({
         </div>
 
         {/* RACING LANES & BOATS */}
-        <div className="absolute top-[48%] bottom-4 left-0 right-0 flex flex-col justify-around px-2 z-20">
+        <div ref={trackRef} className="absolute top-[48%] bottom-4 left-0 right-0 flex flex-col justify-around px-2 z-20">
+          <style>{`
+            @keyframes oarStrokeFast {
+              0%, 100% { transform: rotate(-26deg); }
+              50% { transform: rotate(26deg); }
+            }
+          `}</style>
           {teams.map((team, index) => {
             const prog = boatProgress[index] || 0;
-            // Map 0 -> 100 progress to left margin percentage (3% to 84%)
-            const leftPercent = 3 + (prog / 100) * 81;
             const isFirst = winner?.id === team.id;
 
             return (
-              <div 
+              <div
                 key={team.id}
                 className="relative w-full h-14 flex items-center border-b border-cyan-400/15"
               >
                 {/* Lane marker badge */}
-                <div 
+                <div
                   className="absolute left-2 w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shadow"
                   style={{ backgroundColor: team.color || '#0284c7', color: '#fff' }}
                 >
                   {team.number || index + 1}
                 </div>
 
-                {/* 2D CARTOON RACING BOAT SPRITE */}
-                <div 
-                  className="absolute flex items-center will-change-[left,transform]"
+                {/* 2D CARTOON RACING BOAT SPRITE (Pure GPU translate3d) */}
+                <div
+                  ref={(el) => (boatRefs.current[index] = el)}
+                  className="absolute flex items-center will-change-transform"
                   style={{
-                    left: `${leftPercent}%`,
-                    transform: `translateY(${Math.sin((prog + index * 20) * 0.1) * 3}px)`
+                    left: '3%',
+                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.81 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team Badge above boat */}
                   <div className="absolute -top-7 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
                     <span className="text-xs">{team.icon || '⛵'}</span>
                     <span className="text-[11px] font-bold text-white">{team.shortName || team.name}</span>
-                    <span className="text-[10px] font-mono text-cyan-300 font-bold">{Math.round(prog)}%</span>
+                    <span 
+                      ref={(el) => (badgeRefs.current[index] = el)}
+                      className="text-[10px] font-mono text-cyan-300 font-bold"
+                    >
+                      {Math.round(prog)}%
+                    </span>
                   </div>
 
                   {/* Water Splash behind boat when moving */}
-                  {gameState === GAME_STATES.PLAYING && prog > 2 && (
-                    <div className="absolute -left-6 top-4 w-8 h-4 flex items-center">
+                  {gameState === GAME_STATES.PLAYING && (
+                    <div className="absolute -left-6 top-4 w-8 h-4 flex items-center pointer-events-none">
                       <div className="w-3 h-2 rounded-full bg-cyan-200/80 animate-ping" />
                       <div className="w-4 h-3 rounded-full bg-white/70 -ml-1 animate-pulse" />
                     </div>
                   )}
 
                   {/* Cartoon Boat Body (SVG Illustration) */}
-                  <svg 
-                    viewBox="0 0 160 70" 
+                  <svg
+                    viewBox="0 0 160 70"
                     className="w-36 h-16 drop-shadow-lg"
                     style={{ filter: isFirst ? 'drop-shadow(0 0 12px #fef08a)' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))' }}
                   >
@@ -439,11 +488,11 @@ export default function BoatRaceGame({
                     <ellipse cx="75" cy="58" rx="60" ry="8" fill="#38bdf8" opacity="0.45" />
 
                     {/* Wooden Hull */}
-                    <path 
-                      d="M20 38 L140 38 C148 38 155 46 148 54 C132 58 35 58 18 52 C12 46 15 38 20 38 Z" 
+                    <path
+                      d="M20 38 L140 38 C148 38 155 46 148 54 C132 58 35 58 18 52 C12 46 15 38 20 38 Z"
                       fill={`url(#hull_${team.id})`}
-                      stroke="#0f172a" 
-                      strokeWidth="2.5" 
+                      stroke="#0f172a"
+                      strokeWidth="2.5"
                     />
 
                     {/* Wooden Deck Planking */}
@@ -463,14 +512,13 @@ export default function BoatRaceGame({
                       <circle cx="15" cy="9" r="1.5" fill="#0f172a" />
                       {/* Shirt */}
                       <path d="M6 18 L18 18 L20 26 L4 26 Z" fill={team.color || '#2563eb'} />
-                      {/* Rowing Oar (Swaying) */}
-                      <g style={{
-                        transformOrigin: '12px 24px',
-                        transform: gameState === GAME_STATES.PLAYING 
-                          ? `rotate(${Math.sin(prog * 0.4) * 25}deg)` 
-                          : 'rotate(0deg)',
-                        transition: 'transform 0.05s'
-                      }}>
+                      {/* Rowing Oar (Swaying with vigorous rhythm) */}
+                      <g 
+                        style={{
+                          transformOrigin: '12px 24px',
+                          animation: gameState === GAME_STATES.PLAYING ? 'oarStrokeFast 0.42s ease-in-out infinite' : 'none'
+                        }}
+                      >
                         <line x1="12" y1="20" x2="22" y2="42" stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" />
                         <ellipse cx="22" cy="42" rx="3.5" ry="6" fill="#b45309" stroke="#78350f" strokeWidth="1" />
                       </g>
@@ -490,7 +538,7 @@ export default function BoatRaceGame({
         </div>
 
         {/* Waves Overlay at bottom */}
-        <div 
+        <div
           className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none opacity-40 z-20"
           style={{ backgroundImage: `url('/assets/games/boat-race/wave_overlay.svg')`, backgroundRepeat: 'repeat-x', backgroundSize: 'contain' }}
         />
@@ -515,7 +563,7 @@ export default function BoatRaceGame({
         {gameState === GAME_STATES.FINISHED && winner && (
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-amber-400/60 p-6 shadow-2xl shadow-amber-500/30 flex flex-col items-center text-center">
-              
+
               {/* Golden Trophy Icon */}
               <div className="w-24 h-24 mb-3">
                 <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
@@ -539,13 +587,12 @@ export default function BoatRaceGame({
                 </h4>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
                   {rankings.map((r, i) => (
-                    <div 
+                    <div
                       key={r.id}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-bold ${
-                        i === 0 
-                          ? 'bg-amber-500/20 border border-amber-400/50 text-amber-300' 
+                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-bold ${i === 0
+                          ? 'bg-amber-500/20 border border-amber-400/50 text-amber-300'
                           : 'bg-slate-900/60 text-slate-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black">

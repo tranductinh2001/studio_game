@@ -39,6 +39,9 @@ export default function DuckRaceGame({
 
   // Racer progress array (0 to 100 for each participant)
   const [duckProgress, setDuckProgress] = useState([]);
+  const trackRef = useRef(null);
+  const duckRefs = useRef([]);
+  const badgeRefs = useRef([]);
 
   // Mode: 'team' or 'individual'
   const isIndividual = settings?.gameMode === 'individual';
@@ -55,7 +58,7 @@ export default function DuckRaceGame({
     startTime: 0,
     pausedTime: 0,
     elapsedBeforePause: 0,
-    duration: 18000, // 18s default round
+    duration: 8500, // 8.5s fast exciting race
     targetWinner: null,
     determinedWinner: null,
     isFinished: false,
@@ -63,7 +66,7 @@ export default function DuckRaceGame({
   });
 
   const raceDuration = useMemo(() => {
-    const durSec = settings?.roundDuration || 18;
+    const durSec = settings?.roundDuration ? Math.min(settings.roundDuration, 12) : 8.5;
     const speed = settings?.gameSpeed || 1.0;
     return (durSec * 1000) / speed;
   }, [settings]);
@@ -157,20 +160,35 @@ export default function DuckRaceGame({
     rt.isFinished = false;
     rt.duration = raceDuration;
 
+    // Measure lane travel width
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.80) : 800;
+
+    // Start 60-120 FPS GPU RAF Loop (Direct DOM update: ZERO React re-renders during race)
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      const newProgress = participants.map((item, idx) => {
+      const currentProgress = [];
+      participants.forEach((item, idx) => {
         const isWinner = item.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
+        currentProgress.push(prog);
 
-      setDuckProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 2.0) * 3;
+
+        if (duckRefs.current[idx]) {
+          duckRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setDuckProgress(currentProgress);
         finishRace();
       }
     };
@@ -195,20 +213,33 @@ export default function DuckRaceGame({
     setGameState(GAME_STATES.PLAYING);
     gameAudio.playTick();
 
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.80) : 800;
+
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
-      const newProgress = participants.map((item, idx) => {
+      const currentProgress = [];
+      participants.forEach((item, idx) => {
         const isWinner = item.id === rt.determinedWinner?.id;
-        return computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
-      });
+        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
+        currentProgress.push(prog);
 
-      setDuckProgress(newProgress);
+        const xPx = (prog / 100) * trackWidth;
+        const yPx = Math.sin((timestamp * 0.005) + idx * 2.0) * 3;
+
+        if (duckRefs.current[idx]) {
+          duckRefs.current[idx].style.transform = `translate3d(${xPx}px, ${yPx}px, 0)`;
+        }
+        if (badgeRefs.current[idx]) {
+          badgeRefs.current[idx].textContent = `${Math.round(prog)}%`;
+        }
+      });
 
       if (normalizedTime < 1.0 && !rt.isFinished) {
         rt.rafId = requestAnimationFrame(loop);
       } else if (!rt.isFinished) {
+        setDuckProgress(currentProgress);
         finishRace();
       }
     };
@@ -263,6 +294,16 @@ export default function DuckRaceGame({
     setRankings([]);
     setGameState(GAME_STATES.IDLE);
     gameAudio.playTick();
+
+    // Reset duck positions directly
+    participants.forEach((_, idx) => {
+      if (duckRefs.current[idx]) {
+        duckRefs.current[idx].style.transform = 'translate3d(0px, 0px, 0)';
+      }
+      if (badgeRefs.current[idx]) {
+        badgeRefs.current[idx].textContent = '0%';
+      }
+    });
   };
 
   const toggleSound = () => {
@@ -377,11 +418,15 @@ export default function DuckRaceGame({
         </div>
 
         {/* RACING LANES & DUCKS */}
-        <div className="absolute top-[18%] bottom-[18%] left-0 right-0 flex flex-col justify-around px-2 z-20">
+        <div ref={trackRef} className="absolute top-[18%] bottom-[18%] left-0 right-0 flex flex-col justify-around px-2 z-20">
+          <style>{`
+            @keyframes duckWaddlePaddle {
+              0%, 100% { transform: translateY(-2px) rotate(-4deg); }
+              50% { transform: translateY(3px) rotate(4deg); }
+            }
+          `}</style>
           {participants.map((item, index) => {
             const prog = duckProgress[index] || 0;
-            // Map 0 -> 100 progress to left margin percentage (3% to 83%)
-            const leftPercent = 3 + (prog / 100) * 80;
             const isFirst = winner?.id === item.id;
             const accessory = DUCK_ACCESSORIES[index % DUCK_ACCESSORIES.length];
 
@@ -398,24 +443,30 @@ export default function DuckRaceGame({
                   {item.number || index + 1}
                 </div>
 
-                {/* 2D CARTOON DUCK SPRITE */}
+                {/* 2D CARTOON DUCK SPRITE (GPU translate3d) */}
                 <div 
-                  className="absolute flex items-center will-change-[left,transform]"
+                  ref={(el) => (duckRefs.current[index] = el)}
+                  className="absolute flex items-center will-change-transform"
                   style={{
-                    left: `${leftPercent}%`,
-                    transform: `translateY(${Math.sin((prog + index * 30) * 0.15) * 4}px) rotate(${gameState === GAME_STATES.PLAYING ? Math.sin(prog * 0.3) * 6 : 0}deg)`
+                    left: '3%',
+                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.80 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team / Student Badge above duck */}
                   <div className="absolute -top-7 left-1 flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
                     <span className="text-xs">{item.avatar || accessory.hat}</span>
                     <span className="text-[11px] font-bold text-white">{item.shortName || item.name}</span>
-                    <span className="text-[10px] font-mono text-amber-300 font-bold">{Math.round(prog)}%</span>
+                    <span 
+                      ref={(el) => (badgeRefs.current[index] = el)}
+                      className="text-[10px] font-mono text-amber-300 font-bold"
+                    >
+                      {Math.round(prog)}%
+                    </span>
                   </div>
 
                   {/* Water Splash & Wake Droplets behind duck */}
-                  {gameState === GAME_STATES.PLAYING && prog > 2 && (
-                    <div className="absolute -left-6 top-3 flex items-center">
+                  {gameState === GAME_STATES.PLAYING && (
+                    <div className="absolute -left-6 top-3 flex items-center pointer-events-none">
                       <div className="w-3 h-2 rounded-full bg-white/80 animate-ping" />
                       <div className="w-5 h-3 rounded-full bg-cyan-200/60 -ml-1 animate-pulse" />
                     </div>
@@ -424,7 +475,10 @@ export default function DuckRaceGame({
                   {/* Duck Illustration (SVG) */}
                   <div 
                     className="relative w-28 h-16"
-                    style={{ filter: isFirst ? 'drop-shadow(0 0 12px #fef08a)' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.35))' }}
+                    style={{ 
+                      filter: isFirst ? 'drop-shadow(0 0 12px #fef08a)' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.35))',
+                      animation: gameState === GAME_STATES.PLAYING ? 'duckWaddlePaddle 0.38s ease-in-out infinite' : 'none'
+                    }}
                   >
                     <img 
                       src="/assets/games/duck-race/duck_base.svg" 

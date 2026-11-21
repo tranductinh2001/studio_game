@@ -31,11 +31,17 @@ export default function BallCannonGame({
   const [isMuted, setIsMuted] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
+  const [recoiling, setRecoiling] = useState(false);
+
+  const arenaRef = useRef(null);
+  const cannonRef = useRef(null);
+  const targetRef = useRef(null);
+  const ballRef = useRef(null);
 
   // Ball flight physics state
   const [ballState, setBallState] = useState({
     flying: false,
-    x: 120, // start cannon muzzle
+    x: 120,
     y: 400,
     scale: 1,
     impact: false
@@ -61,13 +67,16 @@ export default function BallCannonGame({
   }, [gameState, activeTeam]);
 
   // -------------------------------------------------------------
-  // CANNON FIRE & PARABOLIC BALL FLIGHT LOGIC
+  // CANNON FIRE & PARABOLIC BALL FLIGHT LOGIC (GPU Direct DOM)
   // -------------------------------------------------------------
   const fireCannon = () => {
     if (gameState === GAME_STATES.PLAYING) return;
 
     setGameState(GAME_STATES.PLAYING);
     setLastHit(null);
+    setRecoiling(true);
+    setTimeout(() => setRecoiling(false), 350);
+
     gameAudio.playHorn();
     gameAudio.playPop();
 
@@ -78,38 +87,53 @@ export default function BallCannonGame({
       chosenZone = TARGET_ZONES[0]; // 100 PTS Bullseye!
     }
 
-    // Ball Flight Parabola (from X=120, Y=400 to Target X=720, Y=260)
-    const startX = 120;
-    const startY = 400;
-    const endX = 720;
-    const endY = 260 + (chosenZone.score === 100 ? 0 : (100 - chosenZone.score) * 1.5);
+    const containerRect = arenaRef.current?.getBoundingClientRect();
+    const cannonRect = cannonRef.current?.getBoundingClientRect();
+    const targetRect = targetRef.current?.getBoundingClientRect();
+
+    let startX = 140;
+    let startY = 320;
+    let endX = 750;
+    let endY = 260;
+
+    if (containerRect && cannonRect && targetRect) {
+      startX = cannonRect.right - containerRect.left - 20;
+      startY = cannonRect.top - containerRect.top + 35;
+      endX = targetRect.left - containerRect.left + targetRect.width * 0.45;
+      const yOffset = chosenZone.score === 100 ? 0.45 : (chosenZone.score === 50 ? 0.35 : 0.60);
+      endY = targetRect.top - containerRect.top + targetRect.height * yOffset;
+    }
+
+    if (ballRef.current) {
+      ballRef.current.style.display = 'block';
+      ballRef.current.style.transform = `translate3d(${startX}px, ${startY}px, 0) scale(1)`;
+    }
 
     const startTime = performance.now();
-    const flightDuration = 1200; // 1.2s flight
+    const flightDuration = 850; // 0.85s snappy flight
 
     const animateFlight = (time) => {
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / flightDuration, 1.0);
 
-      // Parabolic Arc: Y = lerp(startY, endY) - 4 * peak * t * (1 - t)
+      // Smooth parabolic flight
       const currentX = startX + (endX - startX) * progress;
       const linearY = startY + (endY - startY) * progress;
-      const arcHeight = 180 * Math.sin(progress * Math.PI);
+      const arcHeight = 160 * Math.sin(progress * Math.PI);
       const currentY = linearY - arcHeight;
-      const scale = 1.0 - progress * 0.4; // shrinking into the distance
+      const scale = 1.0 - progress * 0.35;
 
-      setBallState({
-        flying: true,
-        x: currentX,
-        y: currentY,
-        scale,
-        impact: false
-      });
+      if (ballRef.current) {
+        ballRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${scale})`;
+      }
 
       if (progress < 1.0) {
         requestAnimationFrame(animateFlight);
       } else {
         // Impact!
+        if (ballRef.current) {
+          ballRef.current.style.display = 'none';
+        }
         gameAudio.playBoost();
         gameAudio.playFanfare();
         setBallState(prev => ({ ...prev, flying: false, impact: true }));
@@ -138,6 +162,9 @@ export default function BallCannonGame({
   };
 
   const resetGame = () => {
+    if (ballRef.current) {
+      ballRef.current.style.display = 'none';
+    }
     setBallState({ flying: false, x: 120, y: 400, scale: 1, impact: false });
     setLastHit(null);
     setGameState(GAME_STATES.IDLE);
@@ -227,13 +254,24 @@ export default function BallCannonGame({
       </div>
 
       {/* 2. MAIN 2D CARTOON CARNIVAL ARENA */}
-      <div className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-rose-950 flex items-center justify-between px-16">
-        
+      <div ref={arenaRef} className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-rose-950 flex items-center justify-between px-16">
+        <style>{`
+          @keyframes cannonRecoilAnim {
+            0% { transform: scale(1) translateX(0); }
+            30% { transform: scale(1.06, 0.94) translateX(-16px) rotate(-4deg); }
+            100% { transform: scale(1) translateX(0); }
+          }
+        `}</style>
+
         {/* Carnival Striped Backdrop */}
         <div className="absolute inset-0 pointer-events-none opacity-15 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500 via-transparent to-transparent" />
 
         {/* LEFT: Cartoon Brass Cannon & Rower/Shooter Character */}
-        <div className="relative z-10 flex flex-col items-center">
+        <div 
+          ref={cannonRef}
+          className="relative z-10 flex flex-col items-center"
+          style={recoiling ? { animation: 'cannonRecoilAnim 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28)' } : {}}
+        >
           <div className="w-48 h-36">
             <img 
               src="/assets/games/ball-cannon/cannon.svg" 
@@ -246,26 +284,25 @@ export default function BallCannonGame({
           </span>
         </div>
 
-        {/* FLYING CARTOON BALL */}
-        {ballState.flying && (
-          <div 
-            className="absolute z-20 pointer-events-none will-change-transform"
-            style={{
-              left: 0,
-              top: 0,
-              transform: `translate3d(${ballState.x}px, ${ballState.y}px, 0) scale(${ballState.scale})`
-            }}
-          >
-            {/* Cannonball with fire trail */}
-            <div className="relative flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-800 via-slate-700 to-amber-300 border-2 border-white shadow-xl shadow-amber-500/50" />
-              <div className="absolute -left-4 w-6 h-3 rounded-full bg-orange-500/80 blur-sm animate-ping" />
-            </div>
+        {/* FLYING CARTOON BALL (Direct GPU transform) */}
+        <div 
+          ref={ballRef}
+          className="absolute z-20 pointer-events-none will-change-transform hidden"
+          style={{
+            left: 0,
+            top: 0,
+            transform: 'translate3d(0px, 0px, 0) scale(1)'
+          }}
+        >
+          {/* Cannonball with fire trail */}
+          <div className="relative flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-800 via-slate-700 to-amber-300 border-2 border-white shadow-xl shadow-amber-500/50" />
+            <div className="absolute -left-4 w-6 h-3 rounded-full bg-orange-500/80 blur-sm animate-ping" />
           </div>
-        )}
+        </div>
 
         {/* RIGHT: Concentric Target Board */}
-        <div className="relative z-10 flex flex-col items-center">
+        <div ref={targetRef} className="relative z-10 flex flex-col items-center">
           <div className={`w-64 h-64 transition-transform ${ballState.impact ? 'scale-110 animate-bounce' : ''}`}>
             <img 
               src="/assets/games/ball-cannon/target_board.svg" 
