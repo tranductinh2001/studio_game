@@ -177,3 +177,4 @@ export default function GameCenter({ onSwitchTab }) {
     </div>
   );
 }
+
