@@ -164,6 +164,22 @@ export default function KnowledgeMazeGame({
 
         {/* Connecting Pathway Line */}
         <div className="relative w-full flex items-center justify-between">
+          
+          {/* Dynamic Hopping Pawn Adventurer */}
+          <div 
+            className="absolute -top-16 z-30 flex flex-col items-center pointer-events-none transition-all duration-700 [transition-timing-function:cubic-bezier(0.34,1.4,0.64,1)] will-change-[left,transform]"
+            style={{
+              left: `calc(${Math.min(currentStep, 5) * 20}% + 4px)`
+            }}
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 border-2 border-white flex items-center justify-center text-2xl shadow-xl shadow-cyan-500/50 animate-bounce">
+              {activeTeam?.icon || '🧙'}
+            </div>
+            <span className="mt-0.5 px-2 py-0.5 rounded text-[9px] font-black bg-cyan-500 text-slate-950 shadow whitespace-nowrap">
+              {activeTeam?.shortName}
+            </span>
+          </div>
+
           <div className="absolute left-[8%] right-[8%] h-3 bg-slate-800 rounded-full border border-amber-500/30 -z-0">
             {/* Progress filled bar */}
             <div 
@@ -188,7 +204,7 @@ export default function KnowledgeMazeGame({
                     isReached 
                       ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-slate-950 shadow-lg shadow-emerald-500/50 scale-105' 
                       : isCurrent
-                        ? 'bg-gradient-to-tr from-amber-400 to-orange-500 border-amber-300 text-slate-950 shadow-lg shadow-amber-500/50 animate-bounce'
+                        ? 'bg-gradient-to-tr from-amber-400 to-orange-500 border-amber-300 text-slate-950 shadow-lg shadow-amber-500/50'
                         : 'bg-slate-900 border-slate-700 text-slate-500'
                   }`}
                 >
@@ -202,18 +218,6 @@ export default function KnowledgeMazeGame({
                 <span className="text-[10px] text-amber-300/80 text-center max-w-[120px]">
                   {gate.hint}
                 </span>
-
-                {/* Pawn Character standing at current position */}
-                {isCurrent && (
-                  <div className="absolute -top-16 flex flex-col items-center animate-pulse">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 border-2 border-white flex items-center justify-center text-2xl shadow-xl shadow-cyan-500/50">
-                      {activeTeam?.icon || '🧙'}
-                    </div>
-                    <span className="mt-0.5 px-2 py-0.5 rounded text-[9px] font-black bg-cyan-500 text-slate-950 shadow">
-                      {activeTeam?.shortName}
-                    </span>
-                  </div>
-                )}
               </div>
             );
           })}

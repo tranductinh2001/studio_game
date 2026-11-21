@@ -378,7 +378,7 @@ export default function RocketSpaceGame({
 
                 {/* Rocket Sprite */}
                 <div 
-                  className="absolute flex items-center transition-all duration-75"
+                  className="absolute flex items-center will-change-[left,transform]"
                   style={{
                     left: `${leftPercent}%`,
                     transform: `translateY(${Math.sin((prog + index * 25) * 0.12) * 3}px)`

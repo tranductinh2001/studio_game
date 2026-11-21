@@ -400,7 +400,7 @@ export default function DuckRaceGame({
 
                 {/* 2D CARTOON DUCK SPRITE */}
                 <div 
-                  className="absolute flex items-center transition-all duration-75"
+                  className="absolute flex items-center will-change-[left,transform]"
                   style={{
                     left: `${leftPercent}%`,
                     transform: `translateY(${Math.sin((prog + index * 30) * 0.15) * 4}px) rotate(${gameState === GAME_STATES.PLAYING ? Math.sin(prog * 0.3) * 6 : 0}deg)`

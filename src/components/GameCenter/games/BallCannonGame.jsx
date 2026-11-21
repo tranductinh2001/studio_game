@@ -249,11 +249,11 @@ export default function BallCannonGame({
         {/* FLYING CARTOON BALL */}
         {ballState.flying && (
           <div 
-            className="absolute z-20 pointer-events-none transition-transform"
+            className="absolute z-20 pointer-events-none will-change-transform"
             style={{
-              left: `${ballState.x}px`,
-              top: `${ballState.y}px`,
-              transform: `scale(${ballState.scale})`
+              left: 0,
+              top: 0,
+              transform: `translate3d(${ballState.x}px, ${ballState.y}px, 0) scale(${ballState.scale})`
             }}
           >
             {/* Cannonball with fire trail */}

@@ -396,7 +396,7 @@ export default function BoatRaceGame({
 
                 {/* 2D CARTOON RACING BOAT SPRITE */}
                 <div 
-                  className="absolute flex items-center transition-all duration-75"
+                  className="absolute flex items-center will-change-[left,transform]"
                   style={{
                     left: `${leftPercent}%`,
                     transform: `translateY(${Math.sin((prog + index * 20) * 0.1) * 3}px)`

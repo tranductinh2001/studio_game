@@ -71,7 +71,7 @@ export default function LuckyCardShuffleGame({
   }, [gameState, rawPool, secretControl]);
 
   // -------------------------------------------------------------
-  // SHUFFLE & DRAW CARD LOGIC
+  // SHUFFLE & DRAW CARD LOGIC (Pure 60 FPS Smooth Riffle Wave)
   // -------------------------------------------------------------
   const startShuffle = () => {
     if (gameState === GAME_STATES.PLAYING || candidatePool.length === 0) return;
@@ -86,18 +86,33 @@ export default function LuckyCardShuffleGame({
     const targetId = isIndividual ? secretControl?.targetStudentId : secretControl?.targetTeamId;
     const chosen = pickRaceWinner(candidatePool, targetId, modeRig) || candidatePool[0];
 
-    // High energy shuffle card deck animation
-    let shuffleCount = 0;
-    const shuffleInterval = setInterval(() => {
-      shuffleCount += 1;
-      setShuffleOffset((prev) => (prev === 0 ? 35 : prev === 35 ? -35 : 0));
-      gameAudio.playTick();
+    // High energy continuous 60 FPS shuffle wave
+    const startTime = performance.now();
+    const duration = 1600; // 1.6s silky shuffle
+    let lastTickCycle = -1;
 
-      if (shuffleCount >= 10) {
-        clearInterval(shuffleInterval);
+    const animateShuffle = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1.0);
+
+      // Smooth wave: 5 sweeps with smooth envelope ramping down to 0
+      const wave = Math.sin(progress * Math.PI * 10);
+      const envelope = Math.sin(progress * Math.PI);
+      const offset = wave * envelope * 60;
+      setShuffleOffset(offset);
+
+      const cycle = Math.floor(progress * 10);
+      if (cycle !== lastTickCycle) {
+        lastTickCycle = cycle;
+        gameAudio.playTick();
+      }
+
+      if (progress < 1.0) {
+        requestAnimationFrame(animateShuffle);
+      } else {
         setShuffleOffset(0);
 
-        // Draw and flip chosen card
+        // Draw and flip chosen card with smooth 3D reveal
         setTimeout(() => {
           setWinner(chosen);
           setCardFlip(true);
@@ -119,9 +134,11 @@ export default function LuckyCardShuffleGame({
               origin: { y: 0.55 }
             });
           } catch (e) {}
-        }, 400);
+        }, 350);
       }
-    }, 120);
+    };
+
+    requestAnimationFrame(animateShuffle);
   };
 
   const resetGame = () => {
@@ -228,7 +245,7 @@ export default function LuckyCardShuffleGame({
           
           {/* Deck of Holographic Cards */}
           <div 
-            className="relative w-64 h-96 transition-all duration-300"
+            className="relative w-64 h-96 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.34,1.4,0.64,1)] will-change-transform"
             style={{
               transformStyle: 'preserve-3d',
               transform: cardFlip ? 'rotateY(180deg) scale(1.08)' : 'rotateY(0deg)'
@@ -236,10 +253,9 @@ export default function LuckyCardShuffleGame({
           >
             {/* BACK OF CARD: Holographic Magic Shield (Face Down) */}
             <div 
-              className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden [backface-visibility:hidden] filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)]"
+              className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden [backface-visibility:hidden] filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] will-change-transform"
               style={{
-                transform: `translateX(${shuffleOffset}px) rotate(${shuffleOffset * 0.3}deg)`,
-                transition: 'transform 0.12s ease-out'
+                transform: `translateX(${shuffleOffset}px) rotate(${shuffleOffset * 0.3}deg)`
               }}
             >
               <img 

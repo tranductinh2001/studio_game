@@ -56,38 +56,41 @@ export function pickRaceWinner(items = [], targetId = null, mode = 'fair_random'
 }
 
 // Compute dynamic progress for racing characters (boats, ducks, rockets)
-// Normalized progress p in [0, 1]
+// Strictly monotonic forward motion: guaranteed positive velocity (zero jitter/stutter)
 export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed = 1) {
   if (p <= 0) return 0;
-  if (p >= 1) return isWinner ? 100 : (92 + (racerIndex % 3) * 2.5);
+  if (p >= 1) return isWinner ? 100 : (91 + (racerIndex % 3) * 2.2);
 
-  // Base progress from time
-  let prog = p * 100;
+  // 1. Base progress
+  const base = p;
 
-  // Add organic oscillation surges in mid-race (0.15 -> 0.8)
-  const freq1 = 2.5 + (racerIndex * 0.7);
-  const freq2 = 4.2 + (racerIndex * 0.4);
-  const surge = Math.sin(p * Math.PI * freq1 + seed) * 4.5 + Math.cos(p * Math.PI * freq2) * 2.5;
+  // 2. Smooth organic wave (sinusoidal speed variation with positive velocity guarantee)
+  const freq = 1.6 + (racerIndex % 4) * 0.35;
+  const phase = seed + racerIndex * 1.25;
+  const A = 0.035;
+  const w = freq * 2 * Math.PI;
+  // Smooth envelope that zeroes out at start and finish
+  const envelope = Math.sin(p * Math.PI);
+  const organicWave = (Math.sin(w * p + phase) * A) * envelope;
 
-  // In middle of race (20% to 75%), apply exciting surges
-  const midPhase = Math.sin(p * Math.PI);
-  prog += surge * midPhase;
+  let prog = (base + organicWave) * 100;
 
-  // Winner boost in the final 35% of the race
-  if (isWinner && p > 0.65) {
-    const sprintFactor = (p - 0.65) / 0.35; // 0 to 1
-    prog += sprintFactor * 8.5;
-  } else if (!isWinner && p > 0.75) {
-    // Non-winners slightly slow down near finish line
-    const lagFactor = (p - 0.75) / 0.25;
-    prog -= lagFactor * 3.5;
+  // 3. Winner sprint in final 40% (smooth cubic ease-in surge)
+  if (isWinner && p > 0.60) {
+    const sprintT = (p - 0.60) / 0.40;
+    const sprintBoost = Math.pow(sprintT, 2.2) * 9.5;
+    prog += sprintBoost;
+  } else if (!isWinner && p > 0.70) {
+    const lagT = (p - 0.70) / 0.30;
+    const lagDamp = Math.pow(lagT, 2.0) * 4.2;
+    prog -= lagDamp;
   }
 
-  // Ensure boundary [0, isWinner ? 100 : 98]
+  // 4. Clamping
   if (prog < 0) prog = 0;
-  const maxCap = isWinner ? 100 : 96;
-  if (prog > maxCap && p < 0.98) prog = maxCap;
+  if (!isWinner && prog > 95 && p < 0.98) prog = 95;
+  if (prog > 100) prog = 100;
 
-  return Math.min(prog, 100);
+  return prog;
 }
 

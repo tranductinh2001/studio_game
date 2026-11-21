@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   Play, RotateCcw, Trophy, Award, Sparkles, UserCheck, 
@@ -18,6 +18,7 @@ export default function LuckyWheelGame({
   onOpenTeacherPanel
 }) {
   const canvasRef = useRef(null);
+  const pointerRef = useRef(null);
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [winner, setWinner] = useState(null);
   const [history, setHistory] = useState([]);
@@ -27,7 +28,6 @@ export default function LuckyWheelGame({
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
   const [isMuted, setIsMuted] = useState(false);
-  const [flapperAngle, setFlapperAngle] = useState(0);
 
   // Sync mode from settings
   useEffect(() => {
@@ -82,8 +82,8 @@ export default function LuckyWheelGame({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, activeItems]);
 
-  // Render Wheel to HTML5 Canvas (High-DPI Razor Sharp)
-  useEffect(() => {
+  // Render Wheel to HTML5 Canvas (High-DPI Razor Sharp & 60 FPS Smooth)
+  const drawWheel = useCallback((rot = wheelRef.current.rotation) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -104,7 +104,6 @@ export default function LuckyWheelGame({
     }
 
     const sliceAngle = (2 * Math.PI) / activeItems.length;
-    const rot = wheelRef.current.rotation;
 
     // 1. Draw Outer Glowing Rim
     ctx.save();
@@ -216,7 +215,12 @@ export default function LuckyWheelGame({
     ctx.fillText('★', 0, 1);
 
     ctx.restore();
-  });
+  }, [activeItems]);
+
+  // Initial draw & redraw on item changes
+  useEffect(() => {
+    drawWheel();
+  }, [drawWheel, activeItems]);
 
   // -------------------------------------------------------------
   // SPIN LOGIC WITH ACCURATE POINTER STOP ALIGNMENT
@@ -269,7 +273,7 @@ export default function LuckyWheelGame({
     const diff = (normalizedTarget - (currentNorm % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     w.targetRotation = currentNorm + fullSpins + diff;
 
-    // 3. Start Spin Animation Loop
+    // 3. Start Spin Animation Loop (Pure 60 FPS RAF direct render)
     const loop = (timestamp) => {
       const elapsed = timestamp - w.startTime;
       const progress = Math.min(elapsed / w.duration, 1.0);
@@ -277,21 +281,20 @@ export default function LuckyWheelGame({
 
       w.rotation = w.startRotation + (w.targetRotation - w.startRotation) * eased;
 
-      // Tick Audio & Pointer Flapper Deflection
+      // Draw canvas immediately on every frame
+      drawWheel(w.rotation);
+
+      // Tick Audio & Physical Flapper Deflection
       const currentSliceIdx = Math.floor((w.rotation / sliceAngle)) % activeItems.length;
       if (currentSliceIdx !== w.lastTickIndex) {
         w.lastTickIndex = currentSliceIdx;
         gameAudio.playTick();
-        setFlapperAngle(-18);
-        setTimeout(() => setFlapperAngle(0), 40);
-      }
-
-      // Re-render
-      const canvas = canvasRef.current;
-      if (canvas) {
-        // Trigger canvas redraw by setting dummy state or invoking render
-        const event = new CustomEvent('wheel-draw');
-        window.dispatchEvent(event);
+        if (pointerRef.current) {
+          pointerRef.current.style.transform = 'rotate(-18deg)';
+          setTimeout(() => {
+            if (pointerRef.current) pointerRef.current.style.transform = 'rotate(0deg)';
+          }, 35);
+        }
       }
 
       if (progress < 1.0) {
@@ -454,8 +457,9 @@ export default function LuckyWheelGame({
           
           {/* Top Indicator Needle Pointer (SVG) */}
           <div 
-            className="absolute -top-7 z-30 w-16 h-20 transition-transform origin-top duration-75 filter drop-shadow-xl"
-            style={{ transform: `rotate(${flapperAngle}deg)` }}
+            ref={pointerRef}
+            className="absolute -top-7 z-30 w-16 h-20 origin-top filter drop-shadow-xl will-change-transform"
+            style={{ transform: 'rotate(0deg)', transition: 'transform 0.04s ease-out' }}
           >
             <img 
               src="/assets/games/lucky-wheel/pointer.svg" 
