@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
 import confetti from 'canvas-confetti';
 import { 
-  Crosshair, Trophy, Play, RotateCcw, Sparkles, 
-  HelpCircle, CheckCircle, Target, Award, Zap
+  Play, RotateCcw, Trophy, Award, Zap, 
+  HelpCircle, CheckCircle, Volume2, VolumeX, Target, Sparkles
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
-import { setupCinematicLighting, disposeThreeScene } from '../services/threeHelpers';
+import { GAME_STATES } from '../services/gameEngine2D';
+import QuestionChallengeModal from '../QuestionChallengeModal';
+
+const TARGET_ZONES = [
+  { score: 100, label: 'TÂM VÀNG (100 PTS)', ring: 'Tâm Vàng', color: '#facc15' },
+  { score: 50, label: 'VÒNG ĐỎ (50 PTS)', ring: 'Vòng Đỏ', color: '#ef4444' },
+  { score: 20, label: 'VÒNG XANH (20 PTS)', ring: 'Vòng Xanh', color: '#0ea5e9' },
+  { score: 10, label: 'VÒNG NGOÀI (10 PTS)', ring: 'Vòng Ngoài', color: '#64748b' }
+];
 
 export default function BallCannonGame({
   teams = [],
@@ -17,575 +24,313 @@ export default function BallCannonGame({
   onRecordResult,
   onOpenTeacherPanel
 }) {
-  const containerRef = useRef(null);
-
-  const isIndividualMode = settings.mode === 'individual';
-  const participants = isIndividualMode ? students : teams;
-
-  // States: 'IDLE' | 'FIRING' | 'HIT'
-  const [gameState, setGameState] = useState('IDLE');
-  const [selectedWinner, setSelectedWinner] = useState(null);
+  const [gameState, setGameState] = useState(GAME_STATES.IDLE);
+  const [selectedTeamIndex, setSelectedTeamIndex] = useState(0);
+  const [scoreTally, setScoreTally] = useState(0);
+  const [lastHit, setLastHit] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
 
-  const threeRef = useRef({
-    scene: null,
-    camera: null,
-    renderer: null,
-    cannonGroup: null,
-    barrelMesh: null,
-    targetRings: [],
-    ballMesh: null,
-    animFrame: null,
-    isFiring: false,
-    fireStartTime: 0,
-    trajectory: null,
-    chosenWinner: null
+  // Ball flight physics state
+  const [ballState, setBallState] = useState({
+    flying: false,
+    x: 120, // start cannon muzzle
+    y: 400,
+    scale: 1,
+    impact: false
   });
 
-  // Shortcut 1-9
+  const activeTeam = teams[selectedTeamIndex] || teams[0];
+
+  // Keyboard shortcut Space to Shoot
   useEffect(() => {
     const handleKeyDown = (e) => {
-      const num = parseInt(e.key, 10);
-      if (!isNaN(num) && num >= 1 && num <= teams.length) {
-        const target = teams[num - 1];
-        if (target) {
-          secretControl.targetTeamId = target.id;
-          secretControl.mode = 'teacher_rigged';
-          gameAudio.playTick();
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        if (gameState !== GAME_STATES.PLAYING) {
+          fireCannon();
         }
+      }
+      if ((e.key === 'r' || e.key === 'R') && e.target.tagName !== 'INPUT') {
+        resetGame();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [teams, secretControl]);
+  }, [gameState, activeTeam]);
 
   // -------------------------------------------------------------
-  // BUILD 3D TARGET RING
-  // -------------------------------------------------------------
-  const buildTargetRing = (participant, posX, posY, posZ) => {
-    const ringGroup = new THREE.Group();
-
-    // 1. Outer Torus Ring
-    const torusGeo = new THREE.TorusGeometry(1.6, 0.22, 16, 32);
-    const torusMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(participant.color || '#38bdf8'),
-      metalness: 0.8,
-      roughness: 0.2
-    });
-    const torusMesh = new THREE.Mesh(torusGeo, torusMat);
-    torusMesh.castShadow = true;
-    ringGroup.add(torusMesh);
-
-    // 2. Concentric Bullseye Disc
-    const discGeo = new THREE.CylinderGeometry(1.4, 1.4, 0.1, 24);
-    discGeo.rotateX(Math.PI / 2);
-    const discMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.5
-    });
-    const discMesh = new THREE.Mesh(discGeo, discMat);
-    ringGroup.add(discMesh);
-
-    // 3. Target Label Canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = participant.color || '#38bdf8';
-    ctx.beginPath();
-    ctx.arc(128, 128, 110, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(128, 128, 75, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = participant.color || '#38bdf8';
-    ctx.font = 'bold 72px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(participant.number || '🎯'), 128, 130);
-
-    const tex = new THREE.CanvasTexture(canvas);
-    const labelGeo = new THREE.PlaneGeometry(2.2, 2.2);
-    const labelMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
-    const labelMesh = new THREE.Mesh(labelGeo, labelMat);
-    labelMesh.position.z = 0.08;
-    ringGroup.add(labelMesh);
-
-    // 4. Name Tag Banner Below
-    const nameCanvas = document.createElement('canvas');
-    nameCanvas.width = 256;
-    nameCanvas.height = 64;
-    const nCtx = nameCanvas.getContext('2d');
-    nCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    nCtx.roundRect(4, 4, 248, 56, 12);
-    nCtx.fill();
-    nCtx.strokeStyle = participant.color || '#38bdf8';
-    nCtx.lineWidth = 4;
-    nCtx.roundRect(4, 4, 248, 56, 12);
-    nCtx.stroke();
-    nCtx.fillStyle = '#ffffff';
-    nCtx.font = 'bold 26px sans-serif';
-    nCtx.textAlign = 'center';
-    nCtx.textBaseline = 'middle';
-    nCtx.fillText((participant.shortName || participant.name).toUpperCase(), 128, 33);
-
-    const nameTex = new THREE.CanvasTexture(nameCanvas);
-    const nameGeo = new THREE.PlaneGeometry(2.8, 0.7);
-    const nameMat = new THREE.MeshBasicMaterial({ map: nameTex, transparent: true, side: THREE.DoubleSide });
-    const nameMesh = new THREE.Mesh(nameGeo, nameMat);
-    nameMesh.position.set(0, -2.4, 0);
-    ringGroup.add(nameMesh);
-
-    ringGroup.position.set(posX, posY, posZ);
-
-    return {
-      group: ringGroup,
-      participant: participant,
-      basePos: new THREE.Vector3(posX, posY, posZ),
-      wobbleOffset: Math.random() * Math.PI * 2
-    };
-  };
-
-  // -------------------------------------------------------------
-  // INITIALIZE THREE.JS SHOOTING ARENA
-  // -------------------------------------------------------------
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020617);
-    threeRef.current.scene = scene;
-
-    const camera = new THREE.PerspectiveCamera(
-      42,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      500
-    );
-    camera.position.set(-8, 12, 34);
-    camera.lookAt(8, 6, 0);
-    threeRef.current.camera = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
-    threeRef.current.renderer = renderer;
-
-    // Lighting
-    setupCinematicLighting(scene, {
-      ambientColor: 0x0f172a,
-      ambientIntensity: 1.8,
-      keyColor: 0x38bdf8,
-      keyIntensity: 3.0,
-      fillColor: 0x3b82f6,
-      fillIntensity: 1.5,
-      rimColor: 0xf59e0b,
-      rimIntensity: 1.8
-    });
-
-    // 1. Stadium Floor Grid
-    const floorGeo = new THREE.BoxGeometry(60, 1.0, 40);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-    floorMesh.position.y = -0.5;
-    floorMesh.receiveShadow = true;
-    scene.add(floorMesh);
-
-    // 2. 3D Cannon at Bottom-Left (-18, 1.5, 8)
-    const cannonGroup = new THREE.Group();
-
-    // Carriage Base & Wheels
-    const carriageGeo = new THREE.BoxGeometry(3.2, 1.2, 2.0);
-    const carriageMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
-    const carriage = new THREE.Mesh(carriageGeo, carriageMat);
-    carriage.position.y = 0.6;
-    cannonGroup.add(carriage);
-
-    const wheelGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.4, 20);
-    wheelGeo.rotateX(Math.PI / 2);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.3 });
-
-    const w1 = new THREE.Mesh(wheelGeo, wheelMat);
-    w1.position.set(-1.0, 0.6, 1.2);
-    cannonGroup.add(w1);
-    const w2 = new THREE.Mesh(wheelGeo, wheelMat);
-    w2.position.set(1.0, 0.6, 1.2);
-    cannonGroup.add(w2);
-    const w3 = new THREE.Mesh(wheelGeo, wheelMat);
-    w3.position.set(-1.0, 0.6, -1.2);
-    cannonGroup.add(w3);
-    const w4 = new THREE.Mesh(wheelGeo, wheelMat);
-    w4.position.set(1.0, 0.6, -1.2);
-    cannonGroup.add(w4);
-
-    // Cannon Barrel (Rotated 45 degrees pointing at +X and +Y)
-    const barrelGeo = new THREE.CylinderGeometry(0.65, 0.85, 5.2, 24);
-    barrelGeo.rotateZ(-Math.PI / 4); // 45 deg elevation
-    const barrelMat = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b,
-      metalness: 0.9,
-      roughness: 0.15
-    });
-    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
-    barrel.position.set(1.0, 2.2, 0);
-    cannonGroup.add(barrel);
-    threeRef.current.barrelMesh = barrel;
-
-    cannonGroup.position.set(-18, 0, 8);
-    scene.add(cannonGroup);
-    threeRef.current.cannonGroup = cannonGroup;
-
-    // 3. Glowing Energy Cannonball (Initially hidden inside barrel)
-    const ballGeo = new THREE.SphereGeometry(0.65, 24, 24);
-    const ballMat = new THREE.MeshStandardMaterial({
-      color: 0xfbbf24,
-      emissive: 0xf59e0b,
-      emissiveIntensity: 0.8,
-      metalness: 0.2
-    });
-    const ballMesh = new THREE.Mesh(ballGeo, ballMat);
-    ballMesh.visible = false;
-    scene.add(ballMesh);
-    threeRef.current.ballMesh = ballMesh;
-
-    // 4. Build Floating Target Rings in Stadium
-    const count = participants.length;
-    const targetObjects = [];
-    const cols = Math.min(count, 4);
-    const rows = Math.ceil(count / cols);
-
-    participants.forEach((p, idx) => {
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-
-      const targetX = 6 + col * 6.5;
-      const targetY = 4 + (rows - 1 - row) * 5.2;
-      const targetZ = -8 + (col % 2) * 2;
-
-      const tObj = buildTargetRing(p, targetX, targetY, targetZ);
-      scene.add(tObj.group);
-      targetObjects.push(tObj);
-    });
-    threeRef.current.targetRings = targetObjects;
-
-    // Resize
-    const handleResize = () => {
-      if (!container || !renderer || !camera) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Animation loop
-    let clock = new THREE.Clock();
-
-    const animate = () => {
-      threeRef.current.animFrame = requestAnimationFrame(animate);
-      const time = clock.getElapsedTime();
-
-      // Gentle floating animation of target rings
-      targetObjects.forEach((t) => {
-        t.group.position.y = t.basePos.y + Math.sin(time * 2.5 + t.wobbleOffset) * 0.25;
-        t.group.rotation.y = Math.sin(time * 1.5 + t.wobbleOffset) * 0.08;
-      });
-
-      // Animate Cannonball along 3D Parabola
-      if (threeRef.current.isFiring && threeRef.current.trajectory) {
-        const { start, target, apexHeight, duration } = threeRef.current.trajectory;
-        const elapsed = performance.now() - threeRef.current.fireStartTime;
-        const t = Math.min(elapsed / duration, 1.0);
-
-        // Parabolic arc equation
-        const x = start.x + (target.x - start.x) * t;
-        const z = start.z + (target.z - start.z) * t;
-        const arcY = 4 * apexHeight * t * (1 - t);
-        const y = start.y + (target.y - start.y) * t + arcY;
-
-        ballMesh.position.set(x, y, z);
-        ballMesh.rotation.x = time * 12;
-
-        if (t >= 1.0) {
-          threeRef.current.isFiring = false;
-          ballMesh.visible = false;
-          handleBallHitTarget();
-        }
-      }
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (threeRef.current.animFrame) cancelAnimationFrame(threeRef.current.animFrame);
-      disposeThreeScene(scene, renderer);
-    };
-  }, [participants]);
-
-  // -------------------------------------------------------------
-  // FIRE BALL CANNON
+  // CANNON FIRE & PARABOLIC BALL FLIGHT LOGIC
   // -------------------------------------------------------------
   const fireCannon = () => {
-    if (gameState === 'FIRING') return;
+    if (gameState === GAME_STATES.PLAYING) return;
 
-    setGameState('FIRING');
-    setSelectedWinner(null);
+    setGameState(GAME_STATES.PLAYING);
+    setLastHit(null);
+    gameAudio.playHorn();
     gameAudio.playPop();
 
-    // 1. Determine Target based on secretControl
-    let chosenWinner = null;
-    let targetObj = null;
-    const mode = secretControl?.mode || 'fair_random';
-    const targetId = isIndividualMode ? secretControl?.targetStudentId : secretControl?.targetTeamId;
-
-    if (mode === 'teacher_rigged' && targetId) {
-      targetObj = threeRef.current.targetRings.find(t => t.participant.id === targetId) || threeRef.current.targetRings[0];
-    } else if (mode === 'weighted_random' && targetId && Math.random() < 0.8) {
-      targetObj = threeRef.current.targetRings.find(t => t.participant.id === targetId) || threeRef.current.targetRings[0];
-    } else {
-      const randIdx = Math.floor(Math.random() * threeRef.current.targetRings.length);
-      targetObj = threeRef.current.targetRings[randIdx];
+    // Determine target hit: Teacher rigged or random
+    const modeRig = secretControl?.mode || 'fair_random';
+    let chosenZone = TARGET_ZONES[Math.floor(Math.random() * TARGET_ZONES.length)];
+    if (modeRig === 'teacher_rigged') {
+      chosenZone = TARGET_ZONES[0]; // 100 PTS Bullseye!
     }
 
-    chosenWinner = targetObj.participant;
-    threeRef.current.chosenWinner = chosenWinner;
+    // Ball Flight Parabola (from X=120, Y=400 to Target X=720, Y=260)
+    const startX = 120;
+    const startY = 400;
+    const endX = 720;
+    const endY = 260 + (chosenZone.score === 100 ? 0 : (100 - chosenZone.score) * 1.5);
 
-    // 2. Setup 3D Ballistic Trajectory
-    const startPos = new THREE.Vector3(-15.5, 4.0, 8.0); // Muzzle position
-    const targetPos = targetObj.group.position.clone();
+    const startTime = performance.now();
+    const flightDuration = 1200; // 1.2s flight
 
-    threeRef.current.trajectory = {
-      start: startPos,
-      target: targetPos,
-      apexHeight: 8.5,
-      duration: 1400 // ms
+    const animateFlight = (time) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / flightDuration, 1.0);
+
+      // Parabolic Arc: Y = lerp(startY, endY) - 4 * peak * t * (1 - t)
+      const currentX = startX + (endX - startX) * progress;
+      const linearY = startY + (endY - startY) * progress;
+      const arcHeight = 180 * Math.sin(progress * Math.PI);
+      const currentY = linearY - arcHeight;
+      const scale = 1.0 - progress * 0.4; // shrinking into the distance
+
+      setBallState({
+        flying: true,
+        x: currentX,
+        y: currentY,
+        scale,
+        impact: false
+      });
+
+      if (progress < 1.0) {
+        requestAnimationFrame(animateFlight);
+      } else {
+        // Impact!
+        gameAudio.playBoost();
+        gameAudio.playFanfare();
+        setBallState(prev => ({ ...prev, flying: false, impact: true }));
+        setLastHit(chosenZone);
+        setScoreTally(prev => prev + chosenZone.score);
+        setGameState(GAME_STATES.FINISHED);
+
+        if (onRecordResult) {
+          onRecordResult('ball-cannon', {
+            team: activeTeam,
+            score: chosenZone.score
+          });
+        }
+
+        try {
+          confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { x: 0.75, y: 0.4 }
+          });
+        } catch (e) {}
+      }
     };
 
-    threeRef.current.ballMesh.visible = true;
-    threeRef.current.ballMesh.position.copy(startPos);
-    threeRef.current.fireStartTime = performance.now();
-    threeRef.current.isFiring = true;
-
-    // Cannon recoil animation
-    if (threeRef.current.barrelMesh) {
-      threeRef.current.barrelMesh.position.x = 0.4;
-      setTimeout(() => {
-        if (threeRef.current.barrelMesh) threeRef.current.barrelMesh.position.x = 1.0;
-      }, 150);
-    }
-  };
-
-  const handleBallHitTarget = () => {
-    setGameState('HIT');
-    const winner = threeRef.current.chosenWinner;
-    setSelectedWinner(winner);
-
-    gameAudio.playWhistle();
-    gameAudio.playFanfare();
-
-    confetti({
-      particleCount: 150,
-      spread: 95,
-      origin: { y: 0.55 }
-    });
-
-    if (onRecordResult) {
-      onRecordResult({
-        gameId: 'game-08-ball-cannon',
-        gameName: 'Bắn Bóng Trúng Đích',
-        winner: winner,
-        timestamp: new Date().toISOString()
-      });
-    }
+    requestAnimationFrame(animateFlight);
   };
 
   const resetGame = () => {
-    setGameState('IDLE');
-    setSelectedWinner(null);
-    threeRef.current.isFiring = false;
-    if (threeRef.current.ballMesh) threeRef.current.ballMesh.visible = false;
+    setBallState({ flying: false, x: 120, y: 400, scale: 1, impact: false });
+    setLastHit(null);
+    setGameState(GAME_STATES.IDLE);
+    gameAudio.playTick();
+  };
+
+  const toggleSound = () => {
+    const muted = gameAudio.toggleMute();
+    setIsMuted(muted);
+  };
+
+  const openChallenge = () => {
+    const randomQ = LESSON_6_QUESTIONS[Math.floor(Math.random() * LESSON_6_QUESTIONS.length)];
+    setCurrentQuestion(randomQ);
+    setShowChallengeModal(true);
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between bg-slate-950 select-none overflow-hidden font-sans">
-      {/* 3D WebGL Canvas */}
-      <div ref={containerRef} className="absolute inset-0 z-0 w-full h-full" />
-
-      {/* Top HUD */}
-      <div className="relative z-10 w-full flex items-center justify-between p-4 bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent pointer-events-auto">
+    <div className="relative w-full h-full flex flex-col bg-slate-950 text-white select-none overflow-hidden font-sans">
+      
+      {/* 1. TOP CONTROL BAR */}
+      <div className="flex-none h-14 bg-slate-900/90 border-b border-slate-800 px-4 flex items-center justify-between z-30 backdrop-blur-md">
+        
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 p-0.5 shadow-xl shadow-sky-500/30">
-            <div className="w-full h-full bg-slate-950/60 rounded-[14px] flex items-center justify-center text-2xl">
-              🎯
-            </div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-xl shadow-lg shadow-amber-500/20">
+            🎯
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-400/40">
-                3D BALLISTIC ARENA
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                GAME 08 • 2D CARTOON PREMIUM
               </span>
-              <span className="text-xs text-slate-400 font-semibold hidden sm:inline">
-                Pháo Thần Công • Quỹ Đạo Parabol 45°
-              </span>
+              <h2 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-100 to-rose-300 uppercase">
+                BẮN BÓNG TRÚNG ĐÍCH
+              </h2>
             </div>
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-100 to-amber-300">
-              BẮN BÓNG TRÚNG ĐÍCH
-            </h1>
+            <p className="text-[11px] text-slate-400">
+              Pháo Thần Công • Quỹ Đạo Parabol Chuẩn Xác • Điểm Thưởng Tâm Vàng 100
+            </p>
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex items-center gap-2.5">
-          {gameState === 'IDLE' && (
-            <button
-              onClick={fireCannon}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-amber-400 hover:from-sky-400 hover:to-amber-300 text-white font-black text-sm shadow-xl shadow-sky-600/30 transition-all transform hover:scale-105 active:scale-95"
-            >
-              <Target className="w-4 h-4" />
-              KHAI HỎA BẮN BÓNG
-            </button>
-          )}
+        {/* Center: Team & Score Tally */}
+        <div className="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+          <span className="text-slate-400 font-bold">Đội Bắn:</span>
+          <select
+            value={selectedTeamIndex}
+            onChange={(e) => setSelectedTeamIndex(Number(e.target.value))}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-amber-300 font-black text-xs outline-none"
+          >
+            {teams.map((t, idx) => (
+              <option key={t.id} value={idx}>{t.name}</option>
+            ))}
+          </select>
+          <div className="border-l border-slate-700 pl-3 flex items-center gap-1.5">
+            <span className="text-slate-400">Tổng điểm:</span>
+            <span className="font-mono text-amber-400 font-black text-sm">{scoreTally} PTS</span>
+          </div>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fireCannon}
+            disabled={gameState === GAME_STATES.PLAYING}
+            className="px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 text-slate-950 shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 active:scale-95"
+          >
+            <Play className="w-4 h-4 fill-current" />
+            <span>BẮN BÓNG (RUN)</span>
+          </button>
 
           <button
             onClick={resetGame}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all active:scale-95"
+            className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1.5 transition-all"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            Làm Mới
+            <span>LÀM LẠI</span>
+          </button>
+
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
           </button>
         </div>
       </div>
 
-      {/* Victory Hit Modal */}
-      {gameState === 'HIT' && selectedWinner && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 via-sky-950/40 to-slate-900 border-2 border-yellow-400 p-8 shadow-2xl shadow-yellow-500/20 text-center animate-in zoom-in-95">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 p-1 shadow-xl shadow-yellow-500/40">
-              <div className="w-full h-full bg-slate-950 rounded-[20px] flex items-center justify-center text-4xl">
-                🎯
-              </div>
-            </div>
+      {/* 2. MAIN 2D CARTOON CARNIVAL ARENA */}
+      <div className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-rose-950 flex items-center justify-between px-16">
+        
+        {/* Carnival Striped Backdrop */}
+        <div className="absolute inset-0 pointer-events-none opacity-15 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500 via-transparent to-transparent" />
 
-            <span className="inline-block mt-4 px-3.5 py-1 rounded-full text-xs font-black bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 tracking-wider">
-              TRÚNG HỒNG TÂM XUẤT SẮC
-            </span>
+        {/* LEFT: Cartoon Brass Cannon & Rower/Shooter Character */}
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="w-48 h-36">
+            <img 
+              src="/assets/games/ball-cannon/cannon.svg" 
+              alt="Cannon" 
+              className="w-full h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+          <span className="mt-2 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/30">
+            {activeTeam?.name}
+          </span>
+        </div>
 
-            <h3 className="text-3xl font-black text-white mt-2">
-              {selectedWinner.name}
-            </h3>
-            <p className="text-sm font-semibold text-sky-300 mt-1">
-              Quả bóng năng lượng đã bay theo quỹ đạo parabol và bắn trúng mục tiêu!
-            </p>
-
-            <div className="my-6 p-4 rounded-2xl bg-sky-950/40 border border-sky-500/30 flex items-center justify-around">
-              <div className="text-center">
-                <div className="text-xs text-slate-400 font-medium">Độ chính xác</div>
-                <div className="text-lg font-black text-sky-300">100% Tuyệt Đối</div>
-              </div>
-              <div className="w-px h-8 bg-slate-800" />
-              <div className="text-center">
-                <div className="text-xs text-slate-400 font-medium">Thưởng thi đua</div>
-                <div className="text-lg font-black text-yellow-300">+10 Điểm ⭐</div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => {
-                  const randQ = LESSON_6_QUESTIONS[Math.floor(Math.random() * LESSON_6_QUESTIONS.length)];
-                  setCurrentQuestion(randQ);
-                  setShowChallengeModal(true);
-                  gameAudio.playBell();
-                }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md transition-all active:scale-95"
-              >
-                <HelpCircle className="w-4 h-4" />
-                Thử Thách Bài 6
-              </button>
-              <button
-                onClick={resetGame}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all active:scale-95"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Bắn Lượt Khác
-              </button>
+        {/* FLYING CARTOON BALL */}
+        {ballState.flying && (
+          <div 
+            className="absolute z-20 pointer-events-none transition-transform"
+            style={{
+              left: `${ballState.x}px`,
+              top: `${ballState.y}px`,
+              transform: `scale(${ballState.scale})`
+            }}
+          >
+            {/* Cannonball with fire trail */}
+            <div className="relative flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-800 via-slate-700 to-amber-300 border-2 border-white shadow-xl shadow-amber-500/50" />
+              <div className="absolute -left-4 w-6 h-3 rounded-full bg-orange-500/80 blur-sm animate-ping" />
             </div>
           </div>
+        )}
+
+        {/* RIGHT: Concentric Target Board */}
+        <div className="relative z-10 flex flex-col items-center">
+          <div className={`w-64 h-64 transition-transform ${ballState.impact ? 'scale-110 animate-bounce' : ''}`}>
+            <img 
+              src="/assets/games/ball-cannon/target_board.svg" 
+              alt="Target Board" 
+              className="w-full h-full object-contain filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)]"
+            />
+          </div>
+
+          {/* Hit Result Badge */}
+          {lastHit && (
+            <div className="mt-4 px-4 py-1.5 rounded-xl text-sm font-black bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 animate-pulse">
+              +{lastHit.score} ĐIỂM ({lastHit.label})!
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Challenge Question Modal */}
-      {showChallengeModal && currentQuestion && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-slate-900 border-2 border-sky-500/50 p-6 shadow-2xl animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 font-bold text-xs">
-                  {currentQuestion.id || 'CÂU HỎI'}
-                </span>
-                <h4 className="text-base font-bold text-white">
-                  Thử Thách Dành Cho {selectedWinner?.name}
-                </h4>
+        {/* 3. VICTORY / HIT CELEBRATION MODAL */}
+        {gameState === GAME_STATES.FINISHED && lastHit && (
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-amber-400/60 p-6 shadow-2xl shadow-amber-500/30 flex flex-col items-center text-center">
+              
+              <div className="w-20 h-20 mb-2">
+                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
               </div>
-              <button
-                onClick={() => setShowChallengeModal(false)}
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center font-bold"
-              >
-                ✕
-              </button>
-            </div>
 
-            <p className="mt-4 text-base font-bold text-slate-100 leading-relaxed">
-              {currentQuestion.question}
-            </p>
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
+                🎯 BẮN TRÚNG MỤC TIÊU!
+              </span>
 
-            <div className="mt-4 space-y-2">
-              {currentQuestion.options.map((opt, i) => {
-                const optLetter = String.fromCharCode(65 + i);
-                const isCorrect = i === currentQuestion.correctAnswer;
-                return (
-                  <div
-                    key={i}
-                    className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                      isCorrect 
-                        ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300 font-medium' 
-                        : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
-                    }`}
-                  >
-                    <span className="w-7 h-7 rounded-lg bg-slate-800 text-xs font-black flex items-center justify-center">
-                      {optLetter}
-                    </span>
-                    <span className="text-sm">{opt}</span>
-                    {isCorrect && (
-                      <CheckCircle className="w-4 h-4 text-emerald-400 ml-auto shrink-0" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+              <h2 className="text-3xl font-black text-amber-300 mt-1">
+                +{lastHit.score} ĐIỂM
+              </h2>
+              <p className="text-xs text-slate-300 mt-1">
+                {activeTeam?.name} đã bắn bóng chính xác vào {lastHit.label}!
+              </p>
 
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowChallengeModal(false)}
-                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-all"
-              >
-                Đã Hoàn Thành
-              </button>
+              <div className="flex items-center gap-3 mt-5 w-full">
+                <button
+                  onClick={openChallenge}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Câu Hỏi Bài 6 (+10đ)</span>
+                </button>
+                <button
+                  onClick={fireCannon}
+                  className="flex-1 py-2.5 rounded-xl font-black text-xs bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 text-slate-950 shadow-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Bắn Lượt Tiếp</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* 4. QUESTION CHALLENGE MODAL */}
+        <QuestionChallengeModal
+          isOpen={showChallengeModal}
+          question={currentQuestion}
+          targetName={activeTeam?.name || 'Đội Bắn Pháo'}
+          onClose={() => setShowChallengeModal(false)}
+          onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+      </div>
     </div>
   );
 }

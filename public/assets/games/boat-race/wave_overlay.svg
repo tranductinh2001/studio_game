@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 120" width="100%" height="100%" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="waveGradFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="35%" stop-color="#0284c7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Foam crest -->
+  <path d="M0,40 Q100,10 200,40 T400,40 T600,40 T800,40 T1000,40 T1200,40 T1400,40 T1600,40 L1600,120 L0,120 Z" fill="url(#waveGradFront)" />
+  <path d="M0,42 Q100,12 200,42 T400,42 T600,42 T800,42 T1000,42 T1200,42 T1400,42 T1600,42" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.85" />
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 140" width="100%" height="100%">
+  <defs>
+    <linearGradient id="duckBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="60%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+    <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <filter id="duckShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#0284c7" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#duckShadow)">
+    <!-- Water Ripple at Duck base -->
+    <ellipse cx="75" cy="122" rx="55" ry="12" fill="#38bdf8" opacity="0.45"/>
+    <ellipse cx="75" cy="122" rx="42" ry="8" fill="#bae6fd" opacity="0.6"/>
+
+    <!-- Duck Tail Feathers -->
+    <path d="M25 80 C10 75 5 60 15 52 C28 50 38 65 48 74 Z" fill="#eab308" stroke="#ca8a04" stroke-width="2"/>
+
+    <!-- Duck Body Plump -->
+    <path d="M35 85 C30 110 55 125 95 125 C130 125 145 105 140 85 C135 68 115 65 95 68 C65 65 40 68 35 85 Z" fill="url(#duckBody)" stroke="#ca8a04" stroke-width="3"/>
+
+    <!-- Duck Wing (Flapping) -->
+    <path d="M52 82 C52 65 75 62 88 74 C95 82 92 98 75 98 C60 98 52 92 52 82 Z" fill="#facc15" stroke="#ca8a04" stroke-width="2.5"/>
+
+    <!-- Duck Head -->
+    <circle cx="108" cy="50" r="28" fill="url(#duckBody)" stroke="#ca8a04" stroke-width="3"/>
+
+    <!-- Cheek Blush -->
+    <ellipse cx="105" cy="62" rx="7" ry="5" fill="#f43f5e" opacity="0.4"/>
+
+    <!-- Duck Eye (Big Cartoon Kawaii) -->
+    <ellipse cx="118" cy="44" rx="8" ry="10" fill="#0f172a"/>
+    <ellipse cx="116" cy="40" rx="3.5" ry="4.5" fill="#ffffff"/>
+    <circle cx="121" cy="47" r="1.8" fill="#ffffff"/>
+
+    <!-- Duck Beak (Cheerful Smiling) -->
+    <path d="M128 48 C144 48 155 54 152 60 C146 66 130 64 126 58 Z" fill="url(#beakGrad)" stroke="#c2410c" stroke-width="2.5"/>
+    <path d="M130 58 C138 64 148 64 144 68 C138 72 128 68 126 62 Z" fill="#c2410c" opacity="0.4"/>
+  </g>
+</svg>

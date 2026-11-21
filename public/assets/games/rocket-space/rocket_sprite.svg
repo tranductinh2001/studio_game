@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="100%" height="100%">
+  <defs>
+    <linearGradient id="rocketHull" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="50%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="rocketNose" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="60%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <linearGradient id="exhaustFlame" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#fef08a"/>
+      <stop offset="60%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="rocketGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Animated Thruster Jet Flame at the back (pointing left) -->
+  <g>
+    <polygon points="35,40 0,30 15,40 0,50" fill="url(#exhaustFlame)"/>
+    <polygon points="35,40 8,34 18,40 8,46" fill="#fef08a"/>
+    <circle cx="5" cy="40" r="3" fill="#facc15" opacity="0.8"/>
+  </g>
+
+  <g filter="url(#rocketGlow)">
+    <!-- Top & Bottom Delta Fins -->
+    <path d="M40 30 L22 10 L55 26 Z" fill="url(#rocketNose)" stroke="#991b1b" stroke-width="2"/>
+    <path d="M40 50 L22 70 L55 54 Z" fill="url(#rocketNose)" stroke="#991b1b" stroke-width="2"/>
+
+    <!-- Rocket Body Main Fuselage -->
+    <path d="M35 25 C75 22 105 24 130 40 C105 56 75 58 35 55 Z" fill="url(#rocketHull)" stroke="#475569" stroke-width="3"/>
+
+    <!-- Aerodynamic Nose Cone (pointing right) -->
+    <path d="M110 28 C128 32 145 37 150 40 C145 43 128 48 110 52 Z" fill="url(#rocketNose)" stroke="#991b1b" stroke-width="2.5"/>
+
+    <!-- Porthole Window -->
+    <circle cx="85" cy="40" r="12" fill="#38bdf8" stroke="#0284c7" stroke-width="3"/>
+    <circle cx="85" cy="40" r="8" fill="#e0f2fe"/>
+    <circle cx="82" cy="37" r="3" fill="#ffffff"/>
+
+    <!-- Metal Rivet details -->
+    <circle cx="48" cy="30" r="1.5" fill="#475569"/>
+    <circle cx="48" cy="50" r="1.5" fill="#475569"/>
+    <circle cx="65" cy="27" r="1.5" fill="#475569"/>
+    <circle cx="65" cy="53" r="1.5" fill="#475569"/>
+  </g>
+</svg>

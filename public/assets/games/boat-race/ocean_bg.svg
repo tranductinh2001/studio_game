@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Sky gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="40%" stop-color="#7dd3fc"/>
+      <stop offset="75%" stop-color="#bae6fd"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+
+    <!-- Sea gradient -->
+    <linearGradient id="seaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="30%" stop-color="#0369a1"/>
+      <stop offset="70%" stop-color="#075985"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+
+    <!-- Island gradient -->
+    <linearGradient id="islandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="70%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+
+    <!-- Cloud filter -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0369a1" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Sky -->
+  <rect x="0" y="0" width="1600" height="420" fill="url(#skyGrad)"/>
+
+  <!-- Sun -->
+  <circle cx="280" cy="130" r="65" fill="#fef08a" opacity="0.95"/>
+  <circle cx="280" cy="130" r="85" fill="#fef08a" opacity="0.3"/>
+  <circle cx="280" cy="130" r="115" fill="#fef08a" opacity="0.15"/>
+
+  <!-- Clouds -->
+  <g fill="#ffffff" opacity="0.9" filter="url(#softShadow)">
+    <!-- Cloud 1 -->
+    <path d="M120 160 C120 130 150 110 180 120 C200 95 240 95 260 120 C290 115 320 135 320 160 C330 180 315 200 290 200 L140 200 C120 200 110 180 120 160 Z"/>
+    <!-- Cloud 2 -->
+    <path d="M680 110 C680 85 705 70 730 80 C745 60 780 60 795 80 C820 75 845 90 845 110 C855 128 840 145 820 145 L700 145 C680 145 670 128 680 110 Z" opacity="0.8"/>
+    <!-- Cloud 3 -->
+    <path d="M1180 140 C1180 115 1210 95 1240 105 C1260 80 1300 80 1320 105 C1350 100 1380 120 1380 145 C1390 165 1375 180 1350 180 L1200 180 C1180 180 1170 165 1180 140 Z"/>
+    <!-- Cloud 4 small -->
+    <path d="M960 190 C960 175 975 165 990 170 C1000 155 1025 155 1035 170 C1055 168 1070 180 1070 195 L970 195 Z" opacity="0.7"/>
+  </g>
+
+  <!-- Distant Mountains & Tropical Islands -->
+  <g>
+    <!-- Distant mountain left -->
+    <path d="M-50 420 Q120 320 300 420 Z" fill="#6ee7b7" opacity="0.5"/>
+    <!-- Tropical Island Center-Left -->
+    <path d="M420 420 C480 340 580 330 650 380 C700 350 780 370 820 420 Z" fill="url(#islandGrad)" opacity="0.85"/>
+    <!-- Island palm tree details -->
+    <path d="M620 350 Q630 310 650 280" stroke="#78350f" stroke-width="4" fill="none"/>
+    <path d="M650 280 Q620 270 590 285 M650 280 Q650 250 640 240 M650 280 Q680 260 700 275 M650 280 Q670 295 680 315" stroke="#15803d" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Distant Island Right -->
+    <path d="M1100 420 C1160 360 1260 350 1340 390 C1390 370 1480 390 1550 420 Z" fill="url(#islandGrad)" opacity="0.75"/>
+    <path d="M1300 365 Q1310 330 1330 305" stroke="#78350f" stroke-width="3" fill="none"/>
+    <path d="M1330 305 Q1305 295 1285 310 M1330 305 Q1330 280 1320 270 M1330 305 Q1355 290 1370 300" stroke="#15803d" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Horizon Line & Sparkle -->
+  <line x1="0" y1="420" x2="1600" y2="420" stroke="#38bdf8" stroke-width="3" opacity="0.8"/>
+
+  <!-- Ocean Sea Body -->
+  <rect x="0" y="420" width="1600" height="480" fill="url(#seaGrad)"/>
+
+  <!-- Distant Wave Rhythms -->
+  <g stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.6">
+    <path d="M100 440 Q150 435 200 440 M350 450 Q420 445 490 450 M700 438 Q780 432 860 438 M1050 446 Q1120 440 1190 446 M1380 442 Q1440 437 1500 442"/>
+    <path d="M40 470 Q110 464 180 470 M280 480 Q360 473 440 480 M620 472 Q700 465 780 472 M950 478 Q1030 470 1110 478 M1280 474 Q1360 468 1440 474"/>
+    <path d="M180 515 Q260 508 340 515 M520 518 Q610 510 700 518 M880 515 Q970 507 1060 515 M1220 520 Q1310 512 1400 520"/>
+  </g>
+</svg>

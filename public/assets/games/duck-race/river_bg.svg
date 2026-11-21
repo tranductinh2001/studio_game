@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="grassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="60%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+    <linearGradient id="riverWater" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="30%" stop-color="#0ea5e9"/>
+      <stop offset="80%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="woodBridge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="30%" stop-color="#b45309"/>
+      <stop offset="70%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Top Grassy Riverbank -->
+  <rect x="0" y="0" width="1600" height="150" fill="url(#grassGrad)"/>
+  <!-- Shore sand / pebbles -->
+  <path d="M0 135 Q180 148 350 138 T700 142 T1050 136 T1400 145 L1600 140 L1600 155 L0 155 Z" fill="#fde047" opacity="0.6"/>
+
+  <!-- River Water Body -->
+  <rect x="0" y="150" width="1600" height="600" fill="url(#riverWater)"/>
+
+  <!-- Water Ripples and Flow Streaks -->
+  <g stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
+    <path d="M80 200 Q150 195 220 200 M320 250 Q410 242 500 250 M720 210 Q820 202 920 210 M1100 240 Q1200 234 1300 240 M1420 215 Q1500 210 1580 215"/>
+    <path d="M40 340 Q130 334 220 340 M450 380 Q560 372 670 380 M850 350 Q960 342 1070 350 M1240 375 Q1350 368 1460 375"/>
+    <path d="M120 500 Q210 492 300 500 M520 530 Q630 522 740 530 M940 510 Q1050 502 1160 510 M1320 525 Q1430 518 1540 525"/>
+    <path d="M60 640 Q150 632 240 640 M380 670 Q490 662 600 670 M790 650 Q900 642 1010 650 M1180 665 Q1290 658 1400 665"/>
+  </g>
+
+  <!-- Lily pads with flowers -->
+  <g filter="url(#softShadow)">
+    <!-- Lily Pad 1 -->
+    <path d="M160 280 C185 270 215 285 210 310 C205 330 175 340 155 325 C140 310 145 290 160 280 Z" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+    <circle cx="185" cy="305" r="7" fill="#f43f5e"/>
+    <circle cx="185" cy="305" r="3" fill="#fef08a"/>
+
+    <!-- Lily Pad 2 -->
+    <path d="M580 620 C605 610 635 625 630 650 C625 670 595 680 575 665 C560 650 565 630 580 620 Z" fill="#16a34a" stroke="#15803d" stroke-width="2"/>
+    <circle cx="605" cy="645" r="6" fill="#fb7185"/>
+
+    <!-- Lily Pad 3 -->
+    <path d="M1020 270 C1045 260 1075 275 1070 300 C1065 320 1035 330 1015 315 C1000 300 1005 280 1020 270 Z" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+  </g>
+
+  <!-- Wooden Finish Bridge Arch at X=1420 -->
+  <g filter="url(#softShadow)" opacity="0.95">
+    <!-- Bridge Planks -->
+    <rect x="1410" y="140" width="40" height="620" fill="url(#woodBridge)" stroke="#451a03" stroke-width="4"/>
+    <!-- Plank horizontal grooves -->
+    <line x1="1410" y1="200" x2="1450" y2="200" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="270" x2="1450" y2="270" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="340" x2="1450" y2="340" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="410" x2="1450" y2="410" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="480" x2="1450" y2="480" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="550" x2="1450" y2="550" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="620" x2="1450" y2="620" stroke="#451a03" stroke-width="3"/>
+    <line x1="1410" y1="690" x2="1450" y2="690" stroke="#451a03" stroke-width="3"/>
+
+    <!-- Finish Sign Banner on Bridge -->
+    <rect x="1395" y="420" width="70" height="36" rx="6" fill="#ef4444" stroke="#ffffff" stroke-width="3"/>
+    <text x="1430" y="444" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle" letter-spacing="1">ĐÍCH</text>
+  </g>
+
+  <!-- Bottom Grassy Riverbank -->
+  <rect x="0" y="750" width="1600" height="150" fill="url(#grassGrad)"/>
+  <!-- Shore sand bottom -->
+  <path d="M0 750 Q180 740 350 748 T700 742 T1050 749 T1400 740 L1600 745 L1600 760 L0 760 Z" fill="#fde047" opacity="0.6"/>
+
+  <!-- Flowers on riverbanks -->
+  <g fill="#ec4899">
+    <circle cx="120" cy="80" r="8"/>
+    <circle cx="340" cy="110" r="10"/>
+    <circle cx="780" cy="65" r="9"/>
+    <circle cx="1200" cy="95" r="10"/>
+    <circle cx="210" cy="810" r="9"/>
+    <circle cx="560" cy="830" r="11"/>
+    <circle cx="920" cy="805" r="10"/>
+    <circle cx="1320" cy="820" r="9"/>
+  </g>
+  <g fill="#fef08a">
+    <circle cx="120" cy="80" r="4"/>
+    <circle cx="340" cy="110" r="5"/>
+    <circle cx="780" cy="65" r="4"/>
+    <circle cx="1200" cy="95" r="5"/>
+    <circle cx="210" cy="810" r="4"/>
+    <circle cx="560" cy="830" r="5"/>
+    <circle cx="920" cy="805" r="5"/>
+    <circle cx="1320" cy="820" r="4"/>
+  </g>
+</svg>

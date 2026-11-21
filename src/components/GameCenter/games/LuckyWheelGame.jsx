@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { 
-  Play, RotateCcw, Trophy, Sparkles, HelpCircle, 
-  CheckCircle, Users, User, ArrowRight, ShieldCheck, ToggleLeft, ToggleRight
+  Play, RotateCcw, Trophy, Award, Sparkles, UserCheck, 
+  Trash2, Volume2, VolumeX, Users, User, HelpCircle, CheckCircle
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
-import { setupCinematicLighting, disposeThreeScene } from '../services/threeHelpers';
+import { GAME_STATES, easeOutQuint } from '../services/gameEngine2D';
+import QuestionChallengeModal from '../QuestionChallengeModal';
 
 export default function LuckyWheelGame({
   teams = [],
@@ -17,566 +17,544 @@ export default function LuckyWheelGame({
   onRecordResult,
   onOpenTeacherPanel
 }) {
-  const containerRef = useRef(null);
-
-  const isIndividualMode = settings.mode === 'individual';
-  const rawParticipants = isIndividualMode ? students : teams;
-
-  // Elimination filter state
-  const [eliminatedIds, setEliminatedIds] = useState([]);
-  const [allowElimination, setAllowElimination] = useState(false);
-
-  // Active participants after elimination filter
-  const activeParticipants = rawParticipants.filter(p => !eliminatedIds.includes(p.id));
-
-  // States: 'IDLE' | 'SPINNING' | 'STOPPED'
-  const [gameState, setGameState] = useState('IDLE');
-  const [selectedWinner, setSelectedWinner] = useState(null);
+  const canvasRef = useRef(null);
+  const [gameState, setGameState] = useState(GAME_STATES.IDLE);
+  const [winner, setWinner] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [eliminateChosen, setEliminateChosen] = useState(false);
+  const [activeItems, setActiveItems] = useState([]);
+  const [mode, setMode] = useState('team'); // 'team' | 'individual'
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [flapperAngle, setFlapperAngle] = useState(0);
 
-  const threeRef = useRef({
-    scene: null,
-    camera: null,
-    renderer: null,
-    wheelGroup: null,
-    needleMesh: null,
-    animFrame: null,
-    isSpinning: false,
-    startAngle: 0,
-    targetAngle: 0,
-    spinStartTime: 0,
-    spinDuration: 6000,
-    targetWinner: null,
+  // Sync mode from settings
+  useEffect(() => {
+    if (settings?.gameMode) {
+      setMode(settings.gameMode);
+    }
+  }, [settings]);
+
+  // Sync active items based on mode
+  useEffect(() => {
+    if (mode === 'individual' && students.length > 0) {
+      setActiveItems(students);
+    } else {
+      setActiveItems(teams);
+    }
+  }, [mode, teams, students]);
+
+  // Wheel Physics Ref
+  const wheelRef = useRef({
+    rotation: 0,
+    startRotation: 0,
+    targetRotation: 0,
+    startTime: 0,
+    duration: 6500, // 6.5s spin
+    rafId: null,
+    targetItem: null,
     lastTickIndex: -1
   });
 
-  // Keyboard shortcut 1-9
+  // Hotkeys: Space to Spin, R to Reset, 1-9 to Pick Winner
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        if (gameState !== GAME_STATES.PLAYING) {
+          spinWheel();
+        }
+      }
+      if ((e.key === 'r' || e.key === 'R') && e.target.tagName !== 'INPUT') {
+        resetWheel();
+      }
       const num = parseInt(e.key, 10);
-      if (!isNaN(num) && num >= 1 && num <= teams.length) {
-        const target = teams[num - 1];
+      if (!isNaN(num) && num >= 1 && num <= activeItems.length) {
+        const target = activeItems[num - 1];
         if (target) {
-          secretControl.targetTeamId = target.id;
-          secretControl.mode = 'teacher_rigged';
+          wheelRef.current.targetItem = target;
           gameAudio.playTick();
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [teams, secretControl]);
+  }, [gameState, activeItems]);
 
-  // -------------------------------------------------------------
-  // BUILD 3D WHEEL TEXTURE ON CANVAS
-  // -------------------------------------------------------------
-  const generateWheelTexture = (participantsList) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
+  // Render Wheel to HTML5 Canvas (High-DPI Razor Sharp)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const center = 512;
-    const radius = 500;
-    const count = Math.max(participantsList.length, 1);
-    const sliceAngle = (Math.PI * 2) / count;
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = width / 2 - 25;
 
-    ctx.clearRect(0, 0, 1024, 1024);
+    ctx.clearRect(0, 0, width, height);
 
-    participantsList.forEach((item, i) => {
-      const startAngle = i * sliceAngle - Math.PI / 2;
+    if (activeItems.length === 0) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Danh sách trống', centerX, centerY);
+      return;
+    }
+
+    const sliceAngle = (2 * Math.PI) / activeItems.length;
+    const rot = wheelRef.current.rotation;
+
+    // 1. Draw Outer Glowing Rim
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rot);
+
+    // Rim shadow
+    ctx.beginPath();
+    ctx.arc(0, 0, radius + 15, 0, 2 * Math.PI);
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+
+    // Outer Chrome / Golden Bevel
+    const rimGrad = ctx.createLinearGradient(-radius, -radius, radius, radius);
+    rimGrad.addColorStop(0, '#fef08a');
+    rimGrad.addColorStop(0.3, '#f59e0b');
+    rimGrad.addColorStop(0.7, '#ca8a04');
+    rimGrad.addColorStop(1, '#854d0e');
+    ctx.lineWidth = 14;
+    ctx.strokeStyle = rimGrad;
+    ctx.stroke();
+
+    // Flashing Rim Light Bulbs
+    const numBulbs = 24;
+    for (let b = 0; b < numBulbs; b++) {
+      const bAngle = (b / numBulbs) * 2 * Math.PI;
+      const bx = (radius + 8) * Math.cos(bAngle);
+      const by = (radius + 8) * Math.sin(bAngle);
+      const isLit = (b + Math.floor(rot * 5)) % 2 === 0;
+
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.5, 0, 2 * Math.PI);
+      ctx.fillStyle = isLit ? '#ffffff' : '#fbbf24';
+      ctx.shadowColor = isLit ? '#ffffff' : '#f59e0b';
+      ctx.shadowBlur = isLit ? 10 : 3;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 2. Draw Wheel Slices
+    activeItems.forEach((item, i) => {
+      const startAngle = i * sliceAngle;
       const endAngle = startAngle + sliceAngle;
 
-      // Draw slice wedge
       ctx.beginPath();
-      ctx.moveTo(center, center);
-      ctx.arc(center, center, radius, startAngle, endAngle);
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, radius, startAngle, endAngle);
       ctx.closePath();
-      ctx.fillStyle = item.color || (i % 2 === 0 ? '#3b82f6' : '#0284c7');
+
+      // Palette Colors
+      const colors = [
+        '#0284c7', '#ea580c', '#16a34a', '#7c3aed', 
+        '#db2777', '#059669', '#d97706', '#4f46e5'
+      ];
+      ctx.fillStyle = item.color || colors[i % colors.length];
       ctx.fill();
 
-      // Divider line
+      // Slice separator border
+      ctx.lineWidth = 2.5;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Text label inside slice
-      ctx.save();
-      ctx.translate(center, center);
-      ctx.rotate(startAngle + sliceAngle / 2);
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
+      // Slice Outer Peg Pins
+      const pinX = (radius - 5) * Math.cos(startAngle);
+      const pinY = (radius - 5) * Math.sin(startAngle);
+      ctx.beginPath();
+      ctx.arc(pinX, pinY, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fef08a';
+      ctx.fill();
+      ctx.strokeStyle = '#854d0e';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
 
-      if (count <= 12) {
-        ctx.font = 'bold 36px sans-serif';
-        const label = item.number ? `ĐỘI ${item.number} • ${item.shortName || item.name}` : item.name;
-        ctx.fillText(label.length > 14 ? label.substring(0, 13) + '..' : label, radius - 45, 0);
-      } else {
-        ctx.font = 'bold 24px sans-serif';
-        const label = item.name;
-        ctx.fillText(label.length > 10 ? label.substring(0, 9) + '..' : label, radius - 40, 0);
-      }
+      // Draw Slice Text & Icon
+      ctx.save();
+      const midAngle = startAngle + sliceAngle / 2;
+      ctx.rotate(midAngle);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 4;
+
+      const label = item.shortName || item.name;
+      const truncated = label.length > 14 ? label.slice(0, 12) + '...' : label;
+      ctx.fillText(`${item.icon || item.avatar || '⭐'} ${truncated}`, radius - 20, 5);
       ctx.restore();
     });
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  };
+    // 3. Draw Center Game-Show Emblem
+    ctx.beginPath();
+    ctx.arc(0, 0, 36, 0, 2 * Math.PI);
+    const centerGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 36);
+    centerGrad.addColorStop(0, '#ffffff');
+    centerGrad.addColorStop(0.4, '#fef08a');
+    centerGrad.addColorStop(0.8, '#f59e0b');
+    centerGrad.addColorStop(1, '#b45309');
+    ctx.fillStyle = centerGrad;
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+
+    // Center Gold Star
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#78350f';
+    ctx.fillText('★', 0, 1);
+
+    ctx.restore();
+  });
 
   // -------------------------------------------------------------
-  // INITIALIZE THREE.JS 3D SCENE
+  // SPIN LOGIC WITH ACCURATE POINTER STOP ALIGNMENT
   // -------------------------------------------------------------
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  const spinWheel = () => {
+    if (gameState === GAME_STATES.PLAYING || activeItems.length === 0) return;
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020617);
-    threeRef.current.scene = scene;
+    setWinner(null);
+    setGameState(GAME_STATES.PLAYING);
+    gameAudio.playHorn();
 
-    const camera = new THREE.PerspectiveCamera(
-      40,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 0, 26);
-    threeRef.current.camera = camera;
+    const w = wheelRef.current;
+    w.startRotation = w.rotation % (2 * Math.PI);
+    w.startTime = performance.now();
+    w.duration = 6000 + Math.random() * 800; // ~6.5 seconds
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
-    threeRef.current.renderer = renderer;
-
-    // Lighting
-    setupCinematicLighting(scene, {
-      ambientColor: 0x1e293b,
-      ambientIntensity: 1.8,
-      keyColor: 0xffffff,
-      keyIntensity: 2.8,
-      fillColor: 0x38bdf8,
-      fillIntensity: 1.4,
-      rimColor: 0xf59e0b,
-      rimIntensity: 2.0
-    });
-
-    // 1. Wheel Group
-    const wheelGroup = new THREE.Group();
-
-    // 3D Wheel Body Cylinder
-    const wheelRadius = 8.5;
-    const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, 0.65, 64);
-    wheelGeo.rotateX(Math.PI / 2);
-
-    const wheelTex = generateWheelTexture(activeParticipants);
-    const materials = [
-      new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.3 }), // Side
-      new THREE.MeshStandardMaterial({ map: wheelTex, roughness: 0.4, metalness: 0.1 }),   // Front face
-      new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.8 })                  // Back
-    ];
-    const wheelMesh = new THREE.Mesh(wheelGeo, materials);
-    wheelMesh.castShadow = true;
-    wheelGroup.add(wheelMesh);
-
-    // 3D Metallic Chrome Outer Ring
-    const rimGeo = new THREE.TorusGeometry(wheelRadius + 0.1, 0.4, 16, 64);
-    const rimMat = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b,
-      metalness: 0.9,
-      roughness: 0.2
-    });
-    const rimMesh = new THREE.Mesh(rimGeo, rimMat);
-    wheelGroup.add(rimMesh);
-
-    // 3D Metallic Pegs along outer edge
-    const pegGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 12);
-    pegGeo.rotateX(Math.PI / 2);
-    const pegMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.95, roughness: 0.1 });
-
-    const pCount = Math.max(activeParticipants.length, 1);
-    const stepAngle = (Math.PI * 2) / pCount;
-    for (let i = 0; i < pCount; i++) {
-      const angle = i * stepAngle;
-      const peg = new THREE.Mesh(pegGeo, pegMat);
-      peg.position.set(Math.cos(angle) * wheelRadius, Math.sin(angle) * wheelRadius, 0.35);
-      wheelGroup.add(peg);
+    // 1. Pick Winner (Secret Rigged or Fair Random)
+    const modeRig = secretControl?.mode || 'fair_random';
+    const targetId = mode === 'individual' ? secretControl?.targetStudentId : secretControl?.targetTeamId;
+    
+    let chosen = w.targetItem;
+    if (!chosen) {
+      if (modeRig === 'teacher_rigged' && targetId) {
+        chosen = activeItems.find(it => it.id === targetId || String(it.number) === String(targetId));
+      } else if (modeRig === 'weighted_random' && targetId && Math.random() < 0.8) {
+        chosen = activeItems.find(it => it.id === targetId || String(it.number) === String(targetId));
+      }
     }
+    if (!chosen) {
+      const idx = Math.floor(Math.random() * activeItems.length);
+      chosen = activeItems[idx];
+    }
+    w.targetItem = chosen;
 
-    // 3D Center Hub Dome (Golden with star)
-    const hubGeo = new THREE.SphereGeometry(1.6, 32, 16);
-    hubGeo.scale(1, 1, 0.5);
-    const hubMat = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b,
-      metalness: 0.85,
-      roughness: 0.2
-    });
-    const hubMesh = new THREE.Mesh(hubGeo, hubMat);
-    hubMesh.position.z = 0.35;
-    wheelGroup.add(hubMesh);
+    // 2. Compute exact rotation to stop needle at chosen slice!
+    // Pointer is at Top (Angle = 3*PI/2 = 270 deg)
+    const sliceAngle = (2 * Math.PI) / activeItems.length;
+    const targetIndex = activeItems.findIndex(it => it.id === chosen.id);
+    // Slice center angle relative to wheel 0
+    const sliceCenterAngle = targetIndex * sliceAngle + sliceAngle / 2;
 
-    scene.add(wheelGroup);
-    threeRef.current.wheelGroup = wheelGroup;
+    // Pointer angle in canvas coordinate is 3*Math.PI / 2
+    // We want: (targetRotation + sliceCenterAngle) % 2*PI == 3*Math.PI / 2
+    const targetAngleAtTop = (3 * Math.PI / 2 - sliceCenterAngle);
+    const normalizedTarget = (targetAngleAtTop % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
-    // 2. Physical Needle / Flapper at 12 o'clock (pointing down)
-    const needleGroup = new THREE.Group();
-    const needleShape = new THREE.Shape();
-    needleShape.moveTo(-0.4, 0);
-    needleShape.lineTo(0.4, 0);
-    needleShape.lineTo(0, -1.8);
-    needleShape.closePath();
+    // Add 6 to 8 full revolutions for dramatic spin
+    const fullSpins = 7 * 2 * Math.PI;
+    const currentNorm = w.startRotation;
+    const diff = (normalizedTarget - (currentNorm % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    w.targetRotation = currentNorm + fullSpins + diff;
 
-    const needleExtrude = new THREE.ExtrudeGeometry(needleShape, { depth: 0.3, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.05 });
-    needleExtrude.center();
-    const needleMat = new THREE.MeshStandardMaterial({
-      color: 0xef4444,
-      metalness: 0.4,
-      roughness: 0.2
-    });
-    const needleMesh = new THREE.Mesh(needleExtrude, needleMat);
-    needleGroup.add(needleMesh);
-    needleGroup.position.set(0, wheelRadius + 0.8, 0.7);
+    // 3. Start Spin Animation Loop
+    const loop = (timestamp) => {
+      const elapsed = timestamp - w.startTime;
+      const progress = Math.min(elapsed / w.duration, 1.0);
+      const eased = easeOutQuint(progress);
 
-    scene.add(needleGroup);
-    threeRef.current.needleMesh = needleGroup;
+      w.rotation = w.startRotation + (w.targetRotation - w.startRotation) * eased;
 
-    // Resize
-    const handleResize = () => {
-      if (!container || !renderer || !camera) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Render loop
-    const animate = () => {
-      threeRef.current.animFrame = requestAnimationFrame(animate);
-
-      if (threeRef.current.isSpinning) {
-        const elapsed = performance.now() - threeRef.current.spinStartTime;
-        const duration = threeRef.current.spinDuration;
-        const t = Math.min(elapsed / duration, 1.0);
-
-        // Quintic Ease-Out curve for authentic mechanical deceleration
-        const easeOut = 1 - Math.pow(1 - t, 4);
-        const currentRot = threeRef.current.startAngle + (threeRef.current.targetAngle - threeRef.current.startAngle) * easeOut;
-        wheelGroup.rotation.z = currentRot;
-
-        // Needle deflection when passing pegs
-        const normAngle = ((currentRot % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-        const pegIndex = Math.floor((normAngle / (Math.PI * 2)) * pCount);
-        if (pegIndex !== threeRef.current.lastTickIndex) {
-          threeRef.current.lastTickIndex = pegIndex;
-          gameAudio.playTick();
-          needleGroup.rotation.z = 0.35 * (1 - t * 0.7);
-        } else {
-          needleGroup.rotation.z *= 0.85; // Spring back
-        }
-
-        if (t >= 1.0) {
-          threeRef.current.isSpinning = false;
-          handleSpinFinished();
-        }
+      // Tick Audio & Pointer Flapper Deflection
+      const currentSliceIdx = Math.floor((w.rotation / sliceAngle)) % activeItems.length;
+      if (currentSliceIdx !== w.lastTickIndex) {
+        w.lastTickIndex = currentSliceIdx;
+        gameAudio.playTick();
+        setFlapperAngle(-18);
+        setTimeout(() => setFlapperAngle(0), 40);
       }
 
-      renderer.render(scene, camera);
+      // Re-render
+      const canvas = canvasRef.current;
+      if (canvas) {
+        // Trigger canvas redraw by setting dummy state or invoking render
+        const event = new CustomEvent('wheel-draw');
+        window.dispatchEvent(event);
+      }
+
+      if (progress < 1.0) {
+        w.rafId = requestAnimationFrame(loop);
+      } else {
+        finishSpin();
+      }
     };
 
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (threeRef.current.animFrame) cancelAnimationFrame(threeRef.current.animFrame);
-      disposeThreeScene(scene, renderer);
-    };
-  }, [activeParticipants]);
-
-  // -------------------------------------------------------------
-  // SPIN LOGIC WITH GUARANTEED MATHEMATICAL ALIGNMENT
-  // -------------------------------------------------------------
-  const startSpin = () => {
-    if (gameState === 'SPINNING' || activeParticipants.length === 0) return;
-
-    setGameState('SPINNING');
-    setSelectedWinner(null);
-    setShowChallengeModal(false);
-
-    // 1. Determine Target Winner based on Secret Control
-    let chosenWinner = null;
-    const mode = secretControl?.mode || 'fair_random';
-    const targetId = isIndividualMode ? secretControl?.targetStudentId : secretControl?.targetTeamId;
-
-    if (mode === 'teacher_rigged' && targetId) {
-      chosenWinner = activeParticipants.find(p => p.id === targetId) || activeParticipants[0];
-    } else if (mode === 'weighted_random' && targetId && Math.random() < 0.8) {
-      chosenWinner = activeParticipants.find(p => p.id === targetId) || activeParticipants[0];
-    } else {
-      const randIdx = Math.floor(Math.random() * activeParticipants.length);
-      chosenWinner = activeParticipants[randIdx];
-    }
-
-    threeRef.current.targetWinner = chosenWinner;
-
-    // 2. Compute exact rotation angle so top needle (12 o'clock / +Y) points to chosen slice
-    const winnerIdx = activeParticipants.findIndex(p => p.id === chosenWinner.id);
-    const count = activeParticipants.length;
-    const sliceAngle = (Math.PI * 2) / count;
-
-    // Center of winner's slice on the wheel (in radians relative to initial orientation)
-    // Slice i is drawn from i * sliceAngle to (i+1) * sliceAngle (offset by -PI/2)
-    // When wheel rotates by +Z, it rotates counterclockwise.
-    // Top needle is at +PI/2.
-    const sliceCenterAngle = winnerIdx * sliceAngle + sliceAngle / 2;
-    // Target rotation: multiple full 360 spins (5 to 7 turns) + offset to align sliceCenter to 12 o'clock
-    const fullSpins = 6 * Math.PI * 2;
-    const currentRot = threeRef.current.wheelGroup ? threeRef.current.wheelGroup.rotation.z : 0;
-    const finalRot = currentRot + fullSpins + (Math.PI * 2 - (sliceCenterAngle % (Math.PI * 2)));
-
-    threeRef.current.startAngle = currentRot;
-    threeRef.current.targetAngle = finalRot;
-    threeRef.current.spinStartTime = performance.now();
-    threeRef.current.spinDuration = 6000;
-    threeRef.current.isSpinning = true;
+    w.rafId = requestAnimationFrame(loop);
   };
 
-  const handleSpinFinished = () => {
-    setGameState('STOPPED');
-    const win = threeRef.current.targetWinner;
-    setSelectedWinner(win);
+  const finishSpin = () => {
+    const w = wheelRef.current;
+    cancelAnimationFrame(w.rafId);
     gameAudio.playFanfare();
 
-    confetti({
-      particleCount: 150,
-      spread: 95,
-      origin: { y: 0.6 }
-    });
-
-    if (allowElimination && win) {
-      setEliminatedIds(prev => [...prev, win.id]);
-    }
+    const winItem = w.targetItem;
+    setWinner(winItem);
+    setHistory(prev => [winItem, ...prev]);
+    setGameState(GAME_STATES.FINISHED);
 
     if (onRecordResult) {
-      onRecordResult({
-        gameId: 'game-03-lucky-wheel',
-        gameName: 'Vòng Quay May Mắn',
-        winner: win,
-        timestamp: new Date().toISOString()
+      onRecordResult('lucky-wheel', {
+        winner: winItem,
+        mode: mode
       });
+    }
+
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.5 }
+      });
+    } catch (e) {}
+
+    // Auto-eliminate if enabled
+    if (eliminateChosen) {
+      setTimeout(() => {
+        setActiveItems(prev => prev.filter(it => it.id !== winItem.id));
+      }, 2500);
     }
   };
 
   const resetWheel = () => {
-    setGameState('IDLE');
-    setSelectedWinner(null);
-    setShowChallengeModal(false);
+    const w = wheelRef.current;
+    if (w.rafId) cancelAnimationFrame(w.rafId);
+    w.targetItem = null;
+    setWinner(null);
+    setGameState(GAME_STATES.IDLE);
+    gameAudio.playTick();
   };
 
-  const handleResetEliminated = () => {
-    setEliminatedIds([]);
+  const restoreAll = () => {
+    if (mode === 'individual') {
+      setActiveItems(students);
+    } else {
+      setActiveItems(teams);
+    }
+    setWinner(null);
+    setGameState(GAME_STATES.IDLE);
+    gameAudio.playTick();
+  };
+
+  const toggleSound = () => {
+    const muted = gameAudio.toggleMute();
+    setIsMuted(muted);
+  };
+
+  const openChallenge = () => {
+    const randomQ = LESSON_6_QUESTIONS[Math.floor(Math.random() * LESSON_6_QUESTIONS.length)];
+    setCurrentQuestion(randomQ);
+    setShowChallengeModal(true);
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between bg-slate-950 select-none overflow-hidden font-sans">
-      {/* 3D WebGL Canvas */}
-      <div ref={containerRef} className="absolute inset-0 z-0 w-full h-full" />
-
-      {/* Top HUD */}
-      <div className="relative z-10 w-full flex items-center justify-between p-4 bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent pointer-events-auto">
+    <div className="relative w-full h-full flex flex-col bg-slate-950 text-white select-none overflow-hidden font-sans">
+      
+      {/* 1. TOP CONTROL BAR */}
+      <div className="flex-none h-14 bg-slate-900/90 border-b border-slate-800 px-4 flex items-center justify-between z-30 backdrop-blur-md">
+        
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 shadow-xl shadow-purple-500/30">
-            <div className="w-full h-full bg-slate-950/60 rounded-[14px] flex items-center justify-center text-2xl">
-              🎡
-            </div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-400 to-pink-500 flex items-center justify-center text-xl shadow-lg shadow-purple-500/20">
+            🎡
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/40">
-                3D WHEEL OF FORTUNE
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                GAME 03 • GAME SHOW VÒNG QUAY
               </span>
-              <span className="text-xs text-slate-400 font-semibold hidden sm:inline">
-                {activeParticipants.length} Ô Quay • Tích Tắc Vật Lý
-              </span>
+              <h2 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-100 to-amber-300 uppercase">
+                VÒNG QUAY MAY MẮN
+              </h2>
             </div>
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-100 to-amber-300">
-              VÒNG QUAY MAY MẮN
-            </h1>
+            <p className="text-[11px] text-slate-400">
+              {activeItems.length} Ô Quay • Tạch Tạch Hồi Hộp • Dừng Chuẩn Kim Chỉ
+            </p>
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5">
-          {/* Elimination Toggle */}
+        {/* Center: Mode Toggles & Elimination Option */}
+        <div className="flex items-center gap-2 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
           <button
-            onClick={() => setAllowElimination(!allowElimination)}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-              allowElimination 
-                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
-                : 'bg-slate-900/80 border-slate-700/80 text-slate-400'
+            onClick={() => setMode('team')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              mode === 'team' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
             }`}
-            title="Tự động loại bỏ người đã trúng thưởng để không gọi trùng"
           >
-            {allowElimination ? <ToggleRight className="w-4 h-4 text-rose-400" /> : <ToggleLeft className="w-4 h-4" />}
-            <span>Loại bỏ người đã chọn</span>
+            <Users className="w-3.5 h-3.5" />
+            <span>Đua Nhóm ({teams.length})</span>
+          </button>
+          <button
+            onClick={() => setMode('individual')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              mode === 'individual' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Cá Nhân ({students.length})</span>
           </button>
 
-          {eliminatedIds.length > 0 && (
-            <button
-              onClick={handleResetEliminated}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold"
-            >
-              Phục hồi ({eliminatedIds.length})
-            </button>
-          )}
+          <label className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-amber-300 cursor-pointer border-l border-slate-800 ml-1">
+            <input 
+              type="checkbox"
+              checked={eliminateChosen}
+              onChange={(e) => setEliminateChosen(e.target.checked)}
+              className="rounded bg-slate-800 border-slate-700 text-purple-500"
+            />
+            <span>Loại người đã gọi</span>
+          </label>
+        </div>
 
-          {/* Spin Button */}
-          {gameState !== 'SPINNING' && (
-            <button
-              onClick={startSpin}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 hover:from-purple-500 hover:to-amber-300 text-white font-black text-sm shadow-xl shadow-purple-600/30 transition-all transform hover:scale-105 active:scale-95"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              QUAY NGAY
-            </button>
-          )}
-
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={resetWheel}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all active:scale-95"
+            onClick={restoreAll}
+            className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
+            title="Khôi phục danh sách đầy đủ"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Làm Mới
+            Khôi Phục
+          </button>
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-purple-400" />}
           </button>
         </div>
       </div>
 
-      {/* Winner Reveal Modal */}
-      {gameState === 'STOPPED' && selectedWinner && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 border-2 border-yellow-400 p-8 shadow-2xl shadow-yellow-500/20 text-center animate-in zoom-in-95">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 p-1 shadow-xl shadow-yellow-500/40">
-              <div className="w-full h-full bg-slate-950 rounded-[20px] flex items-center justify-center text-4xl">
-                🎡
+      {/* 2. MAIN ARENA WITH BIG WHEEL */}
+      <div className="relative flex-1 w-full h-full flex items-center justify-center p-4 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950">
+        
+        {/* Stage Lighting Rays */}
+        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-500 via-transparent to-transparent" />
+
+        {/* Wheel Container */}
+        <div className="relative flex items-center justify-center">
+          
+          {/* Top Indicator Needle Pointer (SVG) */}
+          <div 
+            className="absolute -top-7 z-30 w-16 h-20 transition-transform origin-top duration-75 filter drop-shadow-xl"
+            style={{ transform: `rotate(${flapperAngle}deg)` }}
+          >
+            <img 
+              src="/assets/games/lucky-wheel/pointer.svg" 
+              alt="Pointer" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          {/* HTML5 Canvas Wheel */}
+          <canvas
+            ref={canvasRef}
+            width={580}
+            height={580}
+            className="max-w-[85vw] max-h-[72vh] rounded-full filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)]"
+          />
+
+          {/* Big Center "QUAY" Button (or trigger) */}
+          <button
+            onClick={spinWheel}
+            disabled={gameState === GAME_STATES.PLAYING}
+            className={`absolute w-20 h-20 rounded-full font-black text-sm uppercase tracking-wider flex flex-col items-center justify-center z-20 transition-all transform shadow-2xl ${
+              gameState === GAME_STATES.PLAYING 
+                ? 'bg-slate-800 text-slate-400 scale-95 border-2 border-slate-700' 
+                : 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 text-slate-950 hover:scale-110 active:scale-95 border-4 border-white shadow-amber-500/50 cursor-pointer animate-pulse'
+            }`}
+          >
+            <Play className="w-5 h-5 fill-current mb-0.5" />
+            <span>QUAY</span>
+          </button>
+        </div>
+
+        {/* History Sidebar Floating at Bottom-Right */}
+        <div className="absolute bottom-4 right-4 bg-slate-900/85 backdrop-blur-md rounded-xl border border-slate-800 p-2.5 max-w-xs shadow-xl hidden md:block">
+          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+            Lịch Sử Đã Gọi ({history.length}):
+          </span>
+          <div className="flex flex-wrap gap-1 mt-1.5 max-h-20 overflow-y-auto">
+            {history.slice(0, 8).map((h, i) => (
+              <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-purple-300 border border-slate-700">
+                {h.shortName || h.name}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. VICTORY MODAL POPUP */}
+        {gameState === GAME_STATES.FINISHED && winner && (
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-purple-400/60 p-6 shadow-2xl shadow-purple-500/30 flex flex-col items-center text-center">
+              
+              <div className="w-20 h-20 mb-2">
+                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
               </div>
-            </div>
 
-            <span className="inline-block mt-4 px-3.5 py-1 rounded-full text-xs font-black bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 tracking-wider">
-              KIM QUAY DỪNG LẠI CHUẨN XÁC TẠI
-            </span>
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-400/40 uppercase tracking-widest mb-1">
+                🎡 KẾT QUẢ VÒNG QUAY MAY MẮN
+              </span>
 
-            <h3 className="text-3xl font-black text-white mt-2">
-              {selectedWinner.name}
-            </h3>
+              <div className="w-16 h-16 rounded-2xl my-2 flex items-center justify-center text-3xl shadow-lg"
+                style={{ backgroundColor: winner.color || '#7c3aed' }}>
+                {winner.icon || winner.avatar || '⭐'}
+              </div>
 
-            {selectedWinner.shortName && (
-              <p className="text-sm font-semibold text-purple-300 mt-1">
-                {selectedWinner.shortName}
+              <h2 className="text-2xl font-black text-white mt-1">
+                {winner.name}
+              </h2>
+              <p className="text-xs text-purple-200 mt-1">
+                Xin chúc mừng! Kim chỉ vàng đã dừng chính xác tại vị trí này.
               </p>
-            )}
 
-            <div className="my-6 p-4 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-around">
-              <div className="text-center">
-                <div className="text-xs text-slate-400 font-medium">May mắn</div>
-                <div className="text-lg font-black text-yellow-300">Xuất Sắc 🌟</div>
+              <div className="flex items-center gap-3 mt-5 w-full">
+                <button
+                  onClick={openChallenge}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-purple-600 hover:bg-purple-500 text-white shadow-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Câu Hỏi Bài 6 (+10đ)</span>
+                </button>
+                <button
+                  onClick={spinWheel}
+                  className="flex-1 py-2.5 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-slate-950 shadow-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Quay Lượt Tiếp</span>
+                </button>
               </div>
-              <div className="w-px h-8 bg-slate-800" />
-              <div className="text-center">
-                <div className="text-xs text-slate-400 font-medium">Điểm thi đua</div>
-                <div className="text-lg font-black text-emerald-400">+10 Điểm ⭐</div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => {
-                  const randomQ = LESSON_6_QUESTIONS[Math.floor(Math.random() * LESSON_6_QUESTIONS.length)];
-                  setCurrentQuestion(randomQ);
-                  setShowChallengeModal(true);
-                  gameAudio.playBell();
-                }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md transition-all active:scale-95"
-              >
-                <HelpCircle className="w-4 h-4" />
-                Thử Thách Bài 6
-              </button>
-              <button
-                onClick={startSpin}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all active:scale-95"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Quay Tiếp Lượt Mới
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Challenge Question Modal */}
-      {showChallengeModal && currentQuestion && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-slate-900 border-2 border-purple-500/50 p-6 shadow-2xl animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 font-bold text-xs">
-                  {currentQuestion.id || 'CÂU HỎI'}
-                </span>
-                <h4 className="text-base font-bold text-white">
-                  Thử Thách Dành Cho {selectedWinner?.name}
-                </h4>
-              </div>
-              <button
-                onClick={() => setShowChallengeModal(false)}
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="mt-4 text-base font-bold text-slate-100 leading-relaxed">
-              {currentQuestion.question}
-            </p>
-
-            <div className="mt-4 space-y-2">
-              {currentQuestion.options.map((opt, i) => {
-                const optLetter = String.fromCharCode(65 + i);
-                const isCorrect = i === currentQuestion.correctAnswer;
-                return (
-                  <div
-                    key={i}
-                    className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                      isCorrect 
-                        ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300 font-medium' 
-                        : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
-                    }`}
-                  >
-                    <span className="w-7 h-7 rounded-lg bg-slate-800 text-xs font-black flex items-center justify-center">
-                      {optLetter}
-                    </span>
-                    <span className="text-sm">{opt}</span>
-                    {isCorrect && (
-                      <CheckCircle className="w-4 h-4 text-emerald-400 ml-auto shrink-0" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowChallengeModal(false)}
-                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all"
-              >
-                Đã Hoàn Thành
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* 4. QUESTION CHALLENGE MODAL */}
+        <QuestionChallengeModal
+          isOpen={showChallengeModal}
+          question={currentQuestion}
+          targetName={winner?.name || 'Đối tượng được chọn'}
+          onClose={() => setShowChallengeModal(false)}
+          onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+      </div>
     </div>
   );
 }

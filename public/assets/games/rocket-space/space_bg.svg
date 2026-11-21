@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Deep Space Gradient -->
+    <radialGradient id="spaceCenter" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="45%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="nebulaPurple" cx="30%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#6366f1" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebulaCyan" cx="75%" cy="65%" r="45%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="saturnBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fed7aa"/>
+      <stop offset="50%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="earthBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="60%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Cosmos Background -->
+  <rect x="0" y="0" width="1600" height="900" fill="url(#spaceCenter)"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#nebulaPurple)"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#nebulaCyan)"/>
+
+  <!-- Twinkling Stars Pattern -->
+  <g fill="#ffffff">
+    <circle cx="80" cy="90" r="1.5" opacity="0.8"/>
+    <circle cx="160" cy="220" r="2.5" opacity="0.9"/>
+    <circle cx="290" cy="110" r="1.5" opacity="0.6"/>
+    <circle cx="380" cy="310" r="2" opacity="0.8"/>
+    <circle cx="510" cy="160" r="1" opacity="0.7"/>
+    <circle cx="650" cy="80" r="2" opacity="0.9"/>
+    <circle cx="780" cy="240" r="1.5" opacity="0.8"/>
+    <circle cx="890" cy="140" r="3" opacity="0.9"/>
+    <circle cx="980" cy="290" r="1.5" opacity="0.7"/>
+    <circle cx="1120" cy="120" r="2" opacity="0.8"/>
+    <circle cx="1250" cy="210" r="1.5" opacity="0.9"/>
+    <circle cx="1380" cy="95" r="2.5" opacity="0.9"/>
+    <circle cx="1490" cy="230" r="1.5" opacity="0.8"/>
+
+    <circle cx="90" cy="450" r="2" opacity="0.8"/>
+    <circle cx="210" cy="580" r="1.5" opacity="0.6"/>
+    <circle cx="340" cy="720" r="2.5" opacity="0.9"/>
+    <circle cx="490" cy="620" r="1.5" opacity="0.7"/>
+    <circle cx="620" cy="780" r="2" opacity="0.8"/>
+    <circle cx="750" cy="670" r="1.5" opacity="0.8"/>
+    <circle cx="880" cy="820" r="2" opacity="0.9"/>
+    <circle cx="1020" cy="690" r="1.5" opacity="0.7"/>
+    <circle cx="1180" cy="790" r="2.5" opacity="0.9"/>
+    <circle cx="1320" cy="640" r="1.5" opacity="0.8"/>
+    <circle cx="1460" cy="750" r="2" opacity="0.9"/>
+  </g>
+
+  <!-- Big Twinkling 4-Point Stars -->
+  <g fill="#fef08a">
+    <path d="M220 80 L223 90 L233 93 L223 96 L220 106 L217 96 L207 93 L217 90 Z" opacity="0.9"/>
+    <path d="M920 280 L922 288 L930 290 L922 292 L920 300 L918 292 L910 290 L918 288 Z" opacity="0.85"/>
+    <path d="M1350 480 L1353 490 L1363 493 L1353 496 L1350 506 L1347 496 L1337 493 L1347 490 Z" opacity="0.9"/>
+  </g>
+
+  <!-- Start Zone: Cartoon Earth at Left Bottom -->
+  <g transform="translate(60, 480)">
+    <circle cx="60" cy="60" r="65" fill="url(#earthBody)" stroke="#38bdf8" stroke-width="3"/>
+    <!-- Continents -->
+    <path d="M35 30 C50 20 70 30 75 45 C80 60 65 75 50 75 C35 75 25 60 30 45 Z" fill="#22c55e" opacity="0.8"/>
+    <path d="M70 70 C85 65 105 75 100 95 C95 110 75 115 65 105 Z" fill="#22c55e" opacity="0.8"/>
+    <!-- Atmosphere Glow -->
+    <circle cx="60" cy="60" r="70" fill="none" stroke="#7dd3fc" stroke-width="4" opacity="0.4"/>
+  </g>
+
+  <!-- Destination: Red Planet Mars / Alien Star Station at Far Right -->
+  <g transform="translate(1420, 360)">
+    <!-- Red Planet Mars -->
+    <circle cx="70" cy="70" r="80" fill="#ef4444" stroke="#fca5a5" stroke-width="4"/>
+    <circle cx="70" cy="70" r="85" fill="none" stroke="#f87171" stroke-width="5" opacity="0.3"/>
+    <!-- Craters -->
+    <circle cx="45" cy="50" r="15" fill="#b91c1c"/>
+    <circle cx="95" cy="85" r="18" fill="#b91c1c"/>
+    <circle cx="70" cy="115" r="12" fill="#b91c1c"/>
+    <!-- Station Dome -->
+    <ellipse cx="70" cy="15" rx="30" ry="12" fill="#38bdf8" stroke="#ffffff" stroke-width="2"/>
+    <text x="70" y="8" font-family="Arial, sans-serif" font-weight="900" font-size="11" fill="#fef08a" text-anchor="middle">TRẠM ĐÍCH</text>
+  </g>
+
+  <!-- Giant Ringed Saturn in Background Center-Top -->
+  <g transform="translate(740, 100) rotate(-18)" opacity="0.85">
+    <!-- Back of Ring -->
+    <ellipse cx="60" cy="60" rx="100" ry="24" fill="none" stroke="#fed7aa" stroke-width="12" opacity="0.7"/>
+    <!-- Planet Ball -->
+    <circle cx="60" cy="60" r="45" fill="url(#saturnBody)" stroke="#fdba74" stroke-width="3"/>
+    <!-- Planet Striping -->
+    <path d="M18 55 Q60 65 102 55" stroke="#f97316" stroke-width="4" fill="none"/>
+    <path d="M22 68 Q60 78 98 68" stroke="#ea580c" stroke-width="4" fill="none"/>
+    <!-- Front of Ring -->
+    <path d="M-40 60 C-40 80 160 80 160 60" fill="none" stroke="#ffedd5" stroke-width="14"/>
+    <path d="M-38 60 C-38 78 158 78 158 60" fill="none" stroke="#ea580c" stroke-width="2"/>
+  </g>
+</svg>
