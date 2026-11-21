@@ -90,3 +90,4 @@ export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed 
 
   return Math.min(prog, 100);
 }
+

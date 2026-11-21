@@ -370,6 +370,10 @@ class GameAudioSynth {
       this.bgmTimer = null;
     }
   }
+
+  playAmbientBGM() {
+    this.startAmbientBGM();
+  }
 }
 
 export const gameAudio = new GameAudioSynth();

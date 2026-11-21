@@ -425,13 +425,13 @@ export default function BoatRaceGame({
                   >
                     <defs>
                       <linearGradient id={`hull_${team.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color={team.color || '#0284c7'} />
-                        <stop offset="70%" stop-color="#38bdf8" />
-                        <stop offset="100%" stop-color="#fef08a" />
+                        <stop offset="0%" stopColor={team.color || '#0284c7'} />
+                        <stop offset="70%" stopColor="#38bdf8" />
+                        <stop offset="100%" stopColor="#fef08a" />
                       </linearGradient>
                       <linearGradient id={`wood_${team.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#b45309" />
-                        <stop offset="100%" stop-color="#78350f" />
+                        <stop offset="0%" stopColor="#b45309" />
+                        <stop offset="100%" stopColor="#78350f" />
                       </linearGradient>
                     </defs>
 
