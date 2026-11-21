@@ -226,3 +226,4 @@ export function disposeThreeScene(scene, renderer) {
     renderer.dispose();
   }
 }
+

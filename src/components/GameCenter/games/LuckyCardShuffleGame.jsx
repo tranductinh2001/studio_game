@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import confetti from 'canvas-confetti';
-import { 
-  Shuffle, UserCheck, Sparkles, Trophy, RotateCcw, 
+import {
+  Shuffle, UserCheck, Sparkles, Trophy, RotateCcw,
   HelpCircle, CheckCircle, Users, Star, Award, Filter, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
@@ -580,11 +580,10 @@ export default function LuckyCardShuffleGame({
                 return (
                   <div
                     key={i}
-                    className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                      isCorrect 
-                        ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300 font-medium' 
+                    className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${isCorrect
+                        ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300 font-medium'
                         : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <span className="w-7 h-7 rounded-lg bg-slate-800 text-xs font-black flex items-center justify-center">
                       {optLetter}
