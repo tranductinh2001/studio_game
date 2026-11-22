@@ -46,17 +46,19 @@ export default function VoiceControlBar({
   };
 
   const isListening = agentState === 'LISTENING';
+  const isWaiting = agentState === 'WAITING';
   const isSpeaking = agentState === 'SPEAKING';
-  const isProcessing = agentState === 'PROCESSING';
+  const isProcessing = agentState === 'PROCESSING' || agentState === 'THINKING';
+  const isInterrupted = agentState === 'INTERRUPTED';
   const isPaused = agentState === 'PAUSED';
 
   const SAMPLE_QUESTIONS = [
-    { label: '🌐 WWW là gì?', query: 'Mạng thông tin toàn cầu World Wide Web là gì?' },
+    { label: '🌐 WWW là gì?', query: 'Mark ơi, mạng thông tin toàn cầu là gì?' },
+    { label: '⚡ Thế nó có tác dụng gì?', query: 'Thế nó có tác dụng gì?' },
+    { label: '💡 Cho mình ví dụ nhé!', query: 'Cho mình một ví dụ nhé!' },
+    { label: '⏪ Còn cái đầu tiên là gì?', query: 'Còn cái đầu tiên là gì nhỉ?' },
     { label: '🔗 Siêu liên kết là gì?', query: 'Thế nào là siêu liên kết và siêu văn bản?' },
-    { label: '🧭 Trình duyệt là gì?', query: 'Trình duyệt web là gì và kể tên các trình duyệt phổ biến?' },
-    { label: '❓ Internet khác Web thế nào?', query: 'Internet và mạng thông tin toàn cầu khác nhau như thế nào?' },
-    { label: '🏠 Trang chủ là gì?', query: 'Trang chủ và website là gì?' },
-    { label: '🎬 Làm sao xem video trên mạng?', query: 'Làm thế nào để truy cập và xem một video trên web?' }
+    { label: '🧭 Trình duyệt phổ biến?', query: 'Trình duyệt web là gì và kể tên các trình duyệt phổ biến?' }
   ];
 
   return (
@@ -117,11 +119,15 @@ export default function VoiceControlBar({
                 className={`flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm sm:text-base font-bold shadow-lg transition-all ${
                   isListening
                     ? 'bg-red-500/25 text-red-300 border-2 border-red-500 shadow-red-500/30'
+                    : isWaiting
+                    ? 'bg-amber-500/25 text-amber-300 border-2 border-amber-500 shadow-amber-500/30 animate-pulse'
+                    : isInterrupted
+                    ? 'bg-orange-500/25 text-orange-300 border-2 border-orange-500 shadow-orange-500/30'
                     : isProcessing
                     ? 'bg-purple-500/20 text-purple-300 border-2 border-purple-500/70'
                     : isSpeaking
                     ? 'bg-cyan-500/20 text-cyan-300 border-2 border-cyan-500/70'
-                    : 'bg-amber-500/20 text-amber-300 border-2 border-amber-500/70'
+                    : 'bg-slate-800/60 text-slate-300 border-2 border-slate-700'
                 }`}
               >
                 {isListening && (
@@ -130,7 +136,7 @@ export default function VoiceControlBar({
                       <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
                       <Mic className="w-4 h-4 text-red-400" />
                     </div>
-                    <span>MICRO ĐANG LẮNG NGHE...</span>
+                    <span>MARK ĐANG LẮNG NGHE...</span>
                     {/* Animated Audio Waveform */}
                     <div className="flex items-end gap-1 h-4 ml-1">
                       <span className="w-1 bg-red-400 rounded-full h-3 animate-[pulse_0.4s_ease-in-out_infinite]" />
@@ -140,16 +146,28 @@ export default function VoiceControlBar({
                     </div>
                   </>
                 )}
+                {isWaiting && (
+                  <>
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+                    <span>MARK ĐANG CHỜ BẠN NÓI TIẾP...</span>
+                  </>
+                )}
+                {isInterrupted && (
+                  <>
+                    <span className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-ping" />
+                    <span>ĐÃ NGẮT LỜI • ĐANG LẮNG NGHE</span>
+                  </>
+                )}
                 {isProcessing && (
                   <>
                     <span className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping" />
-                    <span>WEBBY ĐANG SUY NGHĨ...</span>
+                    <span>MARK ĐANG SUY NGHĨ...</span>
                   </>
                 )}
                 {isSpeaking && (
                   <>
                     <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                    <span>WEBBY ĐANG TRẢ LỜI</span>
+                    <span>MARK ĐANG TRẢ LỜI</span>
                   </>
                 )}
                 {isPaused && (

@@ -53,7 +53,7 @@ export default function SubtitleDisplay({
     });
   };
 
-  const isWebby = currentSpeaker === 'WEBBY';
+  const isMark = currentSpeaker === 'MARK' || currentSpeaker === 'WEBBY' || currentSpeaker === 'Mark';
 
   return (
     <div className="w-full max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 z-20 transition-all duration-300">
@@ -66,13 +66,13 @@ export default function SubtitleDisplay({
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <div
               className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full font-bold text-xs sm:text-sm md:text-base tracking-wider ${
-                isWebby
+                isMark
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/50'
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50'
               }`}
             >
-              {isWebby ? <Bot className="w-4 h-4 sm:w-5 sm:h-5" /> : <User className="w-4 h-4 sm:w-5 sm:h-5" />}
-              <span>{isWebby ? 'ĐẠI SỨ WEBBY' : 'HỌC SINH ĐẶT CÂU HỎI'}</span>
+              {isMark ? <Bot className="w-4 h-4 sm:w-5 sm:h-5" /> : <User className="w-4 h-4 sm:w-5 sm:h-5" />}
+              <span>{isMark ? 'TRỢ LÝ MARK' : 'HỌC SINH ĐẶT CÂU HỎI'}</span>
             </div>
 
             {/* Audio Activity indicator */}

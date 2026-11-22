@@ -11,6 +11,7 @@ import LessonSlidePresentation from './components/Presentation/LessonSlidePresen
 import GroupWorkDisplay from './components/GroupWork/GroupWorkDisplay';
 import AssessmentDisplay from './components/Assessment/AssessmentDisplay';
 import BitOneQuestionGenerator from './components/BitOneQuiz/BitOneQuestionGenerator';
+import BitOneVoiceStudio from './components/BitOneVoiceStudio/BitOneVoiceStudio';
 import CardGenerator from './components/CardGenerator/CardGenerator';
 import MobileController from './components/Mobile/MobileController';
 import GameCenter from './components/GameCenter/GameCenter';
@@ -19,6 +20,9 @@ import { speechSynth } from './services/speechSynthesis';
 import { speechRec } from './services/speechRecognition';
 import { aiService } from './services/aiService';
 import { classroomService } from './services/classroomService';
+import { conversationController } from './services/voiceAssistant/ConversationController';
+import { conversationMemory } from './services/voiceAssistant/ConversationMemory';
+import { BOT_CONFIG } from './services/voiceAssistant/VoiceAssistantConfig';
 import { detectAppEnv, buildRoomJoinUrl } from './config/environment';
 import conversationScripts from './data/conversationScripts.json';
 import QRCode from 'qrcode';
@@ -28,7 +32,7 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Navigation Tab: 'lesson-slide' | 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
+  // Navigation Tab: 'lesson-slide' | 'game-center' | 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
   const [currentTab, setCurrentTab] = useState('lesson-slide');
   const [assessmentSelectedQuestion, setAssessmentSelectedQuestion] = useState(null);
 
@@ -56,9 +60,9 @@ export default function App() {
   const [speechRate, setSpeechRate] = useState(0.95);
 
   // Subtitle & Conversation Memory states
-  const [currentSpeaker, setCurrentSpeaker] = useState('WEBBY');
+  const [currentSpeaker, setCurrentSpeaker] = useState('MARK');
   const [subtitleText, setSubtitleText] = useState(
-    'Nhấn nút BẮT ĐẦU TRÒ CHUYỆN LIÊN TỤC để gặp gỡ Đại sứ WEBBY!'
+    'Nhấn nút BẮT ĐẦU TRÒ CHUYỆN LIÊN TỤC để gặp gỡ Trợ lý Mark!'
   );
   const [interimText, setInterimText] = useState('');
   const [lastWebbySpeech, setLastWebbySpeech] = useState('');
@@ -234,131 +238,47 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Webby speaks text with subtitles, lip-sync, and auto-transition when done
-  const speakAsWebby = useCallback(
-    (text, targetEmotion = 'SPEAKING', onFinish = null) => {
-      // 1. Immediately mute speech recognition so Webby's voice is never captured by microphone
-      speechRec.mute();
-
-      setLastWebbySpeech(text);
-      lastWebbySpeechRef.current = text;
-      setCurrentSpeaker('WEBBY');
+  // Connect ConversationController callbacks with React state
+  useEffect(() => {
+    conversationController.onStateChange = (state) => {
+      setAgentState(state);
+      agentStateRef.current = state;
+    };
+    conversationController.onEmotionChange = (emo) => {
+      setEmotion(emo);
+    };
+    conversationController.onSubtitleChange = (speaker, text, interim = '') => {
+      setCurrentSpeaker(speaker);
       setSubtitleText(text);
-      setInterimText('');
-      setEmotion(targetEmotion);
-      setAgentState('SPEAKING');
-
-      setConversationHistory((prev) => [...prev.slice(-8), { sender: 'webby', text }]);
-
-      speechSynth.speak(text, () => {
-        // Record timestamp when Webby stops speaking
-        speechEndedTimeRef.current = Date.now();
-
-        if (onFinish) {
-          onFinish();
-          isProcessingQueryRef.current = false;
-        } else if (isSessionActiveRef.current) {
-          // Acoustic cooldown window: 800ms to allow physical room echo to completely dissipate
-          setTimeout(() => {
-            isProcessingQueryRef.current = false;
-            if (isSessionActiveRef.current && agentStateRef.current !== 'PAUSED') {
-              setAgentState('LISTENING');
-              setEmotion('LISTENING');
-              setCurrentSpeaker('HỌC SINH');
-              setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói đi nào!');
-              speechRec.unmute();
-            }
-          }, 800);
-        } else {
-          isProcessingQueryRef.current = false;
-          setAgentState('IDLE');
-          setEmotion('IDLE');
-        }
-      });
-    },
-    []
-  );
-
-  // Handle student spoken or typed input
-  const handleStudentQuery = useCallback(
-    async (studentText, isManual = false) => {
-      if (!studentText || !studentText.trim()) return;
-
-      const trimmed = studentText.trim();
-      const lower = trimmed.toLowerCase();
-
-      // Guard 1: Mutex lock - already answering a query
-      if (isProcessingQueryRef.current) {
-        console.log('[handleStudentQuery] Blocked: Already processing a query');
-        return;
-      }
-
-      // Guard 2: Agent is currently speaking or processing (unless manual override)
-      if (!isManual && (agentStateRef.current === 'SPEAKING' || agentStateRef.current === 'PROCESSING')) {
-        console.log('[handleStudentQuery] Blocked: Agent is currently speaking/processing');
-        return;
-      }
-
-      // Guard 3: Acoustic cooldown window (800ms after Webby stops speaking)
-      const timeSinceSpeech = Date.now() - speechEndedTimeRef.current;
-      if (!isManual && speechEndedTimeRef.current > 0 && timeSinceSpeech < 800) {
-        console.log(`[handleStudentQuery] Blocked: Within 800ms acoustic cooldown window (${timeSinceSpeech}ms)`);
-        return;
-      }
-
-      // Guard 4: Anti-echo filter - verify student input is not echoing Webby's own voice
-      if (!isManual && lastWebbySpeechRef.current) {
-        const lastWebbyLower = lastWebbySpeechRef.current.toLowerCase();
-        if (lastWebbyLower.includes(lower) && lower.length > 6) {
-          console.log('[handleStudentQuery] Blocked: Self-echo detected from speaker:', trimmed);
-          return;
-        }
-      }
-
-      // Acquire mutex lock
-      isProcessingQueryRef.current = true;
-
-      setCurrentSpeaker('HỌC SINH');
-      setSubtitleText(`"${trimmed}"`);
-      setInterimText('');
-      setAgentState('PROCESSING');
-      setEmotion('THINKING');
-
-      speechRec.mute();
-
-      setConversationHistory((prev) => [...prev.slice(-8), { sender: 'user', text: trimmed }]);
-      setRoundCount((prev) => prev + 1);
-
-      try {
-        const response = await aiService.sendMessage(trimmed, conversationHistory);
-        speakAsWebby(response.reply, response.emotion || 'SPEAKING');
-      } catch (err) {
-        console.error('Error generating AI response:', err);
-        speakAsWebby(
-          'Thầy cô và các bạn hãy hỏi mình thêm về World Wide Web, siêu liên kết hoặc trình duyệt web nhé! Mình đã sẵn sàng rồi đây!',
-          'HAPPY'
-        );
-      }
-    },
-    [conversationHistory, speakAsWebby]
-  );
+      setInterimText(interim);
+    };
+    conversationController.aiQueryHandler = async (message, memory) => {
+      const history = memory.getHistoryForAPI();
+      const context = {
+        activeTopic: memory.getActiveTopic(),
+        firstTopic: memory.getFirstTopic(),
+        studentName: memory.getStudentName(),
+        lastAssistantReply: memory.getLastAssistantReply()
+      };
+      return await aiService.sendMessage(message, history, context);
+    };
+  }, []);
 
   // Bind speech recognition callbacks
   useEffect(() => {
     const handleResult = (finalTranscript) => {
       if (!finalTranscript) return;
       console.log('[App] Speech Recognition Result:', finalTranscript);
-      if (agentStateRef.current === 'SPEAKING' || agentStateRef.current === 'PROCESSING' || !isSessionActiveRef.current) {
-        console.log('[App] Ignored speech while Webby is speaking/processing or session inactive');
-        return;
-      }
-      handleStudentQuery(finalTranscript);
+      conversationController.handleFinalSpeech(finalTranscript);
     };
 
     const handleInterim = (interimTranscript) => {
-      if (agentStateRef.current === 'LISTENING') {
-        setInterimText(interimTranscript);
-      }
+      conversationController.handleInterimSpeech(interimTranscript);
+    };
+
+    const handleBargeIn = () => {
+      console.log('[App] Speech Recognition Barge-In Event');
+      conversationController.handleBargeIn();
     };
 
     const handleError = (error) => {
@@ -369,17 +289,18 @@ export default function App() {
       }
     };
 
-    // Assign direct callback properties (Do NOT double-bind with subscribe)
     speechRec.onResult = handleResult;
     speechRec.onInterim = handleInterim;
+    speechRec.onBargeIn = handleBargeIn;
     speechRec.onError = handleError;
 
     return () => {
       speechRec.onResult = null;
       speechRec.onInterim = null;
+      speechRec.onBargeIn = null;
       speechRec.onError = null;
     };
-  }, [handleStudentQuery]);
+  }, []);
 
   // Request mic permission manually
   const handleRequestMicPermission = async () => {
@@ -392,26 +313,14 @@ export default function App() {
     }
   };
 
-  // Start continuous conversation session
+  // Start continuous conversation session with Mark AI
   const handleStartSession = async () => {
     setMicError(null);
     if (speechRec.requestMicPermission) {
       await speechRec.requestMicPermission();
     }
-
     setIsSessionActive(true);
-    setRoundCount(0);
-    setConversationHistory([]);
-    isProcessingQueryRef.current = false;
-    speechEndedTimeRef.current = 0;
-
-    // Enable continuous listening mode so safeStart() knows agent wants to listen
-    speechRec.startContinuous();
-
-    const greetingText =
-      'Xin chào các bạn học sinh lớp 6! Mình là WEBBY, đại sứ Mạng thông tin toàn cầu! Hôm nay mình rất vui được đồng hành cùng các bạn khám phá thế giới Internet kỳ thú! Các bạn đã sẵn sàng chưa nào?';
-
-    speakAsWebby(greetingText, 'GREETING');
+    conversationController.startSession(true);
   };
 
   // Directly activate microphone listening without waiting for greeting
@@ -420,57 +329,40 @@ export default function App() {
     if (speechRec.requestMicPermission) {
       await speechRec.requestMicPermission();
     }
-
     setIsSessionActive(true);
-    isProcessingQueryRef.current = false;
-    speechEndedTimeRef.current = 0;
-    speechSynth.stop();
-    setAgentState('LISTENING');
-    setEmotion('LISTENING');
-    setCurrentSpeaker('HỌC SINH');
-    setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói hoặc chọn câu hỏi gợi ý!');
-    setInterimText('');
-    speechRec.unmute();
-    speechRec.startContinuous();
+    conversationController.startSession(false);
   };
 
   // Stop session
   const handleStopSession = () => {
     setIsSessionActive(false);
-    isProcessingQueryRef.current = false;
-    speechEndedTimeRef.current = 0;
-    speechSynth.stop();
-    speechRec.stopContinuous();
-    setAgentState('IDLE');
-    setEmotion('IDLE');
-    setCurrentSpeaker('WEBBY');
-    setSubtitleText('Phiên trò chuyện đã kết thúc. Nhấn BẮT ĐẦU TRÒ CHUYỆN để gặp lại WEBBY!');
-    setInterimText('');
+    conversationController.stopSession();
   };
 
   // Pause listening
   const handlePauseListening = () => {
-    setAgentState('PAUSED');
-    isProcessingQueryRef.current = false;
+    speechSynth.pause();
     speechRec.mute();
-    speechSynth.stop();
+    conversationController.setState('PAUSED');
   };
 
   // Resume listening
   const handleResumeListening = () => {
-    setAgentState('LISTENING');
-    setEmotion('LISTENING');
-    setCurrentSpeaker('HỌC SINH');
-    setSubtitleText('WEBBY đang lắng nghe bạn... Hãy nói đi nào!');
-    speechRec.unmute();
-    speechRec.startContinuous();
+    conversationController.transitionToListening();
   };
 
-  // Replay speech
+  // Replay last speech
   const handleReplaySpeech = () => {
-    if (lastWebbySpeech) {
-      speakAsWebby(lastWebbySpeech, emotion);
+    const last = conversationMemory.getLastAssistantReply();
+    if (last) {
+      conversationController.speak(last, emotion);
     }
+  };
+
+  // Manual question submit (typing or sample chip)
+  const handleManualSubmit = (text) => {
+    if (!text || !text.trim()) return;
+    conversationController.processCompleteUtterance(text.trim());
   };
 
   // Execute teacher scripted scenarios
@@ -485,7 +377,7 @@ export default function App() {
     }
 
     if (step.webbyResponse) {
-      speakAsWebby(step.webbyResponse, step.emotion || 'SPEAKING');
+      conversationController.speak(step.webbyResponse, step.emotion || 'SPEAKING');
     }
   };
 
@@ -495,7 +387,7 @@ export default function App() {
     setSubtitleText(`"${faqItem.question}"`);
 
     setTimeout(() => {
-      speakAsWebby(`${faqItem.answer} ${faqItem.followup}`, 'SPEAKING');
+      conversationController.speak(`${faqItem.answer} ${faqItem.followup}`, 'SPEAKING');
     }, 600);
   };
 
@@ -614,7 +506,7 @@ export default function App() {
             }`}
           >
             <Bot className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Webby AI</span>
+            <span className="hidden sm:inline">Mark AI</span>
           </button>
 
           <button
@@ -650,7 +542,7 @@ export default function App() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">BitOne AI Soạn Đề</span>
+            <span className="hidden sm:inline">Trắc nghiệm AI</span>
           </button>
 
           <button
@@ -752,7 +644,7 @@ export default function App() {
                 onResumeListening={handleResumeListening}
                 onDirectListen={handleDirectListen}
                 onReplaySpeech={handleReplaySpeech}
-                onManualSubmit={handleStudentQuery}
+                onManualSubmit={handleManualSubmit}
               />
             </footer>
 
@@ -798,7 +690,7 @@ export default function App() {
           />
         )}
 
-        {/* TAB 4: BITONE AI QUESTION GENERATOR */}
+        {/* TAB 4: BITONE QUESTION GENERATOR */}
         {currentTab === 'bitone-quiz' && (
           <BitOneQuestionGenerator 
             onSelectQuestionForAssessment={(q) => {

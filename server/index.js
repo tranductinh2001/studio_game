@@ -7,6 +7,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { classroomStore } from './data/classroomStore.js';
 import { generateQuestionsWithBitOne, analyzeResultsWithBitOne } from './services/bitoneService.js';
+import { voiceService } from './services/voiceService.js';
 import { matchCurriculumResponse } from '../src/data/curriculumIntents.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +50,10 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '15mb' })); // Support high-res photo uploads from mobile camera
 
+// Static directories for voice files and audio assets
+app.use('/audio_generated', express.static(path.join(__dirname, '../public/audio_generated')));
+app.use('/voice_samples', express.static(path.join(__dirname, '../public/voice_samples')));
+
 // Read lesson knowledge for fallback
 let lessonKnowledge = null;
 let conversationScripts = null;
@@ -66,33 +71,38 @@ try {
   console.warn('Warning: Could not load local knowledge files in server:', err.message);
 }
 
-// System Instruction for WEBBY AI
+// System Instruction for Mark AI - Intelligent Learning Assistant for Grade 6
 const SYSTEM_INSTRUCTION = `
-Bạn là WEBBY, một người bạn AI thông minh, đáng yêu đến từ thế giới Mạng thông tin toàn cầu (World Wide Web).
-Bạn đang trò chuyện giọng nói liên tục hai chiều với các bạn học sinh lớp 6 tại Việt Nam trong tiết thao giảng môn Tin học - Bài 6: Mạng thông tin toàn cầu.
+Bạn là Mark, một trợ lý AI học tập thông minh, thân thiện và ấm áp dành cho học sinh trung học cơ sở (lớp 6) tại Việt Nam trong tiết thao giảng môn Tin học - Bài 6: Mạng thông tin toàn cầu.
 
-TÍNH CÁCH:
-- Thân thiện, vui vẻ, thông minh, tò mò, hóm hỉnh vừa phải, ấm áp như một người bạn đồng trang lứa hiểu biết.
-- Luôn khuyến khích học sinh suy nghĩ, tự tin phát biểu, không phán xét.
+NHIỆM VỤ CỦA BẠN:
+Trò chuyện, hướng dẫn, giải đáp thắc mắc và gợi mở tư duy cho học sinh như một người thầy, người bạn đồng hành thông thái.
 
-QUY TẮC BẮT BUỘC VỀ NỘI DUNG & PHONG CÁCH:
-1. Luôn sử dụng tiếng Việt tự nhiên, phù hợp với học sinh 11-12 tuổi.
-2. Xưng hô là "mình" và gọi học sinh là "các bạn" hoặc "bạn".
-3. TRẢ LỜI NGẮN GỌN (1 đến 3 câu). Tuyệt đối không đọc như sách giáo khoa hay thuyết trình dài dòng.
-4. GHI NHỚ NGỮ CẢNH: Để ý câu nói trước đó của học sinh trong lịch sử trò chuyện để phản hồi liền mạch.
-5. PHÂN BIỆT RÕ RÀNG KIẾN THỨC BÀI 6 (TUYỆT ĐỐI KHÔNG NHẦM LẪN):
-   - Internet: Mạng liên kết các mạng máy tính trên phạm vi toàn cầu (hạ tầng mạng).
-   - Mạng thông tin toàn cầu (World Wide Web - WWW): Là một DỊCH VỤ hoạt động TRÊN nền Internet, bao gồm các trang web liên kết với nhau. (Internet và WWW KHÔNG PHẢI là một!).
-   - Website: Tập hợp gồm một hoặc nhiều trang web liên quan được lưu dưới một địa chỉ chung.
-   - Trang web (Web page): Từng trang tài liệu đa phương tiện trong website (như một trang trong cuốn sách).
-   - Trang chủ (Homepage): Trang web đầu tiên mở ra khi truy cập vào một website.
-   - Siêu liên kết (Hyperlink): Cánh cửa chuyển tiếp – đoạn chữ hoặc hình ảnh có thể bấm chuột vào để chuyển đến trang web khác.
-   - Trình duyệt web: Phần mềm giúp con người truy cập và xem trang web (như Chrome, Edge, Cốc Cốc...).
-6. ĐIỀU TIẾT HỘI THOẠI:
-   - Nếu câu hỏi đơn giản: trả lời ngay trong 1-2 câu ngắn, tự nhiên.
-   - Không máy móc bắt buộc phải hỏi lại sau mỗi câu; chỉ gợi ý câu hỏi khi muốn kích thích học sinh khám phá tiếp.
-   - Nếu học sinh nói câu ngoài chủ đề: trả lời lịch sự, ngắn gọn trong 1 câu rồi dẫn khéo về bài học mạng và trang web.
-7. ĐẦU RA THUẦN VĂN BẢN TIẾNG VIỆT: Không dùng ký tự markdown hay ký hiệu đặc biệt để Text-to-Speech đọc mượt mà.
+14 QUY TẮC BẮT BUỘC TRONG HỘI THOẠI:
+1. Luôn đọc và thấu hiểu lịch sử hội thoại trước khi trả lời.
+2. Không xem câu hỏi mới là một yêu cầu độc lập nếu nó liên quan đến câu trước đó.
+3. Hiểu các đại từ và cách diễn đạt tham chiếu ("nó", "cái đó", "điều vừa rồi", "câu trước", "ví dụ đầu tiên", "cái đầu tiên").
+4. Trả lời tự nhiên, có cảm xúc, không lặp lại máy móc từng từ.
+5. Nếu chưa hiểu hoặc câu hỏi quá mơ hồ, hãy hỏi lại một cách lịch sự, không tự đoán mò.
+6. Nếu học sinh đang nói ngập ngừng hoặc chưa xong câu, hãy kiên nhẫn chờ đợi.
+7. Nếu học sinh yêu cầu giải thích lại ("em chưa hiểu"), hãy dùng cách diễn đạt khác gần gũi hơn, không lặp lại nguyên văn câu cũ.
+8. Nếu học sinh yêu cầu ví dụ, hãy đưa ra ví dụ đời sống thực tế, sinh động, dễ hiểu với lứa tuổi 11-12.
+9. Tuyệt đối không bịa đặt kiến thức, không nói sai chuẩn kiến thức môn Tin học 6.
+10. Không đưa ra thông tin lan man ngoài phạm vi bài học khi không có cơ sở.
+11. Luôn khuyến khích học sinh tự suy nghĩ và tự tin khám phá bài học.
+12. Giữ phong cách giao tiếp thân thiện, ngắn gọn (1 đến 3 câu). Tuyệt đối không thuyết trình dài dòng.
+13. Không tự động kết thúc hội thoại sau mỗi câu trả lời.
+14. Ghi nhớ chủ đề đang thảo luận xuyên suốt toàn bộ phiên học.
+
+PHÂN BIỆT RÕ RÀNG KIẾN THỨC BÀI 6 (TUYỆT ĐỐI CHUẨN XÁC):
+- Internet: Mạng liên kết các mạng máy tính trên phạm vi toàn cầu (hạ tầng mạng).
+- Mạng thông tin toàn cầu (World Wide Web - WWW): Là một DỊCH VỤ hoạt động TRÊN nền Internet, bao gồm các trang web liên kết với nhau. (Internet và WWW KHÔNG PHẢI là một!).
+- Website: Tập hợp gồm một hoặc nhiều trang web liên quan được lưu dưới một địa chỉ chung (như một cuốn sách).
+- Trang web (Web page): Từng trang tài liệu đa phương tiện trong website (như một trang trong cuốn sách).
+- Trang chủ (Homepage): Trang web đầu tiên mở ra khi truy cập vào một website.
+- Siêu liên kết (Hyperlink): Cánh cửa chuyển tiếp – đoạn chữ hoặc hình ảnh có thể bấm chuột vào để chuyển đến trang web khác (con trỏ chuột biến thành hình bàn tay).
+- Trình duyệt web: Phần mềm giúp con người truy cập và xem trang web (Chrome, Edge, Cốc Cốc...).
+- Tim Berners-Lee: Nhà khoa học người Anh phát minh ra WWW vào năm 1989.
 `;
 
 // Helper: Detect appropriate avatar emotion based on response text
@@ -170,17 +180,19 @@ async function callBitOneChat(message, history = []) {
   return null;
 }
 
-// Helper: Intelligent Super Curriculum Knowledge Engine (26+ Grade 6 intents + FAQ + Topics)
-function getLocalFallbackResponse(query, history = []) {
+// Helper: Intelligent Super Curriculum Knowledge Engine (26+ Grade 6 intents + FAQ + Topics + Context Memory)
+function getLocalFallbackResponse(query, history = [], context = {}) {
   const matched = matchCurriculumResponse(
     query,
     lessonKnowledge ? lessonKnowledge.faq : [],
-    lessonKnowledge ? lessonKnowledge.topics : []
+    lessonKnowledge ? lessonKnowledge.topics : [],
+    context
   );
 
   return {
     text: matched.text,
     emotion: matched.emotion || 'SPEAKING',
+    topic: matched.topic,
     source: matched.source || 'curriculum-engine'
   };
 }
@@ -189,16 +201,17 @@ function getLocalFallbackResponse(query, history = []) {
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
+    assistantName: 'Mark',
     hasApiKey: !!GEMINI_API_KEY,
     hasBitOneKey: !!BITONE_API_KEY,
-    model: BITONE_API_KEY ? BITONE_MODEL : (GEMINI_API_KEY ? GEMINI_MODEL : 'curriculum-engine'),
+    model: BITONE_API_KEY ? BITONE_MODEL : (GEMINI_API_KEY ? GEMINI_MODEL : 'mark-curriculum-engine'),
     serverTime: new Date().toISOString()
   });
 });
 
 // Chat endpoint with 3-tier intelligence: BitOne AI -> Gemini API -> Super Curriculum Engine
 app.post('/api/chat', async (req, res) => {
-  const { message, history = [] } = req.body;
+  const { message, history = [], context = {} } = req.body;
 
   if (!message || typeof message !== 'string') {
     return res.status(400).json({ error: 'Nội dung tin nhắn không hợp lệ' });
@@ -233,16 +246,16 @@ app.post('/api/chat', async (req, res) => {
         },
         {
           role: 'model',
-          parts: [{ text: 'Tôi đã hiểu rõ vai trò WEBBY - Đại sứ Mạng thông tin toàn cầu cho học sinh lớp 6. Tôi sẽ luôn nói ngắn gọn, thân thiện bằng tiếng Việt, giải thích dễ hiểu và bám sát Bài 6.' }]
+          parts: [{ text: 'Tôi đã hiểu rõ vai trò Mark - Trợ lý AI học tập thông minh cho học sinh lớp 6. Tôi sẽ luôn nói ngắn gọn, thân thiện bằng tiếng Việt, giải thích dễ hiểu và bám sát Bài 6.' }]
         }
       ];
 
       if (Array.isArray(history)) {
         for (const h of history.slice(-6)) {
-          if (h.sender === 'user') {
-            contents.push({ role: 'user', parts: [{ text: h.text }] });
-          } else if (h.sender === 'webby') {
-            contents.push({ role: 'model', parts: [{ text: h.text }] });
+          if (h.sender === 'user' || h.role === 'user') {
+            contents.push({ role: 'user', parts: [{ text: h.text || h.content }] });
+          } else if (h.sender === 'webby' || h.role === 'assistant') {
+            contents.push({ role: 'model', parts: [{ text: h.text || h.content }] });
           }
         }
       }
@@ -282,13 +295,14 @@ app.post('/api/chat', async (req, res) => {
     }
   }
 
-  // TIER 3: Super Curriculum Knowledge Engine (100% Reliable, 26+ Intents, Zero Error)
-  const fallback = getLocalFallbackResponse(message, history);
+  // TIER 3: Super Curriculum Knowledge Engine (100% Reliable, 26+ Intents, Context Memory, Zero Error)
+  const fallback = getLocalFallbackResponse(message, history, context);
   return res.json({
     reply: fallback.text,
     emotion: fallback.emotion,
+    topic: fallback.topic,
     mode: 'curriculum-engine',
-    provider: 'Webby Smart Curriculum Engine'
+    provider: 'Mark Smart Curriculum Engine'
   });
 });
 
@@ -530,6 +544,74 @@ app.post('/api/bitone/analyze-results', async (req, res) => {
     res.json({ analysis });
   } catch (err) {
     console.error('Error analyzing results with BitOne AI:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// BIT1 ENGLISH VOICE STUDIO & SPEECH APIS
+// ==========================================
+
+// 1. Text to Speech (Edge-TTS / gTTS Fallback)
+app.post('/api/voice/tts', async (req, res) => {
+  try {
+    const result = await voiceService.synthesizeSpeech(req.body || {});
+    res.json(result);
+  } catch (err) {
+    console.error('Error in /api/voice/tts:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Voice Cloning & Learner Simulation
+app.post('/api/voice/clone', async (req, res) => {
+  try {
+    const result = await voiceService.simulateClonedVoice(req.body || {});
+    res.json(result);
+  } catch (err) {
+    console.error('Error in /api/voice/clone:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Audio Sample Analysis
+app.post('/api/voice/analyze-sample', async (req, res) => {
+  try {
+    const { sampleFile = 'default_learner_voice.wav' } = req.body || {};
+    const result = await voiceService.analyzeSample(sampleFile);
+    res.json(result);
+  } catch (err) {
+    console.error('Error in /api/voice/analyze-sample:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Pronunciation Evaluation & Alignment
+app.post('/api/voice/evaluate-pronunciation', (req, res) => {
+  try {
+    const result = voiceService.evaluatePronunciation(req.body || {});
+    res.json(result);
+  } catch (err) {
+    console.error('Error in /api/voice/evaluate-pronunciation:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Upload Voice Sample (from Mic recording or File upload)
+app.post('/api/voice/upload-sample', (req, res) => {
+  try {
+    const { audioBase64, fileName = 'user_recorded_sample.wav' } = req.body || {};
+    if (!audioBase64) {
+      return res.status(400).json({ error: 'Thiếu dữ liệu audioBase64' });
+    }
+    const cleanBase64 = audioBase64.replace(/^data:.*?;base64,/, '');
+    const buffer = Buffer.from(cleanBase64, 'base64');
+    const safeName = `user_${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+    const targetPath = path.join(__dirname, '../public/voice_samples', safeName);
+    fs.writeFileSync(targetPath, buffer);
+    res.json({ success: true, fileName: safeName, url: `/voice_samples/${safeName}` });
+  } catch (err) {
+    console.error('Error in /api/voice/upload-sample:', err);
     res.status(500).json({ error: err.message });
   }
 });

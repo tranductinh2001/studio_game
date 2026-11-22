@@ -1,4 +1,6 @@
-// Service for Text-to-Speech in Vietnamese with audio phoneme synchronization and Chrome keep-alive
+// Service for Text-to-Speech in Vietnamese with audio phoneme synchronization, pronunciation normalization and Chrome keep-alive
+import { normalizeTextForSpeech } from './voiceAssistant/VoiceAssistantConfig.js';
+
 class SpeechSynthesisService {
   constructor() {
     this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
@@ -70,7 +72,8 @@ class SpeechSynthesisService {
       return;
     }
 
-    const cleanText = text.replace(/[*_~`#]/g, '').trim();
+    // Normalize text for natural Vietnamese pronunciation (e.g. Mark -> Mác, not spelled M-A-R-K)
+    const cleanText = normalizeTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     this.activeUtterance = utterance; // Keep reference to prevent Chrome garbage-collection bug
 
@@ -220,6 +223,12 @@ class SpeechSynthesisService {
     this.activeUtterance = null;
     this.stopMouthSimulation();
     this.notify({ type: 'stop' });
+  }
+
+  // Barge-in immediate interruption when student speaks over bot
+  interrupt() {
+    this.stop();
+    this.notify({ type: 'interrupted' });
   }
 
   setRate(rate) {

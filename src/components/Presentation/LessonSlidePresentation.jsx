@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { 
-  Play, Maximize2, Minimize2, ExternalLink, Bot, BarChart3, 
+import {
+  Play, Maximize2, Minimize2, ExternalLink, Bot, BarChart3,
   Image as ImageIcon, BookOpen, Clock, Layers, Sparkles, ChevronRight, RefreshCw, Gamepad2
 } from 'lucide-react';
 
@@ -67,7 +67,7 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
     <div className="w-full h-full flex flex-col bg-[#030712] text-white overflow-hidden">
       {/* Top Slide Control Strip */}
       <header className="px-3 sm:px-5 py-2.5 bg-slate-900/90 border-b border-cyan-500/30 flex flex-wrap items-center justify-between gap-3 shrink-0 backdrop-blur-md z-20">
-        
+
         {/* Left: Lesson Badge & Teacher Info */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-cyan-500/20">
@@ -94,11 +94,10 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
             <button
               key={act.index}
               onClick={() => jumpToSlide(act.index)}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1 ${
-                activeSlideIndex === act.index 
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30' 
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1 ${activeSlideIndex === act.index
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
             >
               <span className="font-mono text-[10px] opacity-80">{act.tag}</span>
               <span className="hidden md:inline">{act.label.split(':')[0]}</span>
@@ -108,14 +107,14 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
 
         {/* Right: Specialized Classroom Tool Switchers & Controls */}
         <div className="flex items-center gap-2">
-          {/* Jump to Webby AI */}
+          {/* Jump to Mark AI */}
           <button
             onClick={() => onSwitchTab && onSwitchTab('webby-agent')}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-200 transition-all shadow-sm"
-            title="Mở Đại sứ Webby AI (Giọng nói 3D)"
+            title="Mở Trợ lý Mark AI (Giọng nói 3D)"
           >
             <Bot className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Webby AI</span>
+            <span>Mark AI</span>
           </button>
 
           {/* Jump to Game Center */}
@@ -173,4 +172,5 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
     </div>
   );
 }
+
 

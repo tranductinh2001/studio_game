@@ -254,7 +254,7 @@ export default function TeacherPanel({
             {activeTab === 'faq' && (
               <div className="space-y-1.5 sm:space-y-2">
                 <p className="text-[11px] sm:text-xs text-slate-400 italic">
-                  Nhấp câu hỏi để WEBBY trả lời và đặt câu hỏi gợi mở cho học sinh:
+                  Nhấp câu hỏi để Mark trả lời và đặt câu hỏi gợi mở cho học sinh:
                 </p>
 
                 {lessonKnowledge.faq.map((item) => (
@@ -284,7 +284,7 @@ export default function TeacherPanel({
                   <div className="flex items-center justify-between font-semibold">
                     <span className="flex items-center gap-1.5">
                       <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
-                      Tốc độ đọc WEBBY:
+                      Tốc độ đọc Mark:
                     </span>
                     <span className="text-cyan-400 font-bold">{speechRate.toFixed(2)}x</span>
                   </div>

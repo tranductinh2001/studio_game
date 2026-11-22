@@ -47,27 +47,29 @@ class AIService {
     return this.onlineStatus;
   }
 
-  // Generate intelligent client-side reply using semantic intent matching
-  generateClientOfflineReply(message, history = []) {
+  // Generate intelligent client-side reply using semantic intent matching & context memory
+  generateClientOfflineReply(message, history = [], context = {}) {
     const matched = matchCurriculumResponse(
       message,
       lessonData ? lessonData.faq : [],
-      lessonData ? lessonData.topics : []
+      lessonData ? lessonData.topics : [],
+      context
     );
     return {
       reply: matched.text,
       emotion: matched.emotion || 'SPEAKING',
+      topic: matched.topic,
       mode: matched.source || 'client-offline'
     };
   }
 
   // Core send query method (with server call & instant fallback)
-  async sendQuery(message, history = []) {
+  async sendQuery(message, history = [], context = {}) {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, history })
+        body: JSON.stringify({ message, history, context })
       });
 
       if (response.ok) {
@@ -76,6 +78,7 @@ class AIService {
           return {
             reply: data.reply.trim(),
             emotion: data.emotion || 'SPEAKING',
+            topic: data.topic,
             mode: data.mode || 'backend',
             provider: data.provider
           };
@@ -86,12 +89,12 @@ class AIService {
     }
 
     // Guaranteed instant client-side intelligence fallback
-    return this.generateClientOfflineReply(message, history);
+    return this.generateClientOfflineReply(message, history, context);
   }
 
   // Dual-name alias: Guarantees App.jsx and other components never throw TypeError
-  async sendMessage(message, history = []) {
-    return this.sendQuery(message, history);
+  async sendMessage(message, history = [], context = {}) {
+    return this.sendQuery(message, history, context);
   }
 }
 

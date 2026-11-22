@@ -15,14 +15,16 @@ class SpeechRecognitionService {
     this.onError = null;
     this.onStart = null;
     this.onEnd = null;
+    this.onBargeIn = null; // Callback when student interrupts bot speech
 
     // Silence detection & debounce timers
     this.silenceTimer = null;
-    this.silenceThresholdMs = 1200; // 1.2s silence marks end of sentence for 6th graders
+    this.silenceThresholdMs = 1000; // 1.0s silence marks end of sentence for 6th graders
     this.accumulatedTranscript = '';
     this.lastDispatchedTranscript = '';
     this.lastDispatchTime = 0;
     this.restartDebounceTimer = null;
+    this.isSpeakingMode = false; // Flag indicating bot is currently speaking
 
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -74,8 +76,6 @@ class SpeechRecognitionService {
     };
 
     this.recognition.onresult = (event) => {
-      if (this.isMuted) return; // Muted while Webby speaks to prevent echo
-
       let currentInterim = '';
       let currentFinal = '';
 
@@ -91,6 +91,17 @@ class SpeechRecognitionService {
 
       const activeText = (currentFinal || currentInterim).trim();
       if (!activeText) return;
+
+      // Barge-in check: If bot is currently speaking and student speaks, trigger immediate interruption
+      if (this.isSpeakingMode && activeText.length >= 2) {
+        console.log('[SpeechRecognition] Barge-in speech detected during bot speech:', activeText);
+        if (typeof this.onBargeIn === 'function') {
+          this.onBargeIn(activeText);
+        }
+        return;
+      }
+
+      if (this.isMuted) return; // Muted while bot speaks if barge-in was handled
 
       this.accumulatedTranscript = activeText;
 
@@ -162,8 +173,8 @@ class SpeechRecognitionService {
     const clean = transcript.trim();
     const now = Date.now();
 
-    // Prevent duplicate dispatches of the same phrase within 3.5 seconds
-    if (!clean || clean.length < 2 || (clean === this.lastDispatchedTranscript && now - this.lastDispatchTime < 3500)) {
+    // Prevent duplicate dispatches of the same phrase within 1.2 seconds
+    if (!clean || clean.length < 2 || (clean === this.lastDispatchedTranscript && now - this.lastDispatchTime < 1200)) {
       return;
     }
 
@@ -254,6 +265,16 @@ class SpeechRecognitionService {
       this.silenceTimer = null;
     }
     this.safeStop();
+  }
+
+  // Set whether bot is currently speaking (for Barge-in detection)
+  setSpeakingMode(isSpeaking) {
+    this.isSpeakingMode = isSpeaking;
+  }
+
+  // Configure silence threshold (VAD end of speech timer)
+  setSilenceThreshold(ms) {
+    this.silenceThresholdMs = Math.max(500, Math.min(3000, ms));
   }
 
   // Unmute/resume listening after Webby finishes speaking

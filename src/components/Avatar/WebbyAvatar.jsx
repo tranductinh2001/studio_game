@@ -498,10 +498,10 @@ export default function WebbyAvatar({
         className="w-[260px] h-[260px] sm:w-[320px] sm:h-[320px] md:w-[380px] md:h-[380px] lg:w-[420px] lg:h-[420px] max-h-[38vh] max-w-[85vw] relative z-10 filter drop-shadow-[0_10px_25px_rgba(0,242,254,0.35)]"
       />
 
-      {/* State Badge beneath Webby */}
+      {/* State Badge beneath Mark AI */}
       <div className="mt-[-15px] sm:mt-[-20px] z-20 flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-500/40 shadow-lg text-cyan-300 text-xs sm:text-sm font-semibold tracking-wide">
         <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span>WEBBY: {currentEmotionLabel}</span>
+        <span>MARK AI: {currentEmotionLabel}</span>
       </div>
     </div>
   );
