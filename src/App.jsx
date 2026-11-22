@@ -253,13 +253,15 @@ export default function App() {
       setInterimText(interim);
     };
     conversationController.aiQueryHandler = async (message, memory) => {
-      const history = memory.getHistoryForAPI();
-      const context = {
-        activeTopic: memory.getActiveTopic(),
-        firstTopic: memory.getFirstTopic(),
-        studentName: memory.getStudentName(),
-        lastAssistantReply: memory.getLastAssistantReply()
-      };
+      const history = memory ? memory.getHistoryForAPI() : [];
+      const context = memory && typeof memory.getFullContextForAI === 'function'
+        ? memory.getFullContextForAI()
+        : {
+            activeTopic: memory ? memory.getActiveTopic() : null,
+            firstTopic: memory ? memory.getFirstTopic() : null,
+            studentName: memory ? memory.getStudentName() : null,
+            lastAssistantReply: memory ? memory.getLastAssistantReply() : null
+          };
       return await aiService.sendMessage(message, history, context);
     };
   }, []);

@@ -59,6 +59,8 @@ class AIService {
       reply: matched.text,
       emotion: matched.emotion || 'SPEAKING',
       topic: matched.topic,
+      stage: matched.stage,
+      question: matched.question,
       mode: matched.source || 'client-offline'
     };
   }
@@ -79,6 +81,8 @@ class AIService {
             reply: data.reply.trim(),
             emotion: data.emotion || 'SPEAKING',
             topic: data.topic,
+            stage: data.stage,
+            question: data.question,
             mode: data.mode || 'backend',
             provider: data.provider
           };

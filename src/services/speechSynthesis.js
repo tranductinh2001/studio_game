@@ -1,5 +1,5 @@
 // Service for Text-to-Speech in Vietnamese with audio phoneme synchronization, pronunciation normalization and Chrome keep-alive
-import { normalizeTextForSpeech } from './voiceAssistant/VoiceAssistantConfig.js';
+import { normalizeTextForSpeech } from './voiceAssistant/VoiceAssistantConfig';
 
 class SpeechSynthesisService {
   constructor() {

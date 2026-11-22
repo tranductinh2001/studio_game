@@ -26,10 +26,10 @@ export const BOT_CONFIG = {
   incompleteWaitMs: 1800,        // Thời gian chờ thêm nếu học sinh nói ngắt quãng ("cho mình hỏi về...")
   acousticCooldownMs: 800,       // Thời gian triệt tiêu tiếng vang phòng học sau khi bot nói xong
 
-  // Lời chào mở đầu tự nhiên, thân thiện
-  welcomeGreeting: 'Xin chào! Mình là Mark. Hôm nay mình sẽ cùng bạn học tập nhé!',
+  // Lời chào mở đầu tự nhiên, thân thiện và đặt câu hỏi gợi mở thực tế cho tiết học
+  welcomeGreeting: 'Xin chào các bạn! Mình là Mark. Hôm nay Mark có một thử thách nhỏ muốn nhờ cả lớp giúp đỡ: Các bạn có thường sử dụng Google để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?',
   // Văn bản dành cho TTS (sử dụng phát âm chuẩn không đánh vần)
-  welcomeGreetingSpeech: 'Xin chào! Mình là Mác. Hôm nay mình sẽ cùng bạn học tập nhé!'
+  welcomeGreetingSpeech: 'Xin chào các bạn! Mình là Mác. Hôm nay Mác có một thử thách nhỏ muốn nhờ cả lớp giúp đỡ: Các bạn có thường sử dụng Gu gồ để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?'
 };
 
 // Từ điển chuẩn hóa phát âm cho Text-to-Speech tiếng Việt

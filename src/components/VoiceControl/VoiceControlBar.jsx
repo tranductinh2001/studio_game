@@ -53,12 +53,13 @@ export default function VoiceControlBar({
   const isPaused = agentState === 'PAUSED';
 
   const SAMPLE_QUESTIONS = [
-    { label: '🌐 WWW là gì?', query: 'Mark ơi, mạng thông tin toàn cầu là gì?' },
-    { label: '⚡ Thế nó có tác dụng gì?', query: 'Thế nó có tác dụng gì?' },
+    { label: '👍 Có ạ!', query: 'Có ạ!' },
+    { label: '🌐 Vì có Internet ạ!', query: 'Vì có Internet ạ!' },
+    { label: '❓ Em không biết', query: 'Em không biết ạ' },
     { label: '💡 Cho mình ví dụ nhé!', query: 'Cho mình một ví dụ nhé!' },
-    { label: '⏪ Còn cái đầu tiên là gì?', query: 'Còn cái đầu tiên là gì nhỉ?' },
-    { label: '🔗 Siêu liên kết là gì?', query: 'Thế nào là siêu liên kết và siêu văn bản?' },
-    { label: '🧭 Trình duyệt phổ biến?', query: 'Trình duyệt web là gì và kể tên các trình duyệt phổ biến?' }
+    { label: '⚡ Thế nó có tác dụng gì?', query: 'Thế nó có tác dụng gì?' },
+    { label: '⏪ Còn câu đầu tiên là gì?', query: 'Còn cái đầu tiên là gì nhỉ?' },
+    { label: '🔗 Siêu liên kết là gì?', query: 'Thế nào là siêu liên kết và siêu văn bản?' }
   ];
 
   return (

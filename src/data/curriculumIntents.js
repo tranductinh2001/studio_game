@@ -1,6 +1,6 @@
 // Curriculum Knowledge Intents & Smart Natural Language Matching Engine
 // Môn Tin học 6 - Bài 6: Mạng thông tin toàn cầu (SGK Kết nối tri thức với cuộc sống & CV 5512)
-// Nâng cấp: Tích hợp Conversation Memory, tham chiếu ngữ cảnh, câu hỏi nối tiếp và nhân vật Trợ lý Mark
+// Nâng cấp: Socratic Pedagogical Dialogue Engine, phân loại ý định học sinh, 7 giai đoạn sư phạm
 
 // KHO VÍ DỤ THỰC TẾ GẦN GŨI CHO TỪNG CHỦ ĐỀ BÀI 6 (Dành cho học sinh lớp 6)
 export const TOPIC_EXAMPLES = {
@@ -95,16 +95,17 @@ export const KNOWLEDGE_INTENTS = [
     emotion: 'SPEAKING'
   },
 
-  // 4. Hyperlink (Siêu liên kết) & Signs (Dấu hiệu nhận biết)
+  // 4. Hyperlink (Siêu liên kết) & Signs
   {
     id: 'hyperlink',
     topic: 'hyperlink',
     patterns: [
-      /(siêu liên kết là gì|thế nào là siêu liên kết|hyperlink|dấu hiệu nhận biết siêu liên kết|hình bàn tay|con trỏ chuột biến thành|gạch chân)/i
+      /(siêu liên kết là gì|thế nào là siêu liên kết|định nghĩa siêu liên kết)/i,
+      /(dấu hiệu nhận biết siêu liên kết|làm sao nhận biết được|nhận biết siêu liên kết bằng cách nào|biểu tượng bàn tay|hình bàn tay)/i
     ],
-    keywords: ['siêu liên kết', 'hyperlink', 'bàn tay', 'dấu hiệu nhận biết', 'con trỏ', 'gạch chân'],
-    reply: "Siêu liên kết (Hyperlink) là đoạn văn bản hoặc hình ảnh mà khi nhấn chuột vào sẽ đưa chúng ta đến một trang web khác! Dấu hiệu nhận biết là chữ thường đổi màu, có gạch chân và con trỏ chuột biến thành hình bàn tay chỉ ngón!",
-    emotion: 'HAPPY'
+    keywords: ['siêu liên kết', 'hyperlink', 'hình bàn tay', 'con trỏ bàn tay', 'gạch chân', 'làm sao nhận biết'],
+    reply: "Siêu liên kết (Hyperlink) là một đoạn văn bản hoặc hình ảnh trên trang web có gắn đường dẫn ngầm! Dấu hiệu nhận biết: chữ thường có màu xanh, gạch chân và khi rê chuột vào, con trỏ sẽ biến thành hình bàn tay!",
+    emotion: 'SPEAKING'
   },
 
   // 5. Hypertext (Siêu văn bản)
@@ -112,34 +113,37 @@ export const KNOWLEDGE_INTENTS = [
     id: 'hypertext',
     topic: 'hypertext',
     patterns: [
-      /(siêu văn bản là gì|thế nào là siêu văn bản|hypertext|khác văn bản thường)/i
+      /(siêu văn bản là gì|thế nào là siêu văn bản|định nghĩa siêu văn bản)/i,
+      /(siêu văn bản khác gì văn bản thông thường)/i
     ],
     keywords: ['siêu văn bản', 'hypertext', 'văn bản tích hợp'],
-    reply: "Siêu văn bản (Hypertext) là loại văn bản đặc biệt tích hợp chữ viết, hình ảnh sống động, âm thanh, video clip và chứa các siêu liên kết để dẫn sang các trang web khác!",
+    reply: "Siêu văn bản là loại văn bản đặc biệt, tích hợp nhiều dạng dữ liệu như chữ viết, hình ảnh, âm thanh, video và ĐẶC BIỆT là có chứa các siêu liên kết tới các tài liệu khác!",
     emotion: 'SPEAKING'
   },
 
-  // 6. How information is organized on Internet
+  // 6. Website Definition
   {
-    id: 'info_organization',
-    topic: 'www',
-    patterns: [
-      /(thông tin trên internet được tổ chức|tổ chức thông tin như thế nào|tổ chức như thế nào|dưới dạng gì)/i
-    ],
-    keywords: ['tổ chức thông tin', 'tổ chức như thế nào', 'dưới dạng'],
-    reply: "Thông tin trên Internet được tổ chức dưới dạng siêu văn bản và được kết nối với nhau bằng các siêu liên kết, tạo thành một mạng lưới thông tin toàn cầu khổng lồ!",
-    emotion: 'SPEAKING'
-  },
-
-  // 7. Website vs Webpage (Website và Trang web)
-  {
-    id: 'website_vs_webpage',
+    id: 'website',
     topic: 'website',
     patterns: [
-      /(website là gì|thế nào là website|trang web là gì|phân biệt website và trang web|khác nhau giữa website và trang web|tập hợp các trang web)/i
+      /(website là gì|thế nào là website|trang mạng là gì)/i,
+      /(ví dụ về website|website gồm những gì)/i
     ],
-    keywords: ['website là gì', 'trang web là gì', 'phân biệt website', 'cuốn sách', 'khác nhau giữa website'],
-    reply: "Các bạn hãy nhớ hình ảnh này: Website giống như một cuốn sách hoàn chỉnh, còn Trang web (Web page) chính là từng trang riêng lẻ trong cuốn sách đó! Một website gồm nhiều trang web liên quan được lưu dưới một địa chỉ chung!",
+    keywords: ['website là gì', 'trang mạng', 'tập hợp các trang web'],
+    reply: "Website là một tập hợp gồm một hoặc nhiều trang web liên quan, được tổ chức dưới một địa chỉ truy cập chung, giống như một cuốn sách giáo khoa gồm nhiều trang bài học vậy!",
+    emotion: 'SPEAKING'
+  },
+
+  // 7. Webpage (Trang web)
+  {
+    id: 'webpage',
+    topic: 'webpage',
+    patterns: [
+      /(trang web là gì|webpage là gì|khái niệm trang web)/i,
+      /(phân biệt website và trang web)/i
+    ],
+    keywords: ['trang web là gì', 'webpage', 'một trang trong website'],
+    reply: "Trang web (Web page) là một trang tài liệu siêu văn bản cụ thể được lưu trữ trên website! Nếu website là một cuốn sách thì mỗi trang web chính là một trang trong cuốn sách đó!",
     emotion: 'SPEAKING'
   },
 
@@ -148,169 +152,337 @@ export const KNOWLEDGE_INTENTS = [
     id: 'homepage',
     topic: 'homepage',
     patterns: [
-      /(trang chủ là gì|thế nào là trang chủ|homepage|trang mở ra đầu tiên|trang đầu tiên)/i
+      /(trang chủ là gì|homepage là gì|khái niệm trang chủ)/i,
+      /(trang đầu tiên mở ra|trang chính của website)/i
     ],
-    keywords: ['trang chủ', 'homepage', 'trang đầu tiên', 'trang mở ra'],
-    reply: "Trang chủ (Homepage) chính là trang web đầu tiên xuất hiện khi các bạn truy cập vào một địa chỉ website!",
+    keywords: ['trang chủ', 'homepage', 'trang đầu tiên'],
+    reply: "Trang chủ (Homepage) là trang web đầu tiên xuất hiện khi bạn mở địa chỉ của một website! Địa chỉ của trang chủ cũng chính là địa chỉ của website đó!",
     emotion: 'SPEAKING'
   },
 
-  // 9. Website Address (URL / Địa chỉ website)
+  // 9. Web Browser (Trình duyệt web)
   {
-    id: 'website_address',
-    topic: 'website',
-    patterns: [
-      /(địa chỉ website|địa chỉ web là gì|url là gì|cho ví dụ địa chỉ web|thcsdaktroi\.edu\.vn|dantri\.com\.vn)/i
-    ],
-    keywords: ['địa chỉ website', 'địa chỉ web', 'url', 'ví dụ địa chỉ'],
-    reply: "Mỗi website trên Internet đều có một địa chỉ truy cập duy nhất, ví dụ: thcsdaktroi.edu.vn hoặc dantri.com.vn. Nhập đúng địa chỉ này vào thanh địa chỉ là chúng ta vào thẳng website!",
-    emotion: 'SPEAKING'
-  },
-
-  // 10. Popular Browsers (Các trình duyệt phổ biến)
-  {
-    id: 'popular_browsers',
+    id: 'browser',
     topic: 'browser',
     patterns: [
-      /(kể tên trình duyệt|các trình duyệt phổ biến|trình duyệt nào|chrome|google chrome|edge|microsoft edge|cốc cốc|firefox|safari|opera)/i
+      /(trình duyệt web là gì|trình duyệt là gì|browser là gì|kể tên các trình duyệt)/i,
+      /(chrome|cốc cốc|microsoft edge|safari|firefox|dùng để làm gì)/i
     ],
-    keywords: ['kể tên trình duyệt', 'các trình duyệt', 'chrome', 'cốc cốc', 'edge', 'firefox', 'safari'],
-    reply: "Một số trình duyệt web rất quen thuộc và phổ biến hiện nay gồm có: Google Chrome, Microsoft Edge, Cốc Cốc, Mozilla Firefox và Safari của Apple!",
-    emotion: 'HAPPY'
-  },
-
-  // 11. Web Browser (Trình duyệt web)
-  {
-    id: 'web_browser',
-    topic: 'browser',
-    patterns: [
-      /(trình duyệt là gì|trình duyệt web là gì|browser là gì|công dụng của trình duyệt|dùng để làm gì)/i
-    ],
-    keywords: ['trình duyệt là gì', 'trình duyệt web', 'browser', 'phần mềm', 'công dụng'],
-    reply: "Trình duyệt web là phần mềm ứng dụng giúp người dùng truy cập, hiển thị và tương tác với các trang web trên Mạng thông tin toàn cầu!",
+    keywords: ['trình duyệt web', 'browser', 'chrome', 'cốc cốc', 'edge', 'safari'],
+    reply: "Trình duyệt web là phần mềm ứng dụng giúp người dùng truy cập, hiển thị và tương tác với các trang web trên Internet! Các trình duyệt phổ biến gồm có Google Chrome, Cốc Cốc, Microsoft Edge và Mozilla Firefox!",
     emotion: 'SPEAKING'
   },
 
-  // 12. 3 Steps to Access a Webpage (Quy trình 3 bước)
-  {
-    id: 'access_steps',
-    topic: 'browser',
-    patterns: [
-      /(các bước truy cập|làm sao để truy cập|quy trình truy cập|3 bước|bước 1.*bước 2|cách mở trang web)/i
-    ],
-    keywords: ['các bước truy cập', '3 bước', 'bước 1', 'thanh địa chỉ', 'nhập địa chỉ'],
-    reply: "Để truy cập một trang web, chúng ta thực hiện 3 bước: Bước 1: Khởi động trình duyệt web; Bước 2: Nhập địa chỉ website vào thanh địa chỉ; Bước 3: Nhấn phím Enter để mở trang web!",
-    emotion: 'SPEAKING'
-  },
-
-  // 13. Search Engine (Máy tìm kiếm)
+  // 10. Search Engine (Máy tìm kiếm)
   {
     id: 'search_engine',
     topic: 'search',
     patterns: [
-      /(máy tìm kiếm|công cụ tìm kiếm|tìm kiếm thông tin|google có phải|search engine)/i
+      /(máy tìm kiếm là gì|công cụ tìm kiếm|tìm kiếm thông tin trên internet)/i
     ],
-    keywords: ['máy tìm kiếm', 'công cụ tìm kiếm', 'tìm kiếm thông tin', 'google'],
-    reply: "Máy tìm kiếm là một trang web đặc biệt giúp người sử dụng tìm kiếm thông tin trên Internet dựa trên các từ khóa, ví dụ nổi tiếng nhất chính là Google!",
+    keywords: ['máy tìm kiếm', 'công cụ tìm kiếm', 'tìm kiếm trên internet', 'google'],
+    reply: "Máy tìm kiếm là một hệ thống phần mềm trực tuyến giúp người dùng tìm kiếm thông tin trên World Wide Web bằng cách nhập các từ khóa liên quan, phổ biến nhất là Google!",
     emotion: 'SPEAKING'
   }
 ];
 
-// CONVERSATIONAL INTENTS (Tương tác tự nhiên mang tên Mark)
+// CONVERSATIONAL INTENTS
 export const CONVERSATIONAL_INTENTS = [
-  // 1. Identity & Introduction
-  {
-    id: 'identity',
-    patterns: [
-      /(bạn|cậu|mark|em|cháu) là ai/i,
-      /tên (bạn|cậu|em|cháu) là gì/i,
-      /ai (tạo|sinh|lập trình) ra (bạn|mark|cậu)/i,
-      /giới thiệu về (bạn|bản thân|mark)/i,
-      /bạn từ đâu (đến|tới)/i,
-      /mấy tuổi/i
-    ],
-    keywords: ['mark là ai', 'bạn là ai', 'tên là gì', 'ai tạo ra bạn', 'giới thiệu bản thân'],
-    reply: "Mình là Mark, trợ lý AI học tập thông minh! Mình rất vui được đồng hành cùng các bạn học sinh lớp 6 Trường THCS Đắk Trôi khám phá Internet và các trang web kỳ thú!",
-    emotion: 'HAPPY'
-  },
-
-  // 2. Greetings
   {
     id: 'greeting',
-    patterns: [
-      /(xin chào|chào bạn|chào mark|mark ơi|ê mark|chào em|chào cháu|chào lớp|chào cả lớp|hello|hé lô|hi\b)/i,
-      /chúc.*(buổi sáng|buổi chiều|ngày mới|tốt lành)/i,
-      /lớp 6.*chào/i
-    ],
-    keywords: ['xin chào', 'chào bạn', 'chào mark', 'hello', 'hi', 'mark ơi'],
-    reply: "Xin chào! Mình là Mark. Hôm nay mình sẽ cùng bạn học tập nhé!",
+    patterns: [/^(xin chào|chào bạn|hello|hi|chào em|chào mark)/i],
+    keywords: ['xin chào', 'chào bạn', 'hello', 'hi'],
+    reply: "Xin chào bạn! Mình là Mark, rất vui được đồng hành cùng bạn khám phá Mạng thông tin toàn cầu!",
+    emotion: 'GREETING'
+  },
+  {
+    id: 'how_are_you',
+    patterns: [/(bạn có khỏe không|khỏe không|bạn thế nào|hôm nay thế nào)/i],
+    keywords: ['khỏe không', 'thế nào'],
+    reply: "Mark luôn tràn đầy năng lượng và sẵn sàng giúp các bạn học sinh lớp 6 chinh phục bài học hôm nay!",
     emotion: 'HAPPY'
   },
-
-  // 3. Ready / Cheerful confirmation
   {
-    id: 'ready',
-    patterns: [
-      /(sẵn sàng|rồi|sẵn sàng rồi|bắt đầu thôi|ok|yes|dạ rồi|nhất trí)/i
-    ],
-    keywords: ['sẵn sàng', 'bắt đầu thôi', 'ok', 'dạ rồi'],
-    reply: "Tuyệt vời! Tinh thần lớp mình hôm nay thật sôi nổi và năng lượng! Chúng ta cùng bước vào khám phá thế giới Mạng thông tin toàn cầu ngay nào!",
+    id: 'who_are_you',
+    patterns: [/(bạn là ai|tên bạn là gì|giới thiệu về mình)/i],
+    keywords: ['bạn là ai', 'tên là gì'],
+    reply: "Mình là Mark – trợ lý AI đồng hành học tập môn Tin học lớp 6 cùng thầy Trần Đức Tình và các bạn học sinh trường THCS Đắk Trôi!",
     emotion: 'HAPPY'
-  },
-
-  // 4. Farewell (Tạm biệt)
-  {
-    id: 'goodbye',
-    patterns: [
-      /(tạm biệt|bye bye|hẹn gặp lại|chào tạm biệt|thôi nghỉ|hết rồi)/i
-    ],
-    keywords: ['tạm biệt', 'bye bye', 'hẹn gặp lại'],
-    reply: "Tạm biệt các bạn học sinh lớp 6 siêu thông minh của Trường THCS Đắk Trôi! Chúc các bạn luôn lướt web an toàn, học thật giỏi và yêu thích môn Tin học nhé!",
-    emotion: 'GOODBYE'
   }
+];
+
+export const TOPIC_IDENTIFIERS = [
+  { id: 'www', words: ['www', 'world wide web', 'mạng thông tin toàn cầu', 'dịch vụ thông tin'] },
+  { id: 'internet', words: ['internet', 'mạng máy tính', 'mạng toàn cầu', 'cáp quang', 'wifi', 'hạ tầng'] },
+  { id: 'hyperlink', words: ['siêu liên kết', 'hyperlink', 'bàn tay', 'liên kết'] },
+  { id: 'hypertext', words: ['siêu văn bản', 'hypertext'] },
+  { id: 'website', words: ['website', 'trang mạng'] },
+  { id: 'webpage', words: ['trang web', 'webpage'] },
+  { id: 'homepage', words: ['trang chủ', 'homepage'] },
+  { id: 'browser', words: ['trình duyệt', 'browser', 'chrome', 'cốc cốc', 'edge'] },
+  { id: 'history', words: ['tim berners-lee', 'phát minh', '1989', 'lịch sử'] },
+  { id: 'search', words: ['máy tìm kiếm', 'tìm kiếm', 'google'] }
 ];
 
 export const CURRICULUM_INTENTS = [...KNOWLEDGE_INTENTS, ...CONVERSATIONAL_INTENTS];
 
 /**
- * Hàm đối sánh tri thức chương trình học có nhận diện ngữ cảnh (Context-Aware Curriculum Matching)
- * @param {string} query - Câu nói/câu hỏi hiện tại của học sinh
- * @param {Array} faqList - Danh mục câu hỏi thường gặp
- * @param {Array} topicsList - Danh mục chủ đề
- * @param {Object} context - Ngữ cảnh hội thoại: { activeTopic, firstTopic, studentName, lastAssistantReply, history }
+ * Super Socratic Pedagogical Curriculum Engine
+ * Xử lý mọi tình huống đàm thoại sư phạm: câu trả lời ngắn (Có/Không/Không biết),
+ * câu hỏi ngược, câu trả lời sai, câu trả lời dài, đổi chủ đề, nâng độ sâu, và chuyển giao bài học.
  */
 export function matchCurriculumResponse(query, faqList = [], topicsList = [], context = {}) {
   if (!query || typeof query !== 'string') {
     return {
-      text: "Xin chào bạn! Mình là Mark. Bạn có thắc mắc gì về Mạng thông tin toàn cầu không nào?",
+      text: "Xin chào các bạn! Mình là Mark. Các bạn có thường sử dụng Google để tìm kiếm thông tin không?",
       emotion: "GREETING",
       topic: 'www',
       source: "curriculum-default"
     };
   }
 
-  const clean = query.toLowerCase().trim();
-  const activeTopic = context.activeTopic || null;
-  const firstTopic = context.firstTopic || 'www';
-  const studentName = context.studentName || null;
+  // Chuẩn hóa chuỗi truy vấn: loại bỏ dấu câu thừa ở đầu/cuối (!, ., ?, ...)
+  const rawClean = query.toLowerCase().trim();
+  const clean = rawClean.replace(/^[!.,?\s]+|[!.,?\s]+$/g, '').trim();
+  const activeTopic = context.activeTopic || context.current_topic || 'www';
+  const firstTopic = context.firstTopic || context.first_topic || 'www';
+  const studentName = context.studentName || context.student_name || null;
   const namePrefix = studentName ? `Bạn ${studentName} ơi! ` : '';
+  const stage = context.conversationStage || context.conversation_stage || 'STAGE_1_HOOK';
+  const lastAiQuestion = (context.lastAiQuestion || context.last_ai_question || '').toLowerCase();
+  const consecutiveCorrect = context.consecutiveCorrect || context.consecutive_correct || 0;
 
-  // -------------------------------------------------------------
-  // GIAI ĐOẠN 0: XỬ LÝ CÁC CÂU HỎI THAM CHIẾU & TIẾP NỐI NGỮ CẢNH
-  // -------------------------------------------------------------
-
-  // 1. Tham chiếu "Cái đầu tiên là gì nhỉ?"
-  if (clean.includes('cái đầu tiên') || clean.includes('điều đầu tiên') || clean.includes('ý đầu tiên') || clean.includes('chủ đề đầu')) {
-    const topicLabel = firstTopic === 'www' ? 'Mạng thông tin toàn cầu (WWW)' : (firstTopic === 'internet' ? 'Mạng máy tính Internet' : firstTopic);
+  // =============================================================
+  // TÌNH HUỐNG 5: HỌC SINH HỎI NGƯỢC LẠI AI (STUDENT ASK BACK)
+  // =============================================================
+  if (/(thế còn mark|còn mark thì sao|mark có biết không|mark biết không|tại sao hả mark|tại sao lại thế hả mark|mark trả lời đi|thế mark bảo xem|còn mark)/i.test(clean)) {
+    if (stage === 'STAGE_2_EXPLORE' || lastAiQuestion.includes('ở mỹ') || lastAiQuestion.includes('việt nam')) {
+      return {
+        text: "Mark biết chứ! Đó là nhờ hệ thống mạng Internet toàn cầu kết nối các máy tính xuyên lục địa đấy! Nhưng đố các bạn biết: Internet có phải chỉ đơn giản là một chiếc dây cáp kết nối các máy tính lại với nhau không nhỉ?",
+        emotion: 'THINKING',
+        topic: 'internet',
+        stage: 'STAGE_3_COGNITIVE_CONFLICT',
+        question: 'Internet có phải chỉ đơn giản là một chiếc dây cáp kết nối các máy tính lại với nhau không nhỉ?',
+        source: 'socratic-ask-back-explore'
+      };
+    }
     return {
-      text: `${namePrefix}Bạn đang hỏi về khái niệm ${topicLabel} mà chúng ta vừa trao đổi lúc đầu phải không? Đó là dịch vụ thông tin khổng lồ trên Internet kết nối hàng triệu website với nhau đấy!`,
+      text: "Mark biết chứ! Đó là nhờ một dịch vụ thông tin kỳ diệu hoạt động trên Internet. Đố các bạn biết dịch vụ đó viết tắt bằng 3 chữ cái nào mà chúng mình thường thấy ở đầu địa chỉ trang web nhỉ?",
       emotion: 'HAPPY',
-      topic: firstTopic,
-      source: 'context-reference-first-topic'
+      topic: 'www',
+      stage: 'STAGE_4_DISCOVERY',
+      question: 'Dịch vụ đó viết tắt bằng 3 chữ cái nào mà chúng mình thường thấy ở đầu địa chỉ web nhỉ?',
+      source: 'socratic-ask-back-general'
     };
   }
 
-  // 2. Yêu cầu đưa ví dụ: "Cho mình một ví dụ nhé!", "Cho ví dụ đi", "Ví dụ là gì?"
+  // =============================================================
+  // TÌNH HUỐNG 8: HỌC SINH ĐỔI CHỦ ĐỀ / NÓI LẠC ĐỀ (TOPIC SWITCH)
+  // =============================================================
+  if (/(chơi game|roblox|liên quân|free fire|mấy tuổi|ở đâu|thời tiết|ăn cơm chưa|người yêu|bạn gái|facebook của mark)/i.test(clean)) {
+    return {
+      text: "Haha, câu hỏi ngoài lề rất ngộ nghĩnh và đáng yêu! Nhưng hôm nay Mark và các bạn đang có một nhiệm vụ khám phá Mạng thông tin toàn cầu hấp dẫn hơn nhiều. Chúng mình cùng giải đáp câu hỏi lúc nãy nhé: Các bạn có nghĩ Internet chỉ đơn giản là sợi dây cáp kết nối máy tính không?",
+      emotion: 'HAPPY',
+      topic: 'internet',
+      stage: 'STAGE_3_COGNITIVE_CONFLICT',
+      question: 'Các bạn có nghĩ Internet chỉ đơn giản là sợi dây cáp kết nối máy tính không?',
+      source: 'socratic-topic-switch'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 7: HỘI THOẠI NHIỀU LƯỢT (NHỚ CÂU ĐẦU TIÊN / THAM CHIẾU ĐẦU TIÊN)
+  // =============================================================
+  if (clean.includes('câu đầu tiên') || clean.includes('cái đầu tiên') || clean.includes('điều đầu tiên') || clean.includes('lúc nãy mark hỏi gì') || clean.includes('chủ đề đầu')) {
+    return {
+      text: `${namePrefix}Lúc nãy Mark đã hỏi các bạn về thói quen sử dụng công cụ tìm kiếm Google để tìm kiếm thông tin, xem video hoặc tìm hình ảnh đấy! Nhờ câu hỏi đó mà chúng mình đã cùng nhau bước vào hành trình khám phá thế giới Mạng thông tin toàn cầu hôm nay.`,
+      emotion: 'HAPPY',
+      topic: 'www',
+      source: 'socratic-memory-first-question'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 6: HỌC SINH TRẢ LỜI DÀI / PHÂN TÍCH SÂU (> 11 TỪ)
+  // =============================================================
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length >= 12 && !clean.endsWith('?')) {
+    if (clean.includes('mỹ') || clean.includes('vệ tinh') || clean.includes('cáp quang') || clean.includes('máy chủ') || clean.includes('truyền dữ liệu')) {
+      return {
+        text: "Một câu trả lời vô cùng sâu sắc và chuẩn xác của một chuyên gia công nghệ tương lai! Đúng vậy, nhờ hạ tầng mạng toàn cầu kết nối các máy chủ mà dữ liệu được truyền đi khắp năm châu. Vậy các bạn có biết hệ thống hàng triệu trang web giúp chúng ta xem được nội dung đó tên là gì không?",
+        emotion: 'HAPPY',
+        topic: 'www',
+        stage: 'STAGE_4_DISCOVERY',
+        question: 'Các bạn có biết hệ thống hàng triệu trang web giúp chúng ta xem được nội dung đó tên là gì không?',
+        source: 'socratic-long-answer-elaborate'
+      };
+    }
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 3: HỌC SINH TRẢ LỜI "EM KHÔNG BIẾT" (ANSWER_DONT_KNOW)
+  // =============================================================
+  if (/^(em không biết|mình không biết|không biết ạ|em chưa biết|chưa biết ạ|khó quá|em chịu|chưa nghĩ ra|chịu thôi|không biết)/i.test(clean)) {
+    if (stage === 'STAGE_2_EXPLORE' || lastAiQuestion.includes('ở mỹ') || lastAiQuestion.includes('điện thoại')) {
+      return {
+        text: "Đừng lo nhé, để Mark gợi ý một chút nè: Để chiếc điện thoại của chúng mình có thể nhận được dữ liệu từ khoảng cách nửa vòng Trái Đất như vậy, máy của chúng mình cần được kết nối vào mạng gì mà chúng mình hay bật Wifi hoặc 4G nhỉ?",
+        emotion: 'ENCOURAGING',
+        topic: 'internet',
+        stage: 'STAGE_2_EXPLORE',
+        question: 'Máy của chúng mình cần được kết nối vào mạng gì mà chúng mình hay bật Wifi hoặc 4G nhỉ?',
+        source: 'socratic-dont-know-hint-internet'
+      };
+    }
+    if (stage === 'STAGE_3_COGNITIVE_CONFLICT' || lastAiQuestion.includes('dây cáp')) {
+      return {
+        text: "Mark bật mí một chút nhé: Dây cáp chỉ giống như đường quốc lộ, còn để có hình ảnh, video và bài học thì chúng mình cần các trang web. Vậy theo bạn, mạng kết nối hàng triệu trang web đó tên là gì nào?",
+        emotion: 'ENCOURAGING',
+        topic: 'www',
+        stage: 'STAGE_4_DISCOVERY',
+        question: 'Vậy theo bạn, mạng kết nối hàng triệu trang web đó tên là gì nào?',
+        source: 'socratic-dont-know-hint-www'
+      };
+    }
+    return {
+      text: "Không sao đâu bạn ơi! Chưa biết thì chúng mình cùng tìm hiểu nhé. Mark gợi ý nè: Khi bạn muốn tìm bài học trên máy tính, bạn thường mở phần mềm nào có biểu tượng chữ G nhiều màu hoặc hình quả địa cầu nhỉ?",
+      emotion: 'ENCOURAGING',
+      topic: 'www',
+      stage: 'STAGE_1_HOOK',
+      question: 'Khi bạn muốn tìm bài học trên máy tính, bạn thường mở phần mềm nào có biểu tượng chữ G nhiều màu nhỉ?',
+      source: 'socratic-dont-know-general'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 4: HỌC SINH TRẢ LỜI SAI (MISCONCEPTION / WRONG)
+  // =============================================================
+  if (clean.includes('chỉ là dây cáp') || clean.includes('chỉ là cái dây') || (lastAiQuestion.includes('dây cáp') && /^(có|có ạ|vâng|đúng rồi|phải ạ|đúng đấy)$/i.test(clean))) {
+    return {
+      text: "Ồ, bạn đang có một góc nhìn rất thú vị! Dây cáp đúng là hạ tầng giúp kết nối máy tính. Nhưng nếu chỉ có dây cáp mà không có các trang tài liệu, hình ảnh, video và dịch vụ thông tin thì chúng mình có xem phim hay đọc báo được không nhỉ?",
+      emotion: 'ENCOURAGING',
+      topic: 'www',
+      stage: 'STAGE_3_COGNITIVE_CONFLICT',
+      question: 'Nếu chỉ có dây cáp mà không có các trang tài liệu thì chúng mình có xem phim hay đọc báo được không nhỉ?',
+      source: 'socratic-wrong-answer-guidance'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 1: HỌC SINH TRẢ LỜI "CÓ" (ANSWER_YES)
+  // =============================================================
+  if (/^(có|có ạ|dạ có|dạ có ạ|vâng|vâng ạ|chắc chắn có|chuẩn rồi ạ|đúng ạ)$/i.test(clean)) {
+    // 1. Trả lời Có cho câu hỏi Hook ban đầu (Google / tìm kiếm)
+    if (stage === 'STAGE_1_HOOK' || lastAiQuestion.includes('google') || lastAiQuestion.includes('tìm kiếm')) {
+      return {
+        text: "Wow! Tuyệt vời! Vậy là các bạn đã sử dụng Internet khá thành thạo rồi đấy! Nhưng Mark đang có một thắc mắc muốn hỏi cả lớp: Các bạn có bao giờ tự hỏi vì sao một chiếc điện thoại ở Việt Nam lại có thể xem được một video vừa được đăng tải ở Mỹ hay không?",
+        emotion: 'HAPPY',
+        topic: 'internet',
+        stage: 'STAGE_2_EXPLORE',
+        question: 'Các bạn có bao giờ tự hỏi vì sao một chiếc điện thoại ở Việt Nam lại có thể xem được một video vừa được đăng tải ở Mỹ hay không?',
+        source: 'socratic-yes-hook-to-explore'
+      };
+    }
+
+    // 2. Trả lời Có cho câu hỏi khám phá hệ thống toàn cầu
+    if (stage === 'STAGE_4_DISCOVERY' || stage === 'STAGE_5_LESSON_CONNECTION' || lastAiQuestion.includes('hệ thống kết nối') || lastAiQuestion.includes('rộng lớn')) {
+      return {
+        text: "Thật tuyệt vời! Qua những câu trả lời vừa rồi, chúng ta đã nhận ra rằng Internet không chỉ giúp tìm kiếm thông tin mà còn tạo nên một không gian kết nối và chia sẻ thông tin trên phạm vi toàn cầu. Vậy mạng thông tin toàn cầu là gì? Chúng ta sẽ cùng khám phá trong bài học hôm nay nhé! Bây giờ, Mark xin kính mời thầy giáo Trần Đức Tình sẽ cùng cả lớp bắt đầu bài học hôm nay!",
+        emotion: 'HAPPY',
+        topic: 'www',
+        stage: 'STAGE_6_HANDOFF',
+        source: 'socratic-yes-discovery-to-handoff'
+      };
+    }
+
+    // Mặc định cho Có
+    return {
+      text: "Rất chuẩn xác! Đúng như vậy đấy các bạn. Chúng mình cùng tiếp tục khám phá điều kỳ diệu tiếp theo nhé!",
+      emotion: 'HAPPY',
+      topic: activeTopic || 'www',
+      source: 'socratic-yes-default'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 2: HỌC SINH TRẢ LỜI "KHÔNG" (ANSWER_NO)
+  // =============================================================
+  if (/^(không|không ạ|dạ không|dạ không ạ|chưa ạ|đâu có|không phải đâu ạ|không phải)$/i.test(clean)) {
+    // 1. Trả lời Không cho câu hỏi dây cáp (Mâu thuẫn nhận thức thành công!)
+    if (stage === 'STAGE_3_COGNITIVE_CONFLICT' || lastAiQuestion.includes('dây cáp')) {
+      return {
+        text: "Chính xác luôn! Internet không chỉ đơn thuần là những sợi dây cáp vật lý. Vậy theo các bạn, điều kỳ diệu gì giúp hàng tỷ thiết bị trên khắp thế giới có thể kết nối, trao đổi và chia sẻ hàng triệu trang web với nhau nhỉ?",
+        emotion: 'HAPPY',
+        topic: 'www',
+        stage: 'STAGE_4_DISCOVERY',
+        question: 'Điều kỳ diệu gì giúp hàng tỷ thiết bị trên khắp thế giới có thể kết nối, trao đổi và chia sẻ hàng triệu trang web với nhau nhỉ?',
+        source: 'socratic-no-conflict-to-discovery'
+      };
+    }
+
+    // 2. Trả lời Không cho câu hỏi ban đầu
+    if (stage === 'STAGE_1_HOOK' || lastAiQuestion.includes('google')) {
+      return {
+        text: "Ồ không sao cả! Vậy chắc hẳn các bạn đã từng xem video trên YouTube hay nghe nhạc giải trí rồi đúng không nè? Các bạn có bao giờ tò mò vì sao chúng mình có thể xem được những nội dung từ khắp nơi trên thế giới như vậy không?",
+        emotion: 'ENCOURAGING',
+        topic: 'internet',
+        stage: 'STAGE_2_EXPLORE',
+        question: 'Các bạn có bao giờ tò mò vì sao chúng mình có thể xem được những nội dung từ khắp nơi trên thế giới như vậy không?',
+        source: 'socratic-no-hook-to-explore'
+      };
+    }
+
+    return {
+      text: "Rất thẳng thắn và thú vị! Điều đó chứng tỏ bạn đang suy nghĩ rất độc lập. Vậy chúng mình cùng xem điều gì tiếp theo nhé!",
+      emotion: 'ENCOURAGING',
+      topic: activeTopic || 'www',
+      source: 'socratic-no-default'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 9: HỌC SINH TRẢ LỜI ĐÚNG LIÊN TỤC HOẶC KHÁI NIỆM "INTERNET" / "WWW"
+  // =============================================================
+  if (clean.includes('vì có internet') || clean.includes('nhờ internet') || clean.includes('do có internet') || clean === 'internet ạ' || clean === 'internet') {
+    // Nếu học sinh trả lời đúng liên tục ngay từ đầu -> tăng độ sâu
+    if (consecutiveCorrect >= 2) {
+      return {
+        text: "Xuất sắc! Các bạn nắm kiến thức rất chắc chắn. Vậy Mark nâng độ khó lên một chút nhé: World Wide Web và Internet có phải là một không, hay chúng có mối quan hệ như thế nào với nhau?",
+        emotion: 'HAPPY',
+        topic: 'internet',
+        stage: 'STAGE_3_COGNITIVE_CONFLICT',
+        question: 'World Wide Web và Internet có phải là một không, hay chúng có mối quan hệ như thế nào với nhau?',
+        source: 'socratic-consecutive-correct-deepen'
+      };
+    }
+
+    return {
+      text: "Chính xác! Đúng là nhờ có mạng Internet! Nhưng các bạn có nghĩ rằng Internet chỉ đơn giản là một chiếc dây cáp kết nối các máy tính lại với nhau không?",
+      emotion: 'HAPPY',
+      topic: 'internet',
+      stage: 'STAGE_3_COGNITIVE_CONFLICT',
+      question: 'Nhưng các bạn có nghĩ rằng Internet chỉ đơn giản là một chiếc dây cáp kết nối các máy tính lại với nhau không?',
+      source: 'socratic-concept-internet'
+    };
+  }
+
+  // =============================================================
+  // TÌNH HUỐNG 10: HOÀN THÀNH MỞ ĐẦU (DISCOVERY HOẶC BẮT ĐẦU BÀI HỌC)
+  // =============================================================
+  if (clean.includes('mạng thông tin toàn cầu') && (stage === 'STAGE_4_DISCOVERY' || lastAiQuestion.includes('kết nối') || lastAiQuestion.includes('chia sẻ'))) {
+    return {
+      text: "Thật tuyệt vời! Qua những câu trả lời vừa rồi, chúng ta đã nhận ra rằng Internet không chỉ giúp tìm kiếm thông tin mà còn tạo nên một không gian kết nối và chia sẻ thông tin trên phạm vi toàn cầu. Vậy mạng thông tin toàn cầu là gì? Chúng ta sẽ cùng khám phá trong bài học hôm nay nhé! Bây giờ, Mark xin kính mời thầy giáo Trần Đức Tình sẽ cùng cả lớp bắt đầu bài học hôm nay!",
+      emotion: 'HAPPY',
+      topic: 'www',
+      stage: 'STAGE_6_HANDOFF',
+      source: 'socratic-discovery-complete-handoff'
+    };
+  }
+
+  // =============================================================
+  // CÁC NHU CẦU TIẾP NỐI THÔNG THƯỜNG (VÍ DỤ, RÚT GỌN, TÁC DỤNG...)
+  // =============================================================
+
+  // 1. Yêu cầu đưa ví dụ: "Cho mình một ví dụ nhé!", "Cho ví dụ đi", "Ví dụ là gì?"
   if (/(cho ví dụ|cho mình ví dụ|ví dụ nhé|lấy ví dụ|ví dụ cụ thể|ví dụ minh họa|cho em ví dụ)/i.test(clean)) {
     const targetTopic = activeTopic || 'www';
     const exampleText = TOPIC_EXAMPLES[targetTopic] || TOPIC_EXAMPLES.www;
@@ -322,7 +494,7 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     };
   }
 
-  // 3. Câu hỏi tiếp nối về tác dụng / vai trò: "Thế nó có tác dụng gì?", "Nó dùng để làm gì?", "Thế có tác dụng gì?"
+  // 2. Câu hỏi tiếp nối về tác dụng / vai trò: "Thế nó có tác dụng gì?", "Nó dùng để làm gì?"
   if ((/(nó|cái đó|điều đó|cái này|điều này)/i.test(clean) || /^(thế|vậy|còn)?\s*(có tác dụng|dùng để|để làm gì)/i.test(clean)) && /(tác dụng|dùng để|để làm gì|ích lợi|công dụng|làm gì)/i.test(clean)) {
     const targetTopic = activeTopic || 'www';
     const benefitText = TOPIC_BENEFITS[targetTopic] || TOPIC_BENEFITS.www;
@@ -334,7 +506,7 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     };
   }
 
-  // 4. Yêu cầu giải thích lại / chưa hiểu: "Em chưa hiểu lắm", "Vẫn chưa hiểu", "Nói dễ hiểu hơn đi"
+  // 3. Yêu cầu giải thích lại / chưa hiểu: "Em chưa hiểu lắm", "Vẫn chưa hiểu"
   if (/(chưa hiểu lắm|chưa hiểu|vẫn chưa hiểu|khó hiểu quá|giải thích lại|nói dễ hiểu hơn)/i.test(clean)) {
     const targetTopic = activeTopic || 'www';
     const simplifiedText = TOPIC_SIMPLIFIED[targetTopic] || TOPIC_SIMPLIFIED.www;
@@ -346,7 +518,7 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     };
   }
 
-  // 5. Yêu cầu tóm tắt ngắn hơn: "Nói ngắn hơn đi", "Tóm tắt lại", "Nói ngắn thôi"
+  // 4. Yêu cầu tóm tắt ngắn hơn: "Nói ngắn hơn đi", "Tóm tắt lại", "Nói ngắn thôi"
   if (/(nói ngắn hơn|ngắn hơn đi|tóm tắt lại|ngắn gọn thôi|rút gọn lại)/i.test(clean)) {
     const targetTopic = activeTopic || 'www';
     const summaryText = TOPIC_SUMMARIES[targetTopic] || TOPIC_SUMMARIES.www;
@@ -358,19 +530,19 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     };
   }
 
-  // 6. Đại từ đơn độc thiếu ngữ cảnh (VD: Người dùng mở đầu cuộc trò chuyện bằng "Nó có tốt không?")
-  if (/^(nó|cái đó|điều đó)\s+(có tốt không|sao|thế nào|là gì)/i.test(clean) && !activeTopic) {
+  // 5. Đại từ đơn độc thiếu ngữ cảnh (VD: Người dùng mở đầu cuộc trò chuyện bằng "Nó có tốt không?")
+  if (/^(nó|cái đó|điều đó)\s+(có tốt không|sao|thế nào|là gì)/i.test(clean) && !context.activeTopic) {
     return {
-      text: "Bạn đang hỏi về Internet, Mạng thông tin toàn cầu hay một ứng dụng nào khác vậy nè?",
+      text: "Bạn đang muốn hỏi Mark về Mạng thông tin toàn cầu, website hay một chủ đề nào khác vậy nè?",
       emotion: 'ENCOURAGING',
       topic: null,
       source: 'context-clarification-needed'
     };
   }
 
-  // -------------------------------------------------------------
-  // GIAI ĐOẠN 1: ĐỐI SÁNH CÁC CHỦ ĐỀ TRI THỨC BÀI 6 (KNOWLEDGE INTENTS)
-  // -------------------------------------------------------------
+  // =============================================================
+  // GIAI ĐOẠN ĐỐI SÁNH KNOWLEDGE INTENTS (BÀI 6 TIN HỌC 6)
+  // =============================================================
   for (const intent of KNOWLEDGE_INTENTS) {
     if (intent.patterns && intent.patterns.some((r) => r.test(clean))) {
       return {
@@ -390,9 +562,9 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     }
   }
 
-  // -------------------------------------------------------------
-  // GIAI ĐOẠN 2: ĐỐI SÁNH DANH MỤC FAQ PHỤ TRỢ
-  // -------------------------------------------------------------
+  // =============================================================
+  // GIAI ĐOẠN ĐỐI SÁNH FAQ VÀ GIAO TIẾP
+  // =============================================================
   if (Array.isArray(faqList)) {
     for (const item of faqList) {
       const qWords = item.question.toLowerCase().replace(/[?.,]/g, '').split(' ');
@@ -408,9 +580,6 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     }
   }
 
-  // -------------------------------------------------------------
-  // GIAI ĐOẠN 3: ĐỐI SÁNH Ý ĐỊNH GIAO TIẾP (CONVERSATIONAL INTENTS)
-  // -------------------------------------------------------------
   for (const intent of CONVERSATIONAL_INTENTS) {
     if (intent.patterns && intent.patterns.some((r) => r.test(clean))) {
       return {
@@ -430,9 +599,9 @@ export function matchCurriculumResponse(query, faqList = [], topicsList = [], co
     }
   }
 
-  // -------------------------------------------------------------
-  // GIAI ĐOẠN 4: DẪN DẮT SƯ PHẠM MỞ (OPEN PEDAGOGICAL GUIDANCE)
-  // -------------------------------------------------------------
+  // =============================================================
+  // FALLBACK DẪN DẮT SƯ PHẠM MỞ
+  // =============================================================
   return {
     text: `Đó là một câu hỏi rất sáng tạo của bạn! Trong Bài 6 Mạng thông tin toàn cầu, bạn có muốn cùng Mark tìm hiểu tiếp về các trang web, siêu liên kết hay trình duyệt web không?`,
     emotion: "HAPPY",

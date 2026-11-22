@@ -25,26 +25,30 @@ export class ConversationController {
     this.classifier = intentClassifier;
     this.config = BOT_CONFIG;
 
-    // Bộ nhớ đệm cho câu nói ngắt quãng
+    // Bộ nhớ đệm cho câu nói ngắt quãng & timers
     this.pendingFragment = '';
     this.waitingTimer = null;
     this.acousticCooldownTimer = null;
+    this.bargeInTimer = null;
     this.isSessionActive = false;
+    this.lastSpokenText = '';
 
     // Callbacks đăng ký từ React UI
     this.onStateChange = null;
     this.onSubtitleChange = null;
     this.onEmotionChange = null;
 
-    // Mặc định sử dụng aiService.sendMessage, có thể được override từ App.jsx
+    // Mặc định gọi aiService với đầy đủ context sư phạm
     this.aiQueryHandler = async (message, memory) => {
       const history = memory ? memory.getHistoryForAPI() : [];
-      const context = {
-        activeTopic: memory ? memory.getActiveTopic() : null,
-        firstTopic: memory ? memory.getFirstTopic() : null,
-        studentName: memory ? memory.getStudentName() : null,
-        lastAssistantReply: memory ? memory.getLastAssistantReply() : null
-      };
+      const context = memory && typeof memory.getFullContextForAI === 'function' 
+        ? memory.getFullContextForAI() 
+        : {
+            activeTopic: memory ? memory.getActiveTopic() : null,
+            firstTopic: memory ? memory.getFirstTopic() : null,
+            studentName: memory ? memory.getStudentName() : null,
+            lastAssistantReply: memory ? memory.getLastAssistantReply() : null
+          };
       return await aiService.sendMessage(message, history, context);
     };
   }
@@ -74,18 +78,24 @@ export class ConversationController {
     }
   }
 
-  // Khởi động phiên trò chuyện mới
+  // Khởi động phiên trò chuyện mới (cách ly hoàn toàn giữa các học sinh/tiết học)
   startSession(initialGreeting = true) {
     this.isSessionActive = true;
     this.memory.startNewSession();
     this.pendingFragment = '';
     if (this.waitingTimer) clearTimeout(this.waitingTimer);
+    if (this.bargeInTimer) clearTimeout(this.bargeInTimer);
+    if (this.acousticCooldownTimer) clearTimeout(this.acousticCooldownTimer);
 
     speechRec.startContinuous();
 
     if (initialGreeting) {
       const greetingDisplay = this.config.welcomeGreeting;
       const greetingSpeech = this.config.welcomeGreetingSpeech;
+      this.memory.addMessage('assistant', greetingDisplay, {
+        stage: 'STAGE_1_HOOK',
+        question: 'Các bạn có thường sử dụng Google để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?'
+      });
       this.speak(greetingDisplay, 'GREETING', greetingSpeech);
     } else {
       this.transitionToListening();
@@ -97,6 +107,7 @@ export class ConversationController {
     this.isSessionActive = false;
     this.pendingFragment = '';
     if (this.waitingTimer) clearTimeout(this.waitingTimer);
+    if (this.bargeInTimer) clearTimeout(this.bargeInTimer);
     if (this.acousticCooldownTimer) clearTimeout(this.acousticCooldownTimer);
 
     speechSynth.stop();
@@ -246,18 +257,20 @@ export class ConversationController {
     // Tạm ngắt mic để chống echo
     speechRec.mute();
 
-    // 1. Lưu câu hỏi học sinh vào bộ nhớ ngữ cảnh
-    this.memory.addMessage('user', trimmed);
-
-    // 2. Phân tích ý định & giải quyết tham chiếu
+    // 1. Phân tích ý định & giải quyết tham chiếu
     const analysis = this.classifier.classify(trimmed, this.memory);
     const reference = this.memory.resolveReference(trimmed);
+
+    // 2. Lưu câu hỏi/trả lời học sinh vào bộ nhớ ngữ cảnh kèm intent
+    this.memory.addMessage('user', trimmed, {
+      intent: analysis.intent,
+      stage: this.memory.getConversationStage()
+    });
 
     console.log('[ConversationController] Intent:', analysis.intent, 'Reference:', reference);
 
     // 3. Xử lý các ý định hội thoại trực tiếp đặc thù
     if (analysis.intent === INTENTS.REQUEST_REPEAT) {
-      // Yêu cầu nói lại
       const lastReply = this.memory.getLastAssistantReply();
       if (lastReply) {
         this.speak(`Mình xin nhắc lại nhé: ${lastReply}`, 'SPEAKING');
@@ -268,10 +281,8 @@ export class ConversationController {
     }
 
     if (analysis.intent === INTENTS.REQUEST_SHORTEN) {
-      // Yêu cầu nói ngắn hơn
       const lastReply = this.memory.getLastAssistantReply();
       if (lastReply) {
-        // Tóm tắt ngắn gọn trong 1 câu
         const shortened = this.shortenReply(lastReply);
         this.speak(`Nói ngắn gọn là: ${shortened}`, 'HAPPY');
       } else {
@@ -281,13 +292,11 @@ export class ConversationController {
     }
 
     if (analysis.intent === INTENTS.NEGATION) {
-      // Học sinh phủ định hoặc sửa ý bot
       this.speak('Ồ, xin lỗi bạn nhé! Vậy ý của bạn là gì, bạn có thể nói rõ hơn một chút để Mark hỗ trợ không?', 'ENCOURAGING');
       return;
     }
 
     if (analysis.intent === INTENTS.THANKS) {
-      // Lời cảm ơn
       const studentName = this.memory.getStudentName();
       const thanksReply = studentName 
         ? `Không có gì đâu bạn ${studentName}! Được đồng hành học tập cùng bạn là niềm vui của Mark mà!` 
@@ -297,13 +306,11 @@ export class ConversationController {
     }
 
     if (analysis.intent === INTENTS.GOODBYE) {
-      // Tạm biệt
       this.speak('Tạm biệt bạn nhé! Chúc bạn học thật tốt môn Tin học và khám phá thêm nhiều điều kỳ thú trên Internet!', 'GOODBYE');
       return;
     }
 
     if (analysis.intent === INTENTS.UNCLEAR && !this.memory.getActiveTopic()) {
-      // Câu hỏi mơ hồ thiếu ngữ cảnh ban đầu
       this.speak('Bạn đang muốn hỏi Mark về Mạng thông tin toàn cầu, website hay một chủ đề nào khác vậy nè?', 'ENCOURAGING');
       return;
     }
@@ -319,11 +326,23 @@ export class ConversationController {
 
       const replyText = aiResult?.reply || 'Mark đã nghe câu hỏi của bạn! Bạn hãy hỏi thêm về World Wide Web, website hoặc trình duyệt nhé!';
       const replyEmotion = aiResult?.emotion || 'SPEAKING';
+      const resolvedTopic = aiResult?.topic || reference.topic || this.memory.getActiveTopic();
+      const resolvedStage = aiResult?.stage || this.memory.getConversationStage();
+      const resolvedQuestion = aiResult?.question || null;
 
-      // Lưu câu trả lời bot vào bộ nhớ
+      // Lưu câu trả lời bot vào bộ nhớ kèm tiến trình sư phạm
       this.memory.addMessage('assistant', replyText, {
-        topic: aiResult?.topic || reference.topic || this.memory.getActiveTopic()
+        topic: resolvedTopic,
+        stage: resolvedStage,
+        question: resolvedQuestion
       });
+
+      if (aiResult?.stage) {
+        this.memory.setConversationStage(aiResult.stage);
+      }
+      if (aiResult?.question) {
+        this.memory.lastAiQuestion = aiResult.question;
+      }
 
       this.speak(replyText, replyEmotion);
     } catch (err) {
@@ -366,10 +385,8 @@ export class ConversationController {
   shortenReply(text) {
     const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
     if (sentences.length <= 1) return text;
-    // Lấy câu đầu tiên súc tích nhất
     return sentences[0] + '.';
   }
 }
 
 export const conversationController = new ConversationController();
-
