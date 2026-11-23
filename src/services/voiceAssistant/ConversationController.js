@@ -94,7 +94,7 @@ export class ConversationController {
       const greetingSpeech = this.config.welcomeGreetingSpeech;
       this.memory.addMessage('assistant', greetingDisplay, {
         stage: 'STAGE_1_HOOK',
-        question: 'Các bạn có thường sử dụng Google để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?'
+        question: 'Khi muốn tìm lời giải một bài toán, xem video hướng dẫn gấp giấy Origami hay tìm lời bài hát, các bạn thường làm gì trên điện thoại hoặc máy tính?'
       });
       this.speak(greetingDisplay, 'GREETING', greetingSpeech);
     } else {

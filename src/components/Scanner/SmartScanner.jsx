@@ -3,17 +3,31 @@ import jsQR from 'jsqr';
 import { 
   Camera, CameraOff, CheckCircle2, RotateCw, RefreshCw, Send, 
   Users, Volume2, Sparkles, AlertCircle, PlayCircle, Layers, Image as ImageIcon,
-  ArrowLeft, X, Smartphone
+  ArrowLeft, X, Smartphone, ChevronLeft, ChevronRight, Trophy, Lock, Unlock, Eye, EyeOff, Award, Shield
 } from 'lucide-react';
 import { classroomService } from '../../services/classroomService';
 import { detectQuizizzCards } from '../../utils/quizizzArucoDetector';
+import { LESSON_6_QUESTIONS } from '../../data/lesson6Questions';
 
 export default function SmartScanner({ 
   roomCode = 'WB-601', 
   onResponsesUpdated,
   fullscreen = false,
+  currentQuestionIndex: propQIndex = 0,
+  questions: propQuestions = null,
+  onNavigateQuestion,
   onCloseScanner
 }) {
+  const questionsList = propQuestions || LESSON_6_QUESTIONS;
+  const [currentQIndex, setCurrentQIndex] = useState(propQIndex);
+
+  // Sync prop changes
+  useEffect(() => {
+    if (typeof propQIndex === 'number' && propQIndex >= 0) {
+      setCurrentQIndex(propQIndex);
+    }
+  }, [propQIndex]);
+
   const [isScanning, setIsScanning] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [detectedResponses, setDetectedResponses] = useState({});
@@ -22,6 +36,7 @@ export default function SmartScanner({
   const [lastScannedStudent, setLastScannedStudent] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
+  const [hideAnswersOnScan, setHideAnswersOnScan] = useState(true); // Anti-cheating privacy mode
 
   const [classes, setClasses] = useState([]);
   const [activeClassId, setActiveClassId] = useState('CLASS_6B');
@@ -34,8 +49,8 @@ export default function SmartScanner({
   const isScanningRef = useRef(false);
   const lastProcessTimeRef = useRef(0);
 
-  // Web Audio API offline sound synthesizer for instant audio feedback
-  const playScanChime = (answer = 'A') => {
+  // Web Audio API offline sound synthesizer (Uniform chime to prevent pitch-based answer leaking)
+  const playScanChime = () => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -46,12 +61,11 @@ export default function SmartScanner({
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      const freqMap = { A: 880, B: 987.77, C: 1108.73, D: 1318.51 };
-      const baseFreq = freqMap[answer] || 880;
+      const baseFreq = 987.77; // Uniform pleasant B5 chime for all scans
 
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(baseFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.1);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.33, now + 0.1);
 
       gain.gain.setValueAtTime(0.35, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
@@ -63,6 +77,55 @@ export default function SmartScanner({
       osc.stop(now + 0.2);
     } catch (e) {
       // Audio context might be restricted before interaction
+    }
+  };
+
+  // Next Question Directly from Phone Camera Scanner
+  const handleNextQuestion = async () => {
+    const nextIdx = currentQIndex + 1;
+    if (nextIdx < questionsList.length) {
+      setCurrentQIndex(nextIdx);
+      const nextQ = questionsList[nextIdx];
+      setDetectedResponses({});
+      syncedCardsRef.current.clear();
+      setSyncStatus(`Đã chuyển sang Câu ${nextIdx + 1}`);
+      try {
+        await classroomService.setQuestion(roomCode, nextQ, 'COLLECTING');
+        if (onNavigateQuestion) onNavigateQuestion(nextIdx);
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(60);
+      } catch (err) {
+        console.error('Error switching next question:', err);
+      }
+    }
+  };
+
+  // Previous Question from Phone Camera Scanner
+  const handlePrevQuestion = async () => {
+    const prevIdx = currentQIndex - 1;
+    if (prevIdx >= 0) {
+      setCurrentQIndex(prevIdx);
+      const prevQ = questionsList[prevIdx];
+      setDetectedResponses({});
+      syncedCardsRef.current.clear();
+      setSyncStatus(`Đã quay lại Câu ${prevIdx + 1}`);
+      try {
+        await classroomService.setQuestion(roomCode, prevQ, 'COLLECTING');
+        if (onNavigateQuestion) onNavigateQuestion(prevIdx);
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(60);
+      } catch (err) {
+        console.error('Error switching prev question:', err);
+      }
+    }
+  };
+
+  // Finish Quiz & Trigger Glorious Podium / Flower Bursts on Web Projector
+  const handleFinishAndShowLeaderboard = async () => {
+    try {
+      await classroomService.broadcastLeaderboard(roomCode, { showLeaderboard: true });
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      if (onCloseScanner) onCloseScanner();
+    } catch (err) {
+      console.error('Error broadcasting leaderboard:', err);
     }
   };
 
@@ -242,6 +305,11 @@ export default function SmartScanner({
         syncedCardsRef.current.clear();
       }
       if (event.type === 'QUESTION_UPDATED' || event.type === 'ROOM_STARTED') {
+        const q = event.payload?.activeQuestion || event.payload?.currentQuestion;
+        if (q) {
+          const foundIdx = questionsList.findIndex(item => item.id === q.id || item.questionText === q.questionText);
+          if (foundIdx !== -1) setCurrentQIndex(foundIdx);
+        }
         setDetectedResponses({});
         syncedCardsRef.current.clear();
         setSyncStatus('Câu hỏi mới: Sẵn sàng quét thẻ học sinh');
@@ -889,21 +957,69 @@ export default function SmartScanner({
           )}
         </div>
 
+        {/* QUESTION CONTROLLER HUD INSIDE CAMERA (CHUYỂN CÂU HỎI TRỰC TIẾP KHI ĐANG QUÉT) */}
+        <div className="absolute bottom-14 left-3 right-3 z-30 flex items-center justify-between gap-2 p-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 shadow-2xl pointer-events-auto">
+          {/* Previous Question */}
+          <button
+            onClick={handlePrevQuestion}
+            disabled={currentQIndex === 0}
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed text-slate-200 text-xs font-bold flex items-center gap-1 active:scale-95 transition-all border border-slate-700/60"
+          >
+            <ChevronLeft className="w-4 h-4 text-cyan-400" />
+            <span className="hidden sm:inline">Câu trước</span>
+          </button>
+
+          {/* Current Question Indicator */}
+          <div className="flex-1 text-center px-1">
+            <div className="font-mono font-black text-xs sm:text-sm text-cyan-300 flex items-center justify-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>CÂU {currentQIndex + 1} / {questionsList.length}</span>
+            </div>
+            <div className="text-[10px] text-slate-300 truncate max-w-[180px] sm:max-w-xs mx-auto">
+              {questionsList[currentQIndex]?.questionText}
+            </div>
+          </div>
+
+          {/* Next Question or Leaderboard */}
+          {currentQIndex < questionsList.length - 1 ? (
+            <button
+              onClick={handleNextQuestion}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-emerald-500/30 active:scale-95 transition-all"
+            >
+              <span>Câu tiếp</span>
+              <ChevronRight className="w-4 h-4 text-slate-950" />
+            </button>
+          ) : (
+            <button
+              onClick={handleFinishAndShowLeaderboard}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-yellow-500/40 active:scale-95 transition-all animate-pulse"
+            >
+              <Trophy className="w-4 h-4 text-slate-950" />
+              <span>Tổng kết</span>
+            </button>
+          )}
+        </div>
+
         {/* Bottom Floating Stats Bar */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 px-3 py-2.5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent flex items-center justify-between pointer-events-auto backdrop-blur-sm">
-          <div className="flex items-center gap-1.5 text-xs font-mono font-bold">
-            <span className="px-2 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/60 text-rose-300">
-              A: {tally.A || 0}
-            </span>
-            <span className="px-2 py-0.5 rounded-lg bg-blue-950/80 border border-blue-500/60 text-blue-300">
-              B: {tally.B || 0}
-            </span>
-            <span className="px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-emerald-300">
-              C: {tally.C || 0}
-            </span>
-            <span className="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-300">
-              D: {tally.D || 0}
-            </span>
+        <div className="absolute bottom-0 left-0 right-0 z-30 px-3 py-2 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent flex items-center justify-between pointer-events-auto backdrop-blur-sm">
+          {/* Privacy Protection Mode: Student answers masked by default */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setHideAnswersOnScan(!hideAnswersOnScan)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-900/80 border border-slate-700/80 text-[10px] text-slate-300 hover:text-white"
+              title="Chống nhìn bài: Ẩn/Hiện chữ đáp án"
+            >
+              <Shield className="w-3 h-3 text-emerald-400" />
+              <span>{hideAnswersOnScan ? '🔒 Đang ẩn đáp án' : '👁️ Đang hiện đáp án'}</span>
+            </button>
+            {!hideAnswersOnScan && (
+              <div className="flex items-center gap-1 text-[11px] font-mono font-bold">
+                <span className="px-1.5 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-500/40">A:{tally.A || 0}</span>
+                <span className="px-1.5 py-0.2 rounded bg-blue-950/80 text-blue-300 border border-blue-500/40">B:{tally.B || 0}</span>
+                <span className="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C:{tally.C || 0}</span>
+                <span className="px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-500/40">D:{tally.D || 0}</span>
+              </div>
+            )}
           </div>
 
           <button
@@ -911,10 +1027,10 @@ export default function SmartScanner({
               stopCamera();
               if (onCloseScanner) onCloseScanner();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/30 active:scale-95 transition-all"
+            className="flex items-center gap-1 px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold active:scale-95 transition-all"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Hoàn tất</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Xong</span>
           </button>
         </div>
       </div>
@@ -1088,9 +1204,19 @@ export default function SmartScanner({
                 ĐÃ QUÉT: {detectedCount} / {totalStudents} HS
               </h3>
             </div>
-            <span className="text-xs font-bold text-cyan-300">
-              {Math.round((detectedCount / (totalStudents || 1)) * 100)}%
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setHideAnswersOnScan(!hideAnswersOnScan)}
+                className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-bold text-slate-300 flex items-center gap-1 hover:text-white"
+                title="Bảo mật đáp án: Chống nhìn bài"
+              >
+                <Shield className="w-3 h-3 text-emerald-400" />
+                <span>{hideAnswersOnScan ? '🔒 Ẩn ký tự A,B,C,D' : '👁️ Hiện đáp án'}</span>
+              </button>
+              <span className="text-xs font-bold text-cyan-300">
+                {Math.round((detectedCount / (totalStudents || 1)) * 100)}%
+              </span>
+            </div>
           </div>
 
           {/* Scanned Items list */}
@@ -1131,8 +1257,12 @@ export default function SmartScanner({
 
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] text-slate-500 font-mono">{res.angle}°</span>
-                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-sm border shadow-sm ${answerColors[res.answer] || ''}`}>
-                        {res.answer}
+                      <span className={`px-2 py-1 rounded-lg flex items-center justify-center font-bold text-xs border shadow-sm ${
+                        hideAnswersOnScan 
+                          ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50' 
+                          : answerColors[res.answer] || ''
+                      }`}>
+                        {hideAnswersOnScan ? '✓ Đã nhận' : res.answer}
                       </span>
                     </div>
                   </div>

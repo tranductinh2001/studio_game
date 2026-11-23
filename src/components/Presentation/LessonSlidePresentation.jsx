@@ -9,22 +9,18 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-  // Quick activity jumps mapped to slide indexes:
-  // Slide 0: Bìa tiết dạy Bài 6 & Khởi động
-  // Slide 1 (2.1): Tiến trình 1 - Giao việc Mục 1 & Đồng hồ đếm ngược 60/40 (Nhóm 1&2)
-  // Slide 2 (2.2): Tiến trình 1 - Báo cáo & Chuẩn hóa Mục 1 (Đáp án Nhóm 1&2)
-  // Slide 3 (2.3): Tiến trình 2 - Giao việc Mục 2 & Đồng hồ đếm ngược 60/40 (Nhóm 3&4)
-  // Slide 4 (2.4): Tiến trình 2 - Báo cáo & Chuẩn hóa Mục 2 (Simulator gõ URL thật)
-  // Slide 5 (2.5): Chuẩn hóa toàn bài 6 (Ghi vở 2 cột 50/50) ➜ Quizizz Q-Cards
-  // Slide 6 (HĐ 4): Hoạt động 4 - Vận dụng thực hành & 5 Bí quyết tỏa sáng
+  // Quick activity jumps mapped to slide indexes (Tiết 11 kết thúc ở Đáp án 2.3):
+  // Slide 0: Bìa tiết dạy Bài 6 & Khởi động (HĐ 1)
+  // Slide 1 (2.1): Hoạt động 2.1 - Giao việc Mục 1 & Đồng hồ đếm ngược (Nhóm 1 & 2)
+  // Slide 2 (Đáp án 2.1): Báo cáo & Đáp án chuẩn hóa Mục 1 (Nhóm 1 & 2)
+  // Slide 3 (2.3): Hoạt động 2.3 - Giao việc Mục 2 & Đồng hồ đếm ngược (Nhóm 3 & 4)
+  // Slide 4 (Đáp án 2.3): Báo cáo & Đáp án chuẩn hóa Mục 2 (Kết thúc tiết học)
   const ACTIVITIES = [
-    { label: 'Bìa & Khởi Động', index: 0, tag: 'HĐ 1' },
-    { label: '2.1: Mục 1 + Timer', index: 1, tag: '2.1' },
-    { label: '2.2: Báo Cáo Mục 1', index: 2, tag: '2.2' },
-    { label: '2.3: Mục 2 + Timer', index: 3, tag: '2.3' },
-    { label: '2.4: Báo Cáo Mục 2', index: 4, tag: '2.4' },
-    { label: '2.5: Chuẩn Hóa Ghi Vở', index: 5, tag: '2.5' },
-    { label: 'HĐ 4: Vận Dụng', index: 6, tag: 'HĐ 4' }
+    { tag: 'HĐ 1', title: 'Khởi Động', desc: 'HĐ 1: Bìa & Khởi động tiết dạy', index: 0 },
+    { tag: '2.1', title: 'Nhiệm vụ 1', desc: 'HĐ 2.1: Giao việc Mục 1 SGK (Nhóm 1 & 2)', index: 1 },
+    { tag: 'Đáp án 2.1', title: 'Chuẩn hóa Mục 1', desc: 'Báo cáo & Đáp án chuẩn hóa Mục 1', index: 2 },
+    { tag: '2.3', title: 'Nhiệm vụ 2', desc: 'HĐ 2.3: Giao việc Mục 2 SGK (Nhóm 3 & 4)', index: 3 },
+    { tag: 'Đáp án 2.3', title: 'Chuẩn hóa Mục 2', desc: 'Báo cáo & Đáp án chuẩn hóa Mục 2 (Kết thúc bài học)', index: 4 }
   ];
 
   // Send message to slide iframe
@@ -66,85 +62,96 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
   return (
     <div className="w-full h-full flex flex-col bg-[#030712] text-white overflow-hidden">
       {/* Top Slide Control Strip */}
-      <header className="px-3 sm:px-5 py-2.5 bg-slate-900/90 border-b border-cyan-500/30 flex flex-wrap items-center justify-between gap-3 shrink-0 backdrop-blur-md z-20">
+      <header className="px-3 sm:px-4 py-2 bg-slate-900/95 border-b border-cyan-500/30 flex items-center justify-between gap-2 shrink-0 backdrop-blur-md z-20 overflow-x-auto">
 
         {/* Left: Lesson Badge & Teacher Info */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-cyan-500/20">
-            <BookOpen className="w-5 h-5 stroke-[2.5]" />
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-md shadow-cyan-500/20">
+            <BookOpen className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+            <div className="flex items-center gap-1.5">
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                 BÀI 6 • TIẾT 11
               </span>
               <h2 className="text-xs sm:text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-100 to-indigo-300 uppercase tracking-tight">
                 MẠNG THÔNG TIN TOÀN CẦU (WWW)
               </h2>
             </div>
-            <p className="text-[11px] text-slate-400">
-              Trường THCS Đắk Trôi • Giáo viên: <span className="text-slate-200 font-bold">Thầy Trần Đức Tình</span>
+            <p className="text-[10px] sm:text-[11px] text-slate-400">
+              Trường THCS Đắk Trôi • GV: <span className="text-slate-200 font-bold">Thầy Trần Đức Tình</span>
             </p>
           </div>
         </div>
 
         {/* Center: Quick Activity Jump Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
-          {ACTIVITIES.map((act) => (
-            <button
-              key={act.index}
-              onClick={() => jumpToSlide(act.index)}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1 ${activeSlideIndex === act.index
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+        <div className="flex items-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
+          {ACTIVITIES.map((act) => {
+            const isActive = activeSlideIndex === act.index;
+            return (
+              <button
+                key={act.index}
+                onClick={() => jumpToSlide(act.index)}
+                title={act.desc}
+                className={`px-2 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30 font-black'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                 }`}
-            >
-              <span className="font-mono text-[10px] opacity-80">{act.tag}</span>
-              <span className="hidden md:inline">{act.label.split(':')[0]}</span>
-            </button>
-          ))}
+              >
+                <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-black ${
+                  isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-cyan-500/20 text-cyan-300'
+                }`}>
+                  {act.tag}
+                </span>
+                <span className={`${isActive ? 'inline' : 'hidden xl:inline'} font-semibold text-[11px]`}>
+                  {act.title}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Right: Specialized Classroom Tool Switchers & Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Jump to Mark AI */}
           <button
             onClick={() => onSwitchTab && onSwitchTab('webby-agent')}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-200 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-200 transition-all shadow-sm"
             title="Mở Trợ lý Mark AI (Giọng nói 3D)"
           >
             <Bot className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Mark AI</span>
+            <span className="hidden md:inline">Mark AI</span>
           </button>
 
           {/* Jump to Game Center */}
           <button
             onClick={() => onSwitchTab && onSwitchTab('game-center')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-400/50 text-amber-300 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-400/50 text-amber-300 transition-all shadow-sm"
             title="Mở Trung Tâm Trò Chơi Thử Thách Bài 6 (8 Games)"
           >
             <Gamepad2 className="w-3.5 h-3.5 text-amber-400" />
-            <span>Đấu Trường Game</span>
+            <span className="hidden md:inline">Đấu Trường Game</span>
           </button>
 
           {/* Jump to Live QR Arena */}
           <button
             onClick={() => onSwitchTab && onSwitchTab('qr-assessment')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 border border-amber-400/50 text-amber-200 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 border border-amber-400/50 text-amber-200 transition-all shadow-sm"
             title="Mở Đấu trường Khảo sát thẻ QR / Quizizz"
           >
             <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
-            <span>Đấu trường Quizizz / QR</span>
+            <span className="hidden md:inline">Đấu trường QR</span>
           </button>
 
           {/* Open in dedicated new window */}
           <button
             onClick={openInNewWindow}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700"
             title="Mở Slide ở tab trình duyệt riêng biệt"
           >
             <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Cửa sổ riêng</span>
+            <span className="hidden lg:inline">Cửa sổ riêng</span>
           </button>
 
           {/* Fullscreen Button */}

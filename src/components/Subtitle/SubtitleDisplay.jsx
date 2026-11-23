@@ -2,7 +2,7 @@ import React from 'react';
 import { Volume2, Mic, Bot, User } from 'lucide-react';
 
 export default function SubtitleDisplay({
-  currentSpeaker = 'WEBBY',
+  currentSpeaker = 'MARK',
   text = '',
   interimText = '',
   isSpeaking = false,
@@ -101,7 +101,7 @@ export default function SubtitleDisplay({
           {isListening && !text && !interimText ? (
             <p className="italic text-slate-400 flex items-center gap-2 text-sm sm:text-base md:text-xl">
               <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-cyan-400 animate-ping inline-block" />
-              Mời các bạn đặt câu hỏi hoặc trao đổi, WEBBY đang lắng nghe...
+              Mời các bạn đặt câu hỏi hoặc trao đổi, Mark đang lắng nghe...
             </p>
           ) : (
             <p className="drop-shadow-md">

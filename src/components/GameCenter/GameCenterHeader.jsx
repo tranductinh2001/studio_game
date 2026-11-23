@@ -69,13 +69,13 @@ export default function GameCenterHeader({
         )}
 
         {activeGame && (
-          <div className="hidden md:flex items-center gap-2 pl-3 border-l border-slate-800">
-            <span className="text-lg">{activeGame.icon}</span>
+          <div className="hidden md:flex items-center gap-2.5 pl-3 border-l border-slate-800">
+            <span className="text-xl">{activeGame.icon}</span>
             <div>
               <div className="text-xs font-black text-amber-300 uppercase tracking-wide">
                 {activeGame.title}
               </div>
-              <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+              <div className="text-[11px] text-slate-300 font-medium truncate max-w-[380px] lg:max-w-[480px]">
                 {activeGame.tagline}
               </div>
             </div>

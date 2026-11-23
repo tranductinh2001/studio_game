@@ -25,6 +25,7 @@ class SpeechRecognitionService {
     this.lastDispatchTime = 0;
     this.restartDebounceTimer = null;
     this.isSpeakingMode = false; // Flag indicating bot is currently speaking
+    this.currentLang = 'vi-VN';   // Strictly enforce Vietnamese (vi-VN)
 
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -44,6 +45,15 @@ class SpeechRecognitionService {
         }
       }
     }
+  }
+
+  // Set recognition language explicitly (Defaults to 'vi-VN')
+  setLanguage(lang = 'vi-VN') {
+    this.currentLang = lang;
+    if (this.recognition) {
+      this.recognition.lang = lang;
+    }
+    console.log('[SpeechRecognition] Language set to:', lang);
   }
 
   // Request browser microphone permission explicitly via getUserMedia
@@ -239,11 +249,15 @@ class SpeechRecognitionService {
   }
 
   // Start continuous listening session
-  startContinuous() {
+  startContinuous(lang = 'vi-VN') {
+    this.currentLang = lang;
     this.shouldBeListening = true;
     this.isMuted = false;
     this.hasPermissionError = false;
     this.accumulatedTranscript = '';
+    if (this.recognition) {
+      this.recognition.lang = lang;
+    }
     this.safeStart();
   }
 
@@ -292,6 +306,8 @@ class SpeechRecognitionService {
       return;
     }
     try {
+      // Re-assert Vietnamese language strictly before start
+      this.recognition.lang = this.currentLang || 'vi-VN';
       if (!this.isListening) {
         this.recognition.start();
       }

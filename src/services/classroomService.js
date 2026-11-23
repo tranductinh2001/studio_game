@@ -481,6 +481,111 @@ class ClassroomService {
     }
   }
 
+  // Stream mobile camera frame to web projector in real-time
+  async broadcastCameraFrame(roomCode = this.activeRoomCode, { groupNumber = 1, frameData, isStreaming = true }) {
+    const payload = {
+      roomCode,
+      groupNumber: Number(groupNumber),
+      frameData,
+      isStreaming,
+      timestamp: Date.now()
+    };
+
+    // 1. Local BroadcastChannel (0ms delay for same PC / local tabs)
+    try {
+      if (typeof window !== 'undefined' && window.BroadcastChannel) {
+        if (!this.broadcastChannel) {
+          this.broadcastChannel = new BroadcastChannel(`bc_${this.getCloudTopic(roomCode)}`);
+        }
+        this.broadcastChannel.postMessage({ type: 'CAMERA_FRAME', payload });
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // 2. Server broadcast via SSE to projector
+    try {
+      fetch(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/camera/frame`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupNumber, frameData, isStreaming })
+      }).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Broadcast camera status (active/inactive stream, active group changed)
+  async broadcastCameraStatus(roomCode = this.activeRoomCode, { isStreaming = false, groupNumber = 1 }) {
+    const payload = {
+      roomCode,
+      isStreaming,
+      groupNumber: Number(groupNumber),
+      timestamp: Date.now()
+    };
+
+    // 1. Local BroadcastChannel
+    try {
+      if (typeof window !== 'undefined' && window.BroadcastChannel) {
+        if (!this.broadcastChannel) {
+          this.broadcastChannel = new BroadcastChannel(`bc_${this.getCloudTopic(roomCode)}`);
+        }
+        this.broadcastChannel.postMessage({ type: 'CAMERA_STATUS', payload });
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // 2. Cloud Serverless Pub/Sub
+    this.publishCloudEvent({ type: 'CAMERA_STATUS', payload }, roomCode);
+
+    // 3. Server broadcast via SSE
+    try {
+      await fetch(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/camera/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isStreaming, groupNumber })
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Broadcast Leaderboard Dashboard trigger (e.g. from phone to projector)
+  async broadcastLeaderboard(roomCode = this.activeRoomCode, { showLeaderboard = true } = {}) {
+    const payload = {
+      roomCode,
+      showLeaderboard: Boolean(showLeaderboard),
+      timestamp: Date.now()
+    };
+
+    // 1. Local BroadcastChannel
+    try {
+      if (typeof window !== 'undefined' && window.BroadcastChannel) {
+        if (!this.broadcastChannel) {
+          this.broadcastChannel = new BroadcastChannel(`bc_${this.getCloudTopic(roomCode)}`);
+        }
+        this.broadcastChannel.postMessage({ type: 'SHOW_LEADERBOARD', payload });
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // 2. Cloud Serverless Pub/Sub
+    this.publishCloudEvent({ type: 'SHOW_LEADERBOARD', payload }, roomCode);
+
+    // 3. Server broadcast via SSE
+    try {
+      await fetch(`${this.getBaseUrl()}/classroom/rooms/${roomCode}/leaderboard`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showLeaderboard })
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
   // Get real-time analytics
   async getAnalytics(roomCode) {
     try {

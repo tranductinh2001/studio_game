@@ -21,15 +21,22 @@ export const BOT_CONFIG = {
   speechRate: 0.95, // Tốc độ vừa phải, chuẩn sư phạm cho học sinh lớp 6
   pitch: 1.05,      // Tông giọng tươi vui, gần gũi, ấm áp
 
+  // Các tùy chọn giọng đọc mặc định đề xuất
+  voicePresets: [
+    { id: 'hoaimy', name: 'Microsoft Hoài My', gender: 'female', desc: 'Giọng Nữ - Truyền cảm, ấm áp, chuẩn ngữ điệu sư phạm' },
+    { id: 'namminh', name: 'Microsoft Nam Minh', gender: 'male', desc: 'Giọng Nam - Rõ ràng, dõng dạc, rành mạch' },
+    { id: 'google_vi', name: 'Google Tiếng Việt', gender: 'female', desc: 'Giọng Nữ - Tự nhiên, thân thiện' }
+  ],
+
   // Thiết lập nhận diện giọng nói (ASR & VAD)
   silenceThresholdMs: 1000,      // 1.0s im lặng để xác nhận kết thúc câu (chuẩn học sinh THCS)
   incompleteWaitMs: 1800,        // Thời gian chờ thêm nếu học sinh nói ngắt quãng ("cho mình hỏi về...")
   acousticCooldownMs: 800,       // Thời gian triệt tiêu tiếng vang phòng học sau khi bot nói xong
 
-  // Lời chào mở đầu tự nhiên, thân thiện và đặt câu hỏi gợi mở thực tế cho tiết học
-  welcomeGreeting: 'Xin chào các bạn! Mình là Mark. Hôm nay Mark có một thử thách nhỏ muốn nhờ cả lớp giúp đỡ: Các bạn có thường sử dụng Google để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?',
-  // Văn bản dành cho TTS (sử dụng phát âm chuẩn không đánh vần)
-  welcomeGreetingSpeech: 'Xin chào các bạn! Mình là Mác. Hôm nay Mác có một thử thách nhỏ muốn nhờ cả lớp giúp đỡ: Các bạn có thường sử dụng Gu gồ để tìm kiếm thông tin, xem video hoặc tìm hình ảnh không?'
+  // Lời chào mở đầu tự nhiên, thân thiện và dẫn dắt bằng câu hỏi trải nghiệm đời sống cho tiết học
+  welcomeGreeting: 'Xin chào các bạn học sinh lớp 6 yêu quý! Mình là Mark – trợ lý AI của lớp mình hôm nay. Cho Mark hỏi nhỏ nhé: Khi muốn tìm lời giải một bài toán khó, xem video hướng dẫn gấp giấy Origami, hay tìm lời một bài hát, các bạn thường làm gì trên điện thoại hoặc máy tính?',
+  // Văn bản dành cho TTS (sử dụng phát âm chuẩn không đánh vần M-A-R-K)
+  welcomeGreetingSpeech: 'Xin chào các bạn học sinh lớp 6 yêu quý! Mình là Mác – trợ lý AI của lớp mình hôm nay. Cho Mác hỏi nhỏ nhé: Khi muốn tìm lời giải một bài toán khó, xem video hướng dẫn gấp giấy Ô ri ga mi, hay tìm lời một bài hát, các bạn thường làm gì trên điện thoại hoặc máy tính?'
 };
 
 // Từ điển chuẩn hóa phát âm cho Text-to-Speech tiếng Việt

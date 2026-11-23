@@ -2794,32 +2794,32 @@
       "className": "Lớp 6A",
       "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "currentQuestion": {
-        "id": "Q_02",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
         "options": {
-          "A": "Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng",
-          "B": "WWW là hạ tầng mạng phần cứng, còn Internet là trang web",
-          "C": "Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet",
-          "D": "Muốn dùng Internet thì nhất thiết phải cài đặt WWW"
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
         },
-        "correctAnswer": "C",
-        "explanation": "Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.",
-        "bloomLevel": "Thông hiểu",
-        "difficulty": "Trung bình"
+        "correctAnswer": "B",
+        "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
       "activeQuestion": {
-        "id": "Q_02",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
         "options": {
-          "A": "Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng",
-          "B": "WWW là hạ tầng mạng phần cứng, còn Internet là trang web",
-          "C": "Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet",
-          "D": "Muốn dùng Internet thì nhất thiết phải cài đặt WWW"
+          "A": "Là một mạng máy tính kết nối bằng cáp ngầm dưới biển",
+          "B": "Là dịch vụ thông tin bao gồm các trang web liên kết với nhau được lưu trữ trên Internet",
+          "C": "Là một phần mềm dùng để soạn thảo văn bản",
+          "D": "Là chiếc máy tính chủ của Google đặt tại Mỹ"
         },
-        "correctAnswer": "C",
-        "explanation": "Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.",
-        "bloomLevel": "Thông hiểu",
-        "difficulty": "Trung bình"
+        "correctAnswer": "B",
+        "explanation": "WWW là một dịch vụ thông tin toàn cầu được tổ chức dưới dạng các trang web liên kết với nhau, hoạt động trên nền tảng Internet.",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
       "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
@@ -2848,8 +2848,8 @@
         "roomCode": "WB-601",
         "classId": "CLASS_6A",
         "className": "Lớp 6A",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
-        "correctAnswer": "C",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web - WWW) là gì?",
+        "correctAnswer": "B",
         "totalStudents": 32,
         "totalAnswered": 0,
         "totalUnanswered": 32,
@@ -2866,7 +2866,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-22T05:18:29.960Z",
+      "lastUpdated": "2026-11-22T15:35:34.671Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }

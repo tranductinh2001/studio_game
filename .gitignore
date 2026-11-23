@@ -5,6 +5,23 @@ node_modules/
 dist/
 build/
 
+# Heavy reference books / PDFs
+SGK tin họcc THCS/
+*.pdf
+
+# Temporary screenshots & debug dumps in root
+*.png
+!public/**/*.png
+!src/**/*.png
+
+# Temporary test scripts
+extract_slides_*.py
+inspect_*.py
+verify_*.py
+scripts/debug_*.js
+scripts/inspect_*.js
+scripts/verify_*.js
+
 # Environment Variables & Secrets
 .env
 .env.local
@@ -25,4 +42,5 @@ Thumbs.db
 # Antigravity artifacts
 .gemini/
 .system_generated/
+.agents/
 

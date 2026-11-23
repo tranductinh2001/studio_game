@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Camera, Image as ImageIcon, Send, RotateCw, Lock, Eye, Unlock,
   CheckCircle2, Sparkles, Smartphone, ChevronRight, ChevronLeft, Upload, RefreshCw, X, ArrowLeft,
-  Users, Check, AlertCircle, Award, Volume2, LogIn, LogOut, Radio, PlayCircle
+  Users, Check, AlertCircle, Award, Volume2, LogIn, LogOut, Radio, PlayCircle,
+  Video, VideoOff
 } from 'lucide-react';
 import SmartScanner from '../Scanner/SmartScanner';
 import { classroomService } from '../../services/classroomService';
@@ -19,7 +20,8 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
   // Master Flow State:
   // hasJoinedRoom = false => Shows Room Lobby / Discovery ("Vào phòng")
   // hasJoinedRoom = true  => Shows Game Controls & QR Scanner ("Trong phòng")
-  const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
+  // Auto-join if room parameter is present in URL (e.g. from QR scan)
+  const [hasJoinedRoom, setHasJoinedRoom] = useState(Boolean(urlRoom));
   const [isCameraScanning, setIsCameraScanning] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState('hub'); // 'hub' | 'groupPhoto'
 
@@ -34,11 +36,29 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
   const [chimeSent, setChimeSent] = useState(false);
   const [currentQIndex, setCurrentQIndex] = useState(0);
 
-  // Group Photo Poster states
+  // Group Photo & Document Camera Streaming states
   const [selectedGroup, setSelectedGroup] = useState(1);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoUploadStatus, setPhotoUploadStatus] = useState('');
+
+  // Real-time Wireless Camera Streaming to Projector
+  const [isLiveStreaming, setIsLiveStreaming] = useState(false);
+  const [cameraFacing, setCameraFacing] = useState('environment'); // 'environment' | 'user'
+  const [streamError, setStreamError] = useState('');
+  const [streamFps, setStreamFps] = useState(0);
+  const [liveSnapshotSuccess, setLiveSnapshotSuccess] = useState(false);
+
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const streamIntervalRef = useRef(null);
+  const isStreamingRef = useRef(false);
+  const selectedGroupRef = useRef(selectedGroup);
+
+  useEffect(() => {
+    selectedGroupRef.current = selectedGroup;
+  }, [selectedGroup]);
 
   // 1. Fetch available online rooms for Lobby
   const fetchActiveRooms = async () => {
@@ -103,6 +123,12 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
       ) {
         refreshRoom(selectedRoomCode);
       }
+
+      // Synchronize group if switched on projector web screen
+      if (event.type === 'CAMERA_STATUS' && event.payload?.groupNumber) {
+        setSelectedGroup(event.payload.groupNumber);
+        selectedGroupRef.current = event.payload.groupNumber;
+      }
     });
 
     return () => unsubscribe();
@@ -121,6 +147,7 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
 
   // Handle Leave Room Action (Back to Lobby)
   const handleLeaveRoom = () => {
+    stopLiveCamera(true);
     setHasJoinedRoom(false);
     setIsCameraScanning(false);
     fetchActiveRooms();
@@ -201,6 +228,183 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
     }
   };
 
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      stopLiveCamera(false);
+    };
+  }, []);
+
+  // Switch SubTab (stops camera if leaving groupPhoto)
+  const switchSubTab = (tab) => {
+    if (tab !== 'groupPhoto' && isLiveStreaming) {
+      stopLiveCamera(true);
+    }
+    setActiveSubTab(tab);
+  };
+
+  // Start Real-time Camera Stream to Web Projector
+  const startLiveCamera = async (overrideFacing) => {
+    try {
+      setStreamError('');
+      // Stop any existing stream
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      if (streamIntervalRef.current) {
+        clearInterval(streamIntervalRef.current);
+      }
+
+      const facing = overrideFacing || cameraFacing;
+      const constraints = {
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      mediaStreamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(console.warn);
+      }
+
+      setIsLiveStreaming(true);
+      isStreamingRef.current = true;
+
+      // Broadcast CAMERA_STATUS active
+      classroomService.broadcastCameraStatus(selectedRoomCode, {
+        isStreaming: true,
+        groupNumber: selectedGroupRef.current
+      });
+
+      // Frame broadcasting loop (~10 fps: 100ms interval)
+      let frameCount = 0;
+      let lastFpsCheck = Date.now();
+
+      streamIntervalRef.current = setInterval(() => {
+        if (!isStreamingRef.current || !videoRef.current || !canvasRef.current) return;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          const targetW = 640;
+          const targetH = Math.round((video.videoHeight / video.videoWidth) * targetW) || 360;
+
+          if (canvas.width !== targetW || canvas.height !== targetH) {
+            canvas.width = targetW;
+            canvas.height = targetH;
+          }
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, targetW, targetH);
+          const frameData = canvas.toDataURL('image/jpeg', 0.65);
+
+          classroomService.broadcastCameraFrame(selectedRoomCode, {
+            groupNumber: selectedGroupRef.current,
+            frameData: frameData,
+            isStreaming: true
+          });
+
+          frameCount++;
+          if (Date.now() - lastFpsCheck >= 1000) {
+            setStreamFps(frameCount);
+            frameCount = 0;
+            lastFpsCheck = Date.now();
+          }
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('Camera streaming error:', err);
+      setStreamError('Không thể mở camera: ' + (err.message || 'Vui lòng cấp quyền máy ảnh'));
+      setIsLiveStreaming(false);
+      isStreamingRef.current = false;
+    }
+  };
+
+  // Stop Real-time Camera Stream
+  const stopLiveCamera = (notify = true) => {
+    isStreamingRef.current = false;
+    setIsLiveStreaming(false);
+    setStreamFps(0);
+
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      mediaStreamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    if (notify) {
+      classroomService.broadcastCameraStatus(selectedRoomCode, {
+        isStreaming: false,
+        groupNumber: selectedGroupRef.current
+      });
+    }
+  };
+
+  // Flip front/rear camera
+  const toggleFacingMode = () => {
+    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    setCameraFacing(nextFacing);
+    if (isLiveStreaming) {
+      startLiveCamera(nextFacing);
+    }
+  };
+
+  // Change active group from mobile and sync to web
+  const handleSelectGroup = (g) => {
+    setSelectedGroup(g);
+    selectedGroupRef.current = g;
+    classroomService.broadcastCameraStatus(selectedRoomCode, {
+      isStreaming: isLiveStreaming,
+      groupNumber: g
+    });
+  };
+
+  // Capture high-res snapshot from live stream and save as group submission
+  const handleLiveSnapshotAndSave = async () => {
+    if (!videoRef.current || !isLiveStreaming) return;
+    const video = videoRef.current;
+
+    const snapCanvas = document.createElement('canvas');
+    snapCanvas.width = video.videoWidth || 1280;
+    snapCanvas.height = video.videoHeight || 720;
+    const ctx = snapCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+    const highResDataUrl = snapCanvas.toDataURL('image/jpeg', 0.85);
+
+    setIsUploadingPhoto(true);
+    setPhotoUploadStatus(`Đang lưu ảnh bài làm Nhóm ${selectedGroup}...`);
+    try {
+      await classroomService.uploadGroupWork(selectedRoomCode, {
+        groupNumber: selectedGroup,
+        imageUrl: highResDataUrl,
+        caption: `Ảnh chụp tài liệu bài làm Nhóm ${selectedGroup} qua Camera ĐT trực tiếp`
+      });
+      setPhotoUploadStatus(`Đã lưu bài làm Nhóm ${selectedGroup} thành công!`);
+      setLiveSnapshotSuccess(true);
+      setTimeout(() => {
+        setLiveSnapshotSuccess(false);
+        setPhotoUploadStatus('');
+      }, 3000);
+    } catch (err) {
+      console.error('Snapshot save error:', err);
+      setPhotoUploadStatus('Lỗi khi lưu bài: ' + (err.message || 'Thử lại'));
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   // Helper calculations for responses and tallies
   const responses = roomState?.responses || {};
   const submittedCount = Object.keys(responses).length;
@@ -226,6 +430,9 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
         <SmartScanner 
           roomCode={selectedRoomCode}
           fullscreen={true}
+          currentQuestionIndex={currentQIndex}
+          questions={LESSON_6_QUESTIONS}
+          onNavigateQuestion={(idx) => handleNavigateQuestion(idx)}
           onCloseScanner={() => {
             setIsCameraScanning(false);
             refreshRoom(selectedRoomCode);
@@ -439,7 +646,7 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
         {/* Sub-tab pills */}
         <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
           <button
-            onClick={() => setActiveSubTab('hub')}
+            onClick={() => switchSubTab('hub')}
             className={`px-3 py-1 rounded-lg transition-all ${
               activeSubTab === 'hub' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400'
             }`}
@@ -447,12 +654,16 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
             Bàn điều khiển
           </button>
           <button
-            onClick={() => setActiveSubTab('groupPhoto')}
-            className={`px-3 py-1 rounded-lg transition-all ${
-              activeSubTab === 'groupPhoto' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400'
+            onClick={() => switchSubTab('groupPhoto')}
+            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+              activeSubTab === 'groupPhoto' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md' : 'text-slate-400'
             }`}
           >
-            Chụp A3/A4
+            <Video className="w-3.5 h-3.5" />
+            <span>Soi Bài Nhóm</span>
+            {isLiveStreaming && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+            )}
           </button>
         </div>
       </div>
@@ -531,14 +742,22 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleNavigateQuestion(currentQIndex + 1)}
-                  disabled={currentQIndex === LESSON_6_QUESTIONS.length - 1}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1 text-slate-200"
-                >
-                  <span>Câu tiếp</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                {currentQIndex < LESSON_6_QUESTIONS.length - 1 ? (
+                  <button
+                    onClick={() => handleNavigateQuestion(currentQIndex + 1)}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1"
+                  >
+                    <span>Câu tiếp</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => classroomService.broadcastLeaderboard(selectedRoomCode, { showLeaderboard: true })}
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md shadow-amber-500/30 active:scale-95 transition-all"
+                  >
+                    <span>🏆 Bảng Vàng</span>
+                  </button>
+                )}
               </div>
 
               {/* Action Buttons: Lock / Reveal / Re-open */}
@@ -709,9 +928,15 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
                       </div>
                       <div className="mt-1">
                         {hasAnswered ? (
-                          <span className="px-1.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-500 text-slate-950">
-                            {resp.answer}
-                          </span>
+                          questionState === 'REVEALED' ? (
+                            <span className="px-1.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-500 text-slate-950">
+                              {resp.answer}
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-500/50">
+                              ✓ Đã nộp
+                            </span>
+                          )
                         ) : (
                           <span className="text-[10px] text-slate-600 font-mono">
                             ---
@@ -725,90 +950,206 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
             </div>
           </>
         ) : (
-          /* SUBTAB: CHỤP ẢNH BÀI LÀM NHÓM A3/A4 */
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <h4 className="font-bold text-sm text-slate-200 flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-cyan-400" />
-              CHỤP ẢNH BÀI LÀM NHÓM LÊN MÁY CHIẾU
-            </h4>
+          /* SUBTAB: DOCUMENT CAMERA & GROUP WORK (SOI BÀI NHÓM A3/A4) */
+          <div className="space-y-4">
+            {/* Hidden canvas for frame extraction */}
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-            {/* Select Group */}
-            <div className="text-xs">
-              <label className="text-slate-400 font-semibold mb-1 block">Chọn Nhóm nộp bài</label>
+            {/* Header info banner */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Video className="w-3.5 h-3.5" />
+                  CAMERA VẬT THỂ • TRUYỀN LÊN MÁY CHIẾU
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Phòng: {selectedRoomCode}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Chọn nhóm bên dưới và bật Camera để soi trực tiếp tờ bài làm A3/A4 của nhóm đó lên ô máy chiếu trên lớp.
+              </p>
+            </div>
+
+            {/* Group Selector Pills: 4 Nhóm */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+              <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                <span>CHỌN NHÓM ĐANG SOI BÀI:</span>
+                <span className="text-cyan-400 font-mono font-black text-xs">
+                  Đang xem: Nhóm {selectedGroup}
+                </span>
+              </label>
+
               <div className="grid grid-cols-4 gap-2">
                 {[1, 2, 3, 4].map((g) => (
                   <button
                     key={g}
                     type="button"
-                    onClick={() => setSelectedGroup(g)}
-                    className={`py-2 rounded-xl font-bold border transition-all ${
-                      selectedGroup === g 
-                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md' 
-                        : 'bg-slate-950 text-slate-300 border-slate-800'
+                    onClick={() => handleSelectGroup(g)}
+                    className={`py-2.5 rounded-xl font-black text-xs border transition-all flex flex-col items-center justify-center gap-0.5 ${
+                      selectedGroup === g
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 border-cyan-400 shadow-lg shadow-cyan-500/30 scale-[1.03]'
+                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    Nhóm {g}
+                    <span>Nhóm {g}</span>
+                    {selectedGroup === g && isLiveStreaming && (
+                      <span className="text-[9px] font-bold text-slate-950 tracking-tight flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
+                        ĐANG CHIẾU
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Camera Trigger / Photo Upload */}
-            <div className="pt-2">
-              <label className="cursor-pointer w-full py-4 rounded-xl border-2 border-dashed border-cyan-500/50 hover:border-cyan-400 bg-cyan-950/20 flex flex-col items-center justify-center text-center space-y-2 transition-all">
-                <Camera className="w-8 h-8 text-cyan-400" />
-                <span className="text-xs font-bold text-cyan-300">
-                  Bấm để chụp ảnh bài giấy (A3/A4)
-                </span>
-                <span className="text-[10px] text-slate-500">
-                  Tự động tối ưu hóa và truyền trực tiếp lên máy chiếu
-                </span>
+            {/* LIVE CAMERA STREAMING VIEWPORT */}
+            <div className="bg-slate-900 border border-cyan-500/40 rounded-2xl p-3.5 space-y-3 shadow-xl">
+              {isLiveStreaming ? (
+                <div className="space-y-3">
+                  {/* Live Video Box */}
+                  <div className="relative rounded-xl overflow-hidden bg-black border-2 border-cyan-400/80 shadow-inner max-h-[55vh] flex items-center justify-center">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-auto max-h-[55vh] object-contain"
+                    />
+
+                    {/* HUD Overlay: Live Badge & FPS */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-rose-600/90 text-white font-mono font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                        <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                        LIVE NHÓM {selectedGroup}
+                      </span>
+                      {streamFps > 0 && (
+                        <span className="px-2 py-0.5 rounded-md bg-slate-950/80 text-emerald-400 font-mono text-[10px] font-bold border border-slate-700">
+                          {streamFps} FPS
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Camera Flip Button */}
+                    <button
+                      onClick={toggleFacingMode}
+                      className="absolute top-2.5 right-2.5 p-2 rounded-xl bg-slate-950/80 hover:bg-slate-900 text-cyan-300 border border-cyan-500/50 shadow-md active:scale-95 transition-all"
+                      title="Đổi camera trước / sau"
+                    >
+                      <RotateCw className="w-4 h-4" />
+                    </button>
+
+                    {/* Document Targeting Crosshairs */}
+                    <div className="absolute inset-4 pointer-events-none border border-cyan-400/30 rounded-lg flex flex-col justify-between p-2">
+                      <div className="flex justify-between">
+                        <span className="w-3 h-3 border-t-2 border-l-2 border-cyan-400"></span>
+                        <span className="w-3 h-3 border-t-2 border-r-2 border-cyan-400"></span>
+                      </div>
+                      <div className="text-center font-bold text-[10px] text-cyan-300/80 bg-slate-950/60 py-0.5 px-2 rounded mx-auto backdrop-blur-sm">
+                        Đang truyền hình ảnh Nhóm {selectedGroup} lên máy chiếu
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="w-3 h-3 border-b-2 border-l-2 border-cyan-400"></span>
+                        <span className="w-3 h-3 border-b-2 border-r-2 border-cyan-400"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions when Streaming */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    {/* Snapshot & Save Button */}
+                    <button
+                      onClick={handleLiveSnapshotAndSave}
+                      disabled={isUploadingPhoto}
+                      className="py-3 px-3 rounded-xl font-black text-xs bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/30 transition-all active:scale-98"
+                    >
+                      <Camera className="w-4 h-4 text-slate-950" />
+                      <span>{isUploadingPhoto ? 'Đang lưu...' : `Chụp Lưu Bài Nhóm ${selectedGroup}`}</span>
+                    </button>
+
+                    {/* Stop Streaming Button */}
+                    <button
+                      onClick={() => stopLiveCamera(true)}
+                      className="py-3 px-3 rounded-xl font-bold text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/50 flex items-center justify-center gap-1.5 transition-all active:scale-98"
+                    >
+                      <VideoOff className="w-4 h-4 text-rose-400" />
+                      <span>Dừng Camera</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Card when Camera is Stopped: Big Launch CTA */
+                <div className="space-y-3 text-center py-2">
+                  <button
+                    onClick={() => startLiveCamera()}
+                    className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-400 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2.5 transform active:scale-98 transition-all border border-cyan-200/40"
+                  >
+                    <Video className="w-5 h-5 text-slate-950 animate-pulse" />
+                    <span>BẬT CAMERA TRỰC TIẾP LÊN MÁY CHIẾU</span>
+                  </button>
+
+                  <p className="text-[11px] text-slate-400">
+                    Máy chiếu sẽ tự động mở ô Camera cho <strong>Nhóm {selectedGroup}</strong>. Thầy cô lia máy soi bài, máy chiếu sẽ chuyển động theo thời gian thực.
+                  </p>
+                </div>
+              )}
+
+              {/* Error Alert */}
+              {streamError && (
+                <div className="p-3 bg-rose-950/60 border border-rose-500/50 rounded-xl text-xs text-rose-200 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{streamError}</span>
+                </div>
+              )}
+
+              {/* Status alerts */}
+              {photoUploadStatus && (
+                <div className="p-2.5 bg-emerald-950/70 border border-emerald-500/60 rounded-xl text-center text-xs font-bold text-emerald-300 flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{photoUploadStatus}</span>
+                </div>
+              )}
+            </div>
+
+            {/* FALLBACK: TẢI ẢNH TỪ THƯ VIỆN ĐIỆN THOẠI NẾU KHÔNG DÙNG LIVE CAM */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                HOẶC CHỌN ẢNH CÓ SẴN TỪ THƯ VIỆN MÁY:
+              </span>
+
+              <label className="cursor-pointer w-full py-3 rounded-xl border border-dashed border-slate-700 hover:border-cyan-500/60 bg-slate-950/60 flex items-center justify-center gap-2 text-slate-300 hover:text-cyan-300 text-xs font-semibold transition-all">
+                <Upload className="w-4 h-4 text-slate-400" />
+                <span>Chọn ảnh bài làm Nhóm {selectedGroup} từ máy...</span>
                 <input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                   onChange={handlePhotoCapture}
                 />
               </label>
-            </div>
 
-            {/* Photo Preview & Upload Submit */}
-            {capturedPhotoUrl && (
-              <div className="space-y-3 pt-2">
-                <div className="rounded-xl overflow-hidden border border-slate-700 max-h-60 flex items-center justify-center bg-black">
-                  <img 
-                    src={capturedPhotoUrl} 
-                    alt="Xem trước bài làm" 
-                    className="max-h-60 object-contain"
-                  />
+              {capturedPhotoUrl && (
+                <div className="space-y-2 pt-1">
+                  <div className="rounded-xl overflow-hidden border border-slate-700 max-h-48 flex items-center justify-center bg-black">
+                    <img
+                      src={capturedPhotoUrl}
+                      alt="Xem trước bài làm"
+                      className="max-h-48 object-contain"
+                    />
+                  </div>
+                  <button
+                    onClick={handleUploadPhoto}
+                    disabled={isUploadingPhoto}
+                    className="w-full py-2.5 rounded-xl text-xs font-black bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center gap-2 shadow-md transition-all"
+                  >
+                    <Send className="w-4 h-4 text-slate-950" />
+                    <span>Gửi ảnh file Nhóm {selectedGroup} lên máy chiếu</span>
+                  </button>
                 </div>
-
-                <button
-                  onClick={handleUploadPhoto}
-                  disabled={isUploadingPhoto}
-                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition-all"
-                >
-                  {isUploadingPhoto ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                      Đang gửi lên máy chiếu...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 text-slate-950" />
-                      Gửi ảnh Nhóm {selectedGroup} lên máy chiếu
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {photoUploadStatus && (
-              <p className="text-center text-xs font-bold text-emerald-400">
-                {photoUploadStatus}
-              </p>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>

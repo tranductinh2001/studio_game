@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Play,
@@ -11,10 +11,12 @@ import {
   BookOpen,
   Volume2,
   Award,
-  Radio
+  Radio,
+  Sliders
 } from 'lucide-react';
 import lessonKnowledge from '../../data/lessonKnowledge.json';
 import conversationScripts from '../../data/conversationScripts.json';
+import { speechSynth } from '../../services/speechSynthesis';
 
 export default function TeacherPanel({
   isOpen,
@@ -35,9 +37,71 @@ export default function TeacherPanel({
   speechRate,
   onChangeSpeechRate,
   currentScriptStep = 1,
-  onEmotionOverride
+  onEmotionOverride,
+  selectedVoiceURI,
+  onChangeVoice,
+  speechPitch,
+  onChangePitch,
+  onTestVoice
 }) {
   const [activeTab, setActiveTab] = useState('script'); // 'script' | 'faq' | 'settings'
+  const [availableVoices, setAvailableVoices] = useState(() => speechSynth.getVietnameseVoices());
+  const [activeVoiceURI, setActiveVoiceURI] = useState(() => selectedVoiceURI || speechSynth.getVoice()?.voiceURI || '');
+  const [activePitch, setActivePitch] = useState(() => speechPitch || speechSynth.getPitch() || 1.05);
+  const [isTestingVoice, setIsTestingVoice] = useState(false);
+
+  useEffect(() => {
+    const updateVoices = () => {
+      const vi = speechSynth.getVietnameseVoices();
+      setAvailableVoices(vi);
+      const current = speechSynth.getVoice();
+      if (current) {
+        setActiveVoiceURI(current.voiceURI);
+      }
+    };
+
+    updateVoices();
+
+    const unsub = speechSynth.subscribe((event) => {
+      if (event.type === 'voice_changed' && event.voice) {
+        setActiveVoiceURI(event.voice.voiceURI);
+      } else if (event.type === 'pitch_changed') {
+        setActivePitch(event.pitch);
+      } else if (event.type === 'end' || event.type === 'stop') {
+        setIsTestingVoice(false);
+      }
+    });
+
+    return unsub;
+  }, []);
+
+  const handleVoiceChange = (uri) => {
+    setActiveVoiceURI(uri);
+    speechSynth.setVoice(uri);
+    if (typeof onChangeVoice === 'function') {
+      onChangeVoice(uri);
+    }
+  };
+
+  const handlePitchChange = (newPitch) => {
+    setActivePitch(newPitch);
+    speechSynth.setPitch(newPitch);
+    if (typeof onChangePitch === 'function') {
+      onChangePitch(newPitch);
+    }
+  };
+
+  const handleTestVoice = () => {
+    setIsTestingVoice(true);
+    if (typeof onTestVoice === 'function') {
+      onTestVoice();
+    } else {
+      speechSynth.testVoice(
+        'Xin chào quý thầy cô và các bạn học sinh lớp 6! Mình là Mark, rất vui được đồng hành cùng tiết học hôm nay!',
+        () => setIsTestingVoice(false)
+      );
+    }
+  };
 
   const isListening = agentState === 'LISTENING';
   const isPaused = agentState === 'PAUSED';
@@ -279,6 +343,75 @@ export default function TeacherPanel({
             {/* TAB 3: SETTINGS & EMOTIONS */}
             {activeTab === 'settings' && (
               <div className="space-y-3 text-xs">
+                {/* Voice Selector */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="flex items-center gap-1.5 text-cyan-300">
+                      <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+                      Giọng đọc Mark AI:
+                    </span>
+                    <button
+                      onClick={handleTestVoice}
+                      disabled={isTestingVoice}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                        isTestingVoice
+                          ? 'bg-amber-500/30 text-amber-300 border-amber-400 animate-pulse'
+                          : 'bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border-cyan-400/40'
+                      }`}
+                      title="Nhấp để nghe thử giọng đọc đã chọn"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-cyan-300" />
+                      <span>{isTestingVoice ? 'Đang đọc thử...' : 'Nghe thử giọng'}</span>
+                    </button>
+                  </div>
+
+                  <select
+                    value={activeVoiceURI}
+                    onChange={(e) => handleVoiceChange(e.target.value)}
+                    className="w-full p-2 rounded-lg bg-slate-950 border border-cyan-500/40 text-slate-200 text-xs focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer"
+                  >
+                    {availableVoices.length > 0 ? (
+                      availableVoices.map((v) => (
+                        <option key={v.voiceURI || v.name} value={v.voiceURI || v.name}>
+                          {v.displayName || v.name} {v.gender === 'female' ? '👩 (Nữ)' : '👨 (Nam)'}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Giọng mặc định trình duyệt (Tiếng Việt)</option>
+                    )}
+                  </select>
+
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>💡 Ưu tiên: Hoài My Neural (Nữ dễ thương, ngọt ngào)</span>
+                    <span className="text-cyan-400 font-semibold">{availableVoices.length} giọng sẵn sàng</span>
+                  </div>
+                </div>
+
+                {/* Pitch Slider (Cao độ) */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                      Cao độ giọng đọc (Pitch):
+                    </span>
+                    <span className="text-cyan-400 font-bold">{activePitch.toFixed(2)}x</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.80"
+                    max="1.30"
+                    step="0.05"
+                    value={activePitch}
+                    onChange={(e) => handlePitchChange(parseFloat(e.target.value))}
+                    className="w-full accent-cyan-400 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>Trầm ấm (0.80x)</span>
+                    <span>Dễ thương (1.15x)</span>
+                    <span>Đáng yêu (1.30x)</span>
+                  </div>
+                </div>
+
                 {/* Speech Rate */}
                 <div className="p-2.5 sm:p-3 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
                   <div className="flex items-center justify-between font-semibold">
@@ -286,16 +419,16 @@ export default function TeacherPanel({
                       <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
                       Tốc độ đọc Mark:
                     </span>
-                    <span className="text-cyan-400 font-bold">{speechRate.toFixed(2)}x</span>
+                    <span className="text-cyan-400 font-bold">{(speechRate || 0.95).toFixed(2)}x</span>
                   </div>
                   <input
                     type="range"
                     min="0.75"
                     max="1.25"
                     step="0.05"
-                    value={speechRate}
+                    value={speechRate || 0.95}
                     onChange={(e) => onChangeSpeechRate(parseFloat(e.target.value))}
-                    className="w-full accent-cyan-400"
+                    className="w-full accent-cyan-400 cursor-pointer"
                   />
                   <div className="flex justify-between text-[10px] text-slate-500">
                     <span>Chậm (0.75x)</span>
@@ -333,7 +466,7 @@ export default function TeacherPanel({
                 {/* Mode info */}
                 <div className="p-2.5 sm:p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-[11px] text-slate-400 space-y-1">
                   <p>
-                    <strong className="text-slate-300">Hội thoại liên tục:</strong> Tự động lắng nghe sau khi Webby nói xong.
+                    <strong className="text-slate-300">Hội thoại liên tục:</strong> Tự động lắng nghe sau khi Mark nói xong.
                   </p>
                   <p>
                     <strong className="text-slate-300">Bảo mật:</strong> Không lưu trữ âm thanh hay thông tin học sinh.

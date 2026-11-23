@@ -183,13 +183,15 @@ export default function LuckyWheelGame({
       ctx.rotate(midAngle);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowColor = 'rgba(0,0,0,0.7)';
       ctx.shadowBlur = 4;
 
-      const label = item.shortName || item.name;
-      const truncated = label.length > 14 ? label.slice(0, 12) + '...' : label;
-      ctx.fillText(`${item.icon || item.avatar || '⭐'} ${truncated}`, radius - 20, 5);
+      const label = item.shortName || item.name || '';
+      // Dynamically scale font size so full student/team names fit comfortably
+      const fontSize = label.length > 18 ? 12 : label.length > 12 ? 13 : 15;
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      const displayLabel = label.length > 22 ? label.slice(0, 20) + '…' : label;
+      ctx.fillText(`${item.icon || item.avatar || '⭐'} ${displayLabel}`, radius - 18, 5);
       ctx.restore();
     });
 

@@ -4,28 +4,28 @@
 
 // KHO VÍ DỤ THỰC TẾ GẦN GŨI CHO TỪNG CHỦ ĐỀ BÀI 6 (Dành cho học sinh lớp 6)
 export const TOPIC_EXAMPLES = {
-  www: "Ví dụ nhé! Khi bạn sử dụng Google để tìm kiếm một bài học hoặc xem video học tập trên YouTube, bạn đang sử dụng Internet và World Wide Web đấy!",
-  internet: "Ví dụ nhé! Khi bạn sử dụng điện thoại gọi video cho người thân ở xa, hoặc xem bài giảng trực tuyến trên YouTube, dữ liệu đó truyền qua mạng Internet kết nối toàn cầu!",
-  hyperlink: "Ví dụ nhé! Khi bạn đọc một bài viết về 'Thành phố Pleiku', bạn thấy chữ 'Biển Hồ' có màu xanh và gạch chân. Khi bạn nhấp chuột vào đó, nó sẽ mở ra một trang mới giới thiệu về Biển Hồ – đó chính là một siêu liên kết!",
-  hypertext: "Ví dụ nhé! Trang báo điện tử Dân Trí có cả chữ viết, ảnh phóng sự, clip video bàn thắng bóng đá và các đường dẫn sang bài viết khác – đó chính là một trang siêu văn bản!",
-  website: "Ví dụ nhé! Website của Trường THCS Đắk Trôi (thcsdaktroi.edu.vn) giống như một cuốn sách lớn, trong đó có trang giới thiệu trường, trang thời khóa biểu và trang tin tức!",
-  webpage: "Ví dụ nhé! Trong website trường mình, trang 'Thời khóa biểu lớp 6' chính là một trang web riêng lẻ đấy!",
-  homepage: "Ví dụ nhé! Khi bạn gõ dantri.com.vn, trang đầu tiên mở ra với các tin tức nổi bật và thanh menu chính là Trang chủ!",
-  browser: "Ví dụ nhé! Biểu tượng hình tròn 4 màu Google Chrome hoặc chữ 'e' màu xanh Microsoft Edge trên máy tính chính là các trình duyệt web!",
-  history: "Ví dụ nhé! Vào năm 1989, giáo sư Tim Berners-Lee muốn các nhà khoa học khắp thế giới dễ dàng chia sẻ tài liệu nghiên cứu với nhau, nên ông đã sáng tạo ra World Wide Web!",
-  search: "Ví dụ nhé! Khi bạn gõ từ khóa 'thời tiết Gia Lai hôm nay' vào ô tìm kiếm của Google và nhấn Enter, Google chính là một máy tìm kiếm thông tin!"
+  www: "Ví dụ nhé! Khi bạn dùng điện thoại mở Google tìm 'cách giải bài toán tỉ số phần trăm' hay vào YouTube xem video khám phá vũ trụ, bạn đang bước vào thế giới Mạng thông tin toàn cầu (WWW) đấy!",
+  internet: "Ví dụ nhé! Internet giống như hệ thống đường cao tốc và mạng lưới bưu chính toàn cầu: dữ liệu truyền qua cáp quang dưới đáy biển và sóng wifi từ máy tính trường THCS Đắk Trôi đến tận các máy chủ ở bên kia bán cầu!",
+  hyperlink: "Ví dụ nhé! Trong bài đọc về 'Tây Nguyên', bạn thấy cụm từ 'Không gian văn hóa Cồng chiêng' màu xanh và có gạch chân. Khi bạn chạm ngón tay hoặc rê chuột vào, con trỏ biến thành hình bàn tay và mở ngay ra bài viết mới – đó chính là Siêu liên kết (Hyperlink), giống như cánh cửa thần kỳ của Doraemon vậy!",
+  hypertext: "Ví dụ nhé! Trang báo điện tử Thiếu niên Tiền phong có bài viết về Hội khỏe Phù Đổng: trong bài vừa có chữ viết, ảnh chụp các bạn đạt giải, clip video bàn thắng và cả các đường dẫn sang bài khác – đó chính là Siêu văn bản!",
+  website: "Ví dụ nhé! Website của trường THCS Đắk Trôi (thcsdaktroi.edu.vn) giống như một cuốn bách khoa thư về trường: trong đó có trang giới thiệu thầy cô, trang thời khóa biểu và trang tin hoạt động Đoàn Đội!",
+  webpage: "Ví dụ nhé! Trong website trường mình, trang 'Thời khóa biểu lớp 6' chính là một trang web (webpage) cụ thể nằm trong website đó!",
+  homepage: "Ví dụ nhé! Khi bạn gõ địa chỉ google.com hay thcsdaktroi.edu.vn, trang đầu tiên mở ra trước mắt có logo và thanh điều hướng chính là Trang chủ (Homepage) – giống như cánh cổng trường hay trang bìa của một cuốn sách!",
+  browser: "Ví dụ nhé! Biểu tượng hình tròn 4 màu Google Chrome, chữ 'e' xoáy màu xanh Microsoft Edge, hay quả cầu xanh Cốc Cốc trên màn hình chính là các Trình duyệt web – chiếc kính thần kỳ giúp mắt chúng ta đọc và tương tác với các trang web!",
+  history: "Ví dụ nhé! Vào năm 1989, nhà khoa học Tim Berners-Lee muốn giúp các đồng nghiệp khắp thế giới dễ dàng chia sẻ tài liệu nghiên cứu với nhau, nên ông đã sáng tạo ra World Wide Web – phát minh đã làm thay đổi cả nhân loại!",
+  search: "Ví dụ nhé! Khi bạn gõ từ khóa 'dự báo thời tiết Đắk Trôi hôm nay' vào ô tìm kiếm của Google và nhấn Enter, Google chính là Máy tìm kiếm giúp lục tìm kết quả trong hàng triệu trang web chỉ sau nửa giây!"
 };
 
 // KHO GIẢI THÍCH TÁC DỤNG CHO TỪNG CHỦ ĐỀ KHI HỌC SINH HỎI "THẾ NÓ CÓ TÁC DỤNG GÌ?"
 export const TOPIC_BENEFITS = {
-  www: "Như mình vừa giải thích, Mạng thông tin toàn cầu (WWW) giúp chúng ta tìm kiếm thông tin, xem các bài học trực tuyến, đọc báo, xem video và chia sẻ tài liệu với mọi người trên toàn thế giới một cách nhanh chóng!",
-  internet: "Internet là hạ tầng mạng kết nối các máy tính toàn cầu, giúp truyền tải dữ liệu, gửi thư điện tử, gọi video và kết nối mọi người khắp năm châu!",
-  hyperlink: "Siêu liên kết có tác dụng như chiếc cầu nối thần kỳ, giúp bạn chỉ cần nhấp một cú chuột là chuyển ngay sang trang web mới mà không phải gõ lại địa chỉ dài dòng!",
-  hypertext: "Siêu văn bản giúp thông tin trở nên vô cùng sống động và trực quan, kết hợp hài hòa chữ viết, hình ảnh, âm thanh và video trong cùng một trang tài liệu!",
-  website: "Website dùng để tập hợp toàn bộ thông tin của một trường học, tổ chức hay công ty dưới một địa chỉ duy nhất để mọi người dễ dàng tra cứu mọi lúc mọi nơi!",
+  www: "Mạng thông tin toàn cầu (WWW) mang cả kho tàng tri thức khổng lồ của nhân loại về ngay bàn học của bạn: từ bài tập Toán, khoa học, lịch sử đến các bộ phim tài liệu sinh động, bạn có thể học tập và khám phá mọi lúc mọi nơi!",
+  internet: "Internet giúp kết nối thế giới phẳng không biên giới: giúp các bạn ở Đắk Trôi có thể học tập trực tuyến, gọi video cho người thân ở xa và kết nối bạn bè khắp năm châu trong tích tắc!",
+  hyperlink: "Siêu liên kết giúp việc đọc tài liệu vô cùng liền mạch: bạn không cần ghi nhớ hay gõ lại những địa chỉ trang web dài ngoằng, chỉ cần bấm nhẹ một cái là đến ngay nội dung cần tìm!",
+  hypertext: "Siêu văn bản giúp bài học sinh động gấp nhiều lần sách in truyền thống, kết hợp hài hòa chữ viết, hình ảnh, âm thanh sống động và video chân thực!",
+  website: "Website giúp các trường học, bảo tàng, tổ chức sắp xếp hàng triệu thông tin ngăn nắp dưới một địa chỉ duy nhất, giúp mọi người tra cứu thuận tiện nhất!",
   webpage: "Trang web giúp trình bày một nội dung cụ thể trong website, ví dụ như một bài báo, một thông báo điểm thi hay một bài học trực tuyến!",
-  homepage: "Trang chủ có tác dụng như mục lục của cuốn sách, giúp người xem có cái nhìn tổng quan và dễ dàng điều hướng đến các nội dung quan trọng khác trong website!",
-  browser: "Trình duyệt có tác dụng dịch mã nguồn trang web thành chữ viết, hình ảnh, âm thanh sống động để con người có thể nhìn và tương tác trực tiếp!",
+  homepage: "Trang chủ giúp người xem nắm bắt ngay bức tranh tổng thể của toàn bộ website và dễ dàng tìm đường đến các nội dung quan trọng khác!",
+  browser: "Trình duyệt web như một người thông dịch viên tài ba: dịch những dòng mã lập trình phức tạp thành hình ảnh, video và chữ viết rực rỡ để chúng ta dễ dàng thao tác!",
   history: "Phát minh của Tim Berners-Lee đã mở ra kỷ nguyên thông tin cho nhân loại, đưa kho tàng tri thức thế giới đến tận bàn học của mỗi chúng ta!",
   search: "Máy tìm kiếm giúp chúng ta tra cứu thông tin nhanh chóng trong hàng triệu trang web chỉ trong chưa đầy một giây!"
 };
@@ -46,12 +46,12 @@ export const TOPIC_SUMMARIES = {
 
 // KHO SƯ PHẠM GIẢNG GIẢI ĐƠN GIẢN HÓA (KHI HỌC SINH: "EM CHƯA HIỂU LẮM")
 export const TOPIC_SIMPLIFIED = {
-  www: "Không sao đâu! Mình thử giải thích bằng một ví dụ gần gũi nhé: Bạn hãy tưởng tượng Internet như một hệ thống đường quốc lộ, còn World Wide Web chính là các siêu thị, thư viện và rạp chiếu phim được xây dựng dọc hai bên đường để chúng ta vào học và giải trí!",
-  internet: "Không sao đâu! Bạn cứ tưởng tượng Internet giống như mạng lưới bưu điện và đường giao thông kết nối các thành phố trên toàn thế giới lại với nhau vậy!",
-  hyperlink: "Đơn giản lắm nhé! Bạn có bao giờ chơi trò mở cánh cửa thần kỳ chưa? Siêu liên kết chính là một cánh cửa thần kỳ trên màn hình máy tính: bạn nhấp chuột một cái là bước ngay sang một căn phòng mới!",
-  website: "Bạn hãy hình dung Website giống như một cuốn sách giáo khoa Tin học 6, còn mỗi Trang web chính là từng trang sách cụ thể từ trang 1 đến trang 50!",
-  browser: "Bạn hãy tưởng tượng Trình duyệt web giống như một chiếc kính thần kỳ: nhờ có chiếc kính này (Chrome hay Cốc Cốc) mà mắt chúng ta mới nhìn thấy và đọc được nội dung trên mạng!",
-  homepage: "Trang chủ giống như chiếc cổng trường hoặc trang bìa của một cuốn truyện: vừa bước tới là bạn nhìn thấy nó đầu tiên!"
+  www: "Đơn giản lắm nhé! Bạn hãy tưởng tượng Internet như một hệ thống đường cao tốc, còn World Wide Web chính là các khu siêu thị, bảo tàng và thư viện sách khổng lồ được xây dọc hai bên đường để chúng mình vào học tập và vui chơi!",
+  internet: "Bạn cứ tưởng tượng Internet giống như mạng lưới đường bộ và hệ thống dây điện thoại bưu chính kết nối mọi ngôi nhà và trường học trên thế giới lại với nhau vậy!",
+  hyperlink: "Bạn có nhớ 'Cánh cửa thần kỳ' của chú mèo máy Doraemon không? Siêu liên kết trên màn hình máy tính y như vậy: chạm vào một cái là bạn bước ngay sang một thế giới thông tin mới!",
+  website: "Website giống như một cuốn sách giáo khoa Tin học 6 hoàn chỉnh, còn mỗi Trang web chính là từng trang sách cụ thể từ trang 1 đến trang 50 bên trong cuốn sách đó!",
+  browser: "Trình duyệt web giống như chiếc kính thần kỳ: nhờ có chiếc kính này (như Chrome, Cốc Cốc, Edge) thì mắt chúng ta mới nhìn rõ được hình ảnh, chữ viết và video trên mạng!",
+  homepage: "Trang chủ giống như chiếc cổng trường hoặc trang bìa của cuốn truyện: vừa bước đến nơi là bạn nhìn thấy nó đầu tiên!"
 };
 
 // SPECIFIC CURRICULUM KNOWLEDGE TOPICS

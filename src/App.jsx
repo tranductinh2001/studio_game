@@ -7,7 +7,10 @@ import TeacherPanel from './components/TeacherPanel/TeacherPanel';
 import IntroBanner from './components/IntroBanner/IntroBanner';
 
 // New Classroom Modules
+import UniversalSlidePresentation from './components/Presentation/UniversalSlidePresentation';
 import LessonSlidePresentation from './components/Presentation/LessonSlidePresentation';
+import CurriculumLibrary from './components/CurriculumLibrary/CurriculumLibrary';
+import CurriculumCreator from './components/CurriculumCreator/CurriculumCreator';
 import GroupWorkDisplay from './components/GroupWork/GroupWorkDisplay';
 import AssessmentDisplay from './components/Assessment/AssessmentDisplay';
 import BitOneQuestionGenerator from './components/BitOneQuiz/BitOneQuestionGenerator';
@@ -20,6 +23,7 @@ import { speechSynth } from './services/speechSynthesis';
 import { speechRec } from './services/speechRecognition';
 import { aiService } from './services/aiService';
 import { classroomService } from './services/classroomService';
+import { curriculumService } from './services/curriculumService';
 import { conversationController } from './services/voiceAssistant/ConversationController';
 import { conversationMemory } from './services/voiceAssistant/ConversationMemory';
 import { BOT_CONFIG } from './services/voiceAssistant/VoiceAssistantConfig';
@@ -28,13 +32,22 @@ import conversationScripts from './data/conversationScripts.json';
 import QRCode from 'qrcode';
 import { 
   Maximize2, Minimize2, Globe, Bot, Image as ImageIcon, 
-  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink, BookOpen, Gamepad2 
+  BarChart3, Sparkles, Printer, Smartphone, QrCode, X, Copy, Check, Wifi, ExternalLink, BookOpen, Gamepad2, Plus, FolderKanban, Layers 
 } from 'lucide-react';
 
 export default function App() {
-  // Navigation Tab: 'lesson-slide' | 'game-center' | 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
-  const [currentTab, setCurrentTab] = useState('lesson-slide');
+  // Navigation Tab: 'curriculum-library' | 'curriculum-creator' | 'lesson-slide' | 'game-center' | 'webby-agent' | 'group-work' | 'qr-assessment' | 'bitone-quiz' | 'card-generator' | 'mobile-controller'
+  const [currentTab, setCurrentTab] = useState('curriculum-library');
+  const [activeCurriculumLesson, setActiveCurriculumLesson] = useState(() => curriculumService.getActiveLesson());
   const [assessmentSelectedQuestion, setAssessmentSelectedQuestion] = useState(null);
+
+  // Subscribe to Curriculum Service updates
+  useEffect(() => {
+    const unsub = curriculumService.subscribe(() => {
+      setActiveCurriculumLesson(curriculumService.getActiveLesson());
+    });
+    return () => unsub();
+  }, []);
 
   // Phone Connect Modal state
   const [showPhoneConnectModal, setShowPhoneConnectModal] = useState(false);
@@ -58,6 +71,8 @@ export default function App() {
   const [emotion, setEmotion] = useState('IDLE');
   const [mouthValue, setMouthValue] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
+  const [speechPitch, setSpeechPitch] = useState(() => speechSynth.getPitch() || 1.15);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState(() => speechSynth.getVoice()?.voiceURI || 'vi-VN-HoaiMyNeural');
 
   // Subtitle & Conversation Memory states
   const [currentSpeaker, setCurrentSpeaker] = useState('MARK');
@@ -452,28 +467,63 @@ export default function App() {
 
       {/* 2. TOP HEADER & MAIN NAVIGATION TABS */}
       <header className="relative z-30 flex flex-wrap items-center justify-between px-3 sm:px-6 py-2 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-transparent shrink-0 gap-2 border-b border-slate-800/60">
-        {/* Branding & Lesson Title */}
+        {/* Branding & Dynamic Active Lesson Pill */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-            <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950 animate-spin-slow" />
-          </div>
+          <button 
+            onClick={() => setCurrentTab('curriculum-library')}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 cursor-pointer hover:scale-105 transition-transform"
+            title="Mở Thư Viện Bài Giảng & Quản Lý Slide Đa Khối Lớp"
+          >
+            <FolderKanban className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
+          </button>
           <div>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="font-extrabold text-base sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-200 to-white font-['Orbitron',sans-serif]">
                 WEBBY CLASSROOM
               </h1>
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 uppercase">
-                Tin học 6
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 uppercase">
+                {activeCurriculumLesson ? `${activeCurriculumLesson.subject} ${activeCurriculumLesson.grade}` : 'Tin học 6'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 hidden lg:block">
-              Bài 6: Mạng thông tin toàn cầu • THCS Đắk Trôi
+            <p className="text-[10px] text-slate-400 hidden lg:block truncate max-w-xs">
+              {activeCurriculumLesson 
+                ? (activeCurriculumLesson.shortTitle || `Bài ${activeCurriculumLesson.lessonNumber}: ${activeCurriculumLesson.title}`) 
+                : 'Bài 6: Mạng thông tin toàn cầu'} • THCS Đắk Trôi
             </p>
           </div>
         </div>
 
-        {/* 6 Main Mode Navigation Switcher Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800/80 shadow-inner">
+        {/* Main Mode Navigation Switcher Tabs */}
+        <nav className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800/80 shadow-inner overflow-x-auto max-w-full">
+          {/* TAB: THƯ VIỆN BÀI GIẢNG */}
+          <button
+            onClick={() => setCurrentTab('curriculum-library')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+              currentTab === 'curriculum-library'
+                ? 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-500/40 ring-1 ring-indigo-300'
+                : 'text-indigo-300 hover:text-white hover:bg-slate-800/80'
+            }`}
+            title="Thư viện bài giảng & Quản lý slide đa khối lớp"
+          >
+            <FolderKanban className="w-3.5 h-3.5" />
+            <span>Thư Viện Bài</span>
+          </button>
+
+          {/* TAB: TẠO BÀI GIẢNG MỚI */}
+          <button
+            onClick={() => setCurrentTab('curriculum-creator')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+              currentTab === 'curriculum-creator'
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-slate-950 shadow-md shadow-emerald-500/40 ring-1 ring-emerald-300'
+                : 'text-emerald-300 hover:text-white hover:bg-slate-800/80'
+            }`}
+            title="Tạo bài giảng mới & Phân bổ tiết AI"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Tạo Slide Mới</span>
+          </button>
+
+          {/* TAB: SLIDE TRÌNH CHIẾU */}
           <button
             onClick={() => setCurrentTab('lesson-slide')}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
@@ -481,9 +531,14 @@ export default function App() {
                 ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 text-slate-950 shadow-md shadow-cyan-500/40 ring-1 ring-cyan-300'
                 : 'text-cyan-300 hover:text-white hover:bg-slate-800/80'
             }`}
+            title={activeCurriculumLesson ? `Trình chiếu: ${activeCurriculumLesson.title}` : 'Trình chiếu slide'}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Slide Bài 6</span>
+            <span>
+              {activeCurriculumLesson?.isCoreLesson 
+                ? 'Slide Bài 6' 
+                : `Slide Bài ${activeCurriculumLesson?.lessonNumber || ''}`}
+            </span>
           </button>
 
           <button
@@ -602,9 +657,41 @@ export default function App() {
 
       {/* 3. DYNAMIC BODY ROUTING ACCORDING TO CURRENT TAB */}
       <section className="relative z-20 flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* TAB 0: INTERACTIVE LESSON PRESENTATION (BÀI 6 - MẠNG THÔNG TIN TOÀN CẦU) */}
+        {/* TAB: THƯ VIỆN BÀI GIẢNG ĐA KHỐI LỚP (CURRICULUM LIBRARY) */}
+        {currentTab === 'curriculum-library' && (
+          <CurriculumLibrary
+            onSelectLessonToPresent={(lesson) => {
+              setActiveCurriculumLesson(lesson);
+              curriculumService.setActiveLesson(lesson.id);
+              setCurrentTab('lesson-slide');
+            }}
+            onOpenCreator={() => setCurrentTab('curriculum-creator')}
+          />
+        )}
+
+        {/* TAB: TẠO BÀI GIẢNG MỚI & PHÂN BỔ TIẾT AI (CURRICULUM CREATOR) */}
+        {currentTab === 'curriculum-creator' && (
+          <CurriculumCreator
+            onCancel={() => setCurrentTab('curriculum-library')}
+            onLessonCreated={(newLesson) => {
+              setActiveCurriculumLesson(newLesson);
+              setCurrentTab('curriculum-library');
+            }}
+            onPresentImmediately={(newLesson) => {
+              setActiveCurriculumLesson(newLesson);
+              curriculumService.setActiveLesson(newLesson.id);
+              setCurrentTab('lesson-slide');
+            }}
+          />
+        )}
+
+        {/* TAB: UNIVERSAL SLIDE PRESENTATION (HỖ TRỢ BÀI 6 CỐT LÕI & CÁC BÀI TẠO MỚI) */}
         {currentTab === 'lesson-slide' && (
-          <LessonSlidePresentation onSwitchTab={(tab) => setCurrentTab(tab)} />
+          <UniversalSlidePresentation 
+            lesson={activeCurriculumLesson}
+            onSwitchTab={(tab) => setCurrentTab(tab)} 
+            onBackToLibrary={() => setCurrentTab('curriculum-library')}
+          />
         )}
 
         {/* TAB: INTERACTIVE GAME CENTER (8 EDUCATIONAL GAMESHOWS) */}
@@ -671,6 +758,21 @@ export default function App() {
               onChangeSpeechRate={(rate) => {
                 setSpeechRate(rate);
                 speechSynth.setRate(rate);
+              }}
+              speechPitch={speechPitch}
+              onChangePitch={(pitch) => {
+                setSpeechPitch(pitch);
+                speechSynth.setPitch(pitch);
+              }}
+              selectedVoiceURI={selectedVoiceURI}
+              onChangeVoice={(uri) => {
+                setSelectedVoiceURI(uri);
+                speechSynth.setVoice(uri);
+              }}
+              onTestVoice={() => {
+                speechSynth.testVoice(
+                  'Xin chào các bạn học sinh lớp 6 yêu quý! Mình là Mark, rất vui được đồng hành cùng các bạn khám phá Mạng thông tin toàn cầu!'
+                );
               }}
               currentScriptStep={currentScriptStep}
               onEmotionOverride={(em) => setEmotion(em)}

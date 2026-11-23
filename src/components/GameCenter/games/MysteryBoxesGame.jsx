@@ -232,11 +232,11 @@ export default function MysteryBoxesGame({
 
               {/* If challenge question attached */}
               {selectedBox.reward.type === 'question' && selectedBox.question && (
-                <div className="w-full mt-4 bg-slate-950/70 rounded-xl border border-slate-800 p-4 text-left">
-                  <h4 className="text-xs font-bold text-white mb-2">
+                <div className="w-full mt-4 bg-slate-950/85 rounded-2xl border border-slate-800 p-4 sm:p-5 text-left shadow-inner">
+                  <h4 className="text-sm sm:text-base font-black text-white mb-3 leading-snug">
                     {selectedBox.question.questionText || selectedBox.question.question}
                   </h4>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {(Array.isArray(selectedBox.question.options)
                       ? selectedBox.question.options.map((text, i) => ({ key: ['A', 'B', 'C', 'D'][i] || `${i + 1}`, text: String(text) }))
                       : Object.entries(selectedBox.question.options || {}).map(([key, text]) => ({ key, text: String(text) }))
@@ -245,18 +245,18 @@ export default function MysteryBoxesGame({
                       return (
                         <div 
                           key={opt.key} 
-                          className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
+                          className={`px-3 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-2.5 transition-all ${
                             isCorrect 
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold' 
-                              : 'bg-slate-900/60 text-slate-300'
+                              ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50 font-bold' 
+                              : 'bg-slate-900/80 text-slate-200 border border-slate-800/80'
                           }`}
                         >
-                          <span className={`w-5 h-5 rounded text-[10px] flex items-center justify-center font-bold ${
-                            isCorrect ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-300'
+                          <span className={`w-6 h-6 rounded-lg text-xs flex items-center justify-center font-black shrink-0 ${
+                            isCorrect ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'
                           }`}>
                             {opt.key}
                           </span>
-                          <span>{opt.text}</span>
+                          <span className="leading-snug">{opt.text}</span>
                         </div>
                       );
                     })}

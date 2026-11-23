@@ -63,3 +63,4 @@ Hệ thống đã được nâng cấp theo kiến trúc **3-Tier Pedagogical St
 - **Thời gian phản hồi câu thoại:** `< 250ms` (Instant response)
 - **Tương thích giao diện trình chiếu:** Đạt chuẩn 16:9 Full HD & Projector classroom.
 - **Ảnh chụp minh chứng kiểm thử:** [live_test_mark_smart_pedagogy_10_scenarios.png](file:///C:/Users/X1/.gemini/antigravity/brain/aed90b94-7322-4ab0-a656-78c6fe474d75/live_test_mark_smart_pedagogy_10_scenarios.png)
+

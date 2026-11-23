@@ -161,7 +161,7 @@ export default function DuckRaceGame({
     rt.duration = raceDuration;
 
     // Measure lane travel width
-    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.80) : 800;
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.78) : 800;
 
     // Start 60-120 FPS GPU RAF Loop (Direct DOM update: ZERO React re-renders during race)
     const loop = (timestamp) => {
@@ -213,7 +213,7 @@ export default function DuckRaceGame({
     setGameState(GAME_STATES.PLAYING);
     gameAudio.playTick();
 
-    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.80) : 800;
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.78) : 800;
 
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
@@ -410,9 +410,9 @@ export default function DuckRaceGame({
           style={{ backgroundImage: `url('/assets/games/duck-race/river_bg.svg')` }}
         />
 
-        {/* Start Line at Left 4% */}
-        <div className="absolute top-[18%] bottom-[18%] left-[3%] w-1 border-r-4 border-dashed border-amber-300/60 z-10 pointer-events-none">
-          <span className="absolute -top-6 -left-3 px-2 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 shadow">
+        {/* Start Line at Left 2.5% */}
+        <div className="absolute top-[16%] bottom-[18%] left-[2.5%] w-1 border-r-4 border-dashed border-amber-300/60 z-10 pointer-events-none">
+          <span className="absolute -top-7 -left-7 px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-md uppercase tracking-wider">
             XUẤT PHÁT
           </span>
         </div>
@@ -448,8 +448,8 @@ export default function DuckRaceGame({
                   ref={(el) => (duckRefs.current[index] = el)}
                   className="absolute flex items-center will-change-transform"
                   style={{
-                    left: '3%',
-                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.80 : 800)}px, 0px, 0)`
+                    left: '4.8%',
+                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.78 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team / Student Badge above duck */}

@@ -85,6 +85,12 @@ export default function VoiceControlBar({
 
         {/* Main Agent Control & Status Row */}
         <div className="flex items-center justify-center gap-2.5 sm:gap-4 flex-wrap">
+          {/* Language Indicator Badge */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-emerald-500/50 text-emerald-300 text-xs font-bold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>🇻🇳 Ngôn ngữ: Tiếng Việt (vi-VN)</span>
+          </div>
+
           {/* 1. If session is not active -> Big START CONVERSATION button */}
           {!isSessionActive ? (
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -193,7 +199,7 @@ export default function VoiceControlBar({
                 <button
                   onClick={onResumeListening}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 text-xs sm:text-sm font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                  title="Tiếp tục để WEBBY lắng nghe học sinh"
+                  title="Tiếp tục để Mark lắng nghe học sinh"
                 >
                   <Play className="w-4 h-4 fill-emerald-400 text-emerald-400" />
                   <span>Tiếp tục nghe</span>
@@ -217,7 +223,7 @@ export default function VoiceControlBar({
             onClick={onReplaySpeech}
             disabled={disabled || isListening}
             className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition-all hover:scale-105 active:scale-95 disabled:opacity-40 cursor-pointer"
-            title="Nghe lại câu nói của WEBBY"
+            title="Nghe lại câu nói của Trợ lý Mark"
           >
             <RotateCcw className="w-4 h-4 text-cyan-400" />
             <span>Nghe lại</span>
@@ -266,7 +272,7 @@ export default function VoiceControlBar({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Nhập câu hỏi cho WEBBY (VD: WWW có nghĩa là gì?)..."
+              placeholder="Nhập câu hỏi cho Trợ lý Mark (VD: WWW có nghĩa là gì?)..."
               className="flex-1 bg-transparent px-3 py-1.5 sm:py-2 text-white placeholder-slate-400 focus:outline-none text-xs sm:text-sm md:text-base"
               autoFocus
             />

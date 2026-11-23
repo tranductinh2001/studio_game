@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, XCircle, Lock, Unlock, Eye, Sparkles, Clock, 
   BarChart3, Users, ChevronLeft, ChevronRight, RotateCcw, AlertCircle,
-  Smartphone, QrCode, PlayCircle, Settings, PlusCircle, Check, X, Shield, RefreshCw, Layers
+  Smartphone, QrCode, PlayCircle, Settings, PlusCircle, Check, X, Shield, RefreshCw, Layers,
+  Trophy, Award, Flame, Medal, Download, HelpCircle, EyeOff, ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { classroomService } from '../../services/classroomService';
@@ -23,6 +24,11 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [bitoneAiAnalysis, setBitoneAiAnalysis] = useState(null);
   const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
+
+  // Leaderboard & Podium Top 1 2 3 Celebration states
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [questionHistory, setQuestionHistory] = useState({});
+  const [showStudentAnswers, setShowStudentAnswers] = useState(false); // Anti-cheating privacy mode (Default false: hide A,B,C,D letters)
 
   // Room Config & Creator Modal states
   const [showRoomConfigModal, setShowRoomConfigModal] = useState(false);
@@ -89,6 +95,9 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
       } else if (event.type === 'ANSWER_REVEALED') {
         setQuestionState('REVEALED');
         triggerConfetti();
+      } else if (event.type === 'SHOW_LEADERBOARD') {
+        setShowLeaderboardModal(true);
+        triggerGloriousConfetti();
       } else if (event.type === 'ROOM_CLASS_CHANGED' || event.type === 'ROOM_STATE' || event.type === 'ROOM_CREATED') {
         const payload = event.payload;
         if (payload.activeQuestion) {
@@ -180,12 +189,81 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
     return () => clearInterval(interval);
   }, [isTimerRunning, timerSeconds]);
 
+  // Track student responses across all questions for overall leaderboard
+  useEffect(() => {
+    if (activeQuestion && responses && Object.keys(responses).length > 0) {
+      setQuestionHistory(prev => ({
+        ...prev,
+        [activeQuestion.id]: {
+          question: activeQuestion,
+          responses: { ...responses }
+        }
+      }));
+    }
+  }, [responses, activeQuestion]);
+
   const triggerConfetti = () => {
     confetti({
       particleCount: 80,
       spread: 70,
       origin: { y: 0.6 }
     });
+  };
+
+  // Super High-Impact Glorious Confetti & Flower Burst (Tung hoa & Pháo hoa rực rỡ)
+  const triggerGloriousConfetti = () => {
+    // 1. Play triumphant fanfare audio synthesized with Web Audio API
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.35, now + idx * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.65);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.65);
+        });
+      }
+    } catch (e) {}
+
+    // 2. Multi-stage celebratory confetti cannons (Tung hoa rực rỡ hai bên và từ trên xuống)
+    confetti({
+      particleCount: 90,
+      spread: 60,
+      origin: { x: 0.15, y: 0.7 },
+      colors: ['#facc15', '#fbbf24', '#34d399', '#22d3ee', '#f43f5e']
+    });
+    confetti({
+      particleCount: 90,
+      spread: 60,
+      origin: { x: 0.85, y: 0.7 },
+      colors: ['#facc15', '#fbbf24', '#34d399', '#22d3ee', '#f43f5e']
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 140,
+        spread: 100,
+        origin: { x: 0.5, y: 0.35 },
+        colors: ['#facc15', '#ffd700', '#ff69b4', '#00ffff', '#7fff00', '#e11d48']
+      });
+    }, 350);
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        spread: 120,
+        origin: { x: 0.5, y: 0.55 },
+        colors: ['#facc15', '#fbbf24', '#a855f7', '#38bdf8']
+      });
+    }, 850);
   };
 
   const handleSetQuestion = async (q) => {
@@ -456,6 +534,19 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
               Bắt đầu thu bài lại
             </button>
           )}
+
+          {/* Bảng Vàng Vinh Danh & Tung Hoa Top 1 2 3 */}
+          <button
+            onClick={() => {
+              setShowLeaderboardModal(true);
+              triggerGloriousConfetti();
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 transition-all shadow-lg shadow-amber-500/30 transform active:scale-95"
+            title="Mở Bảng Vàng Vinh Danh & Tung Hoa Chúc Mừng Top 1, 2, 3"
+          >
+            <Trophy className="w-4 h-4 text-slate-950 animate-bounce" />
+            <span>BẢNG VÀNG VINH DANH</span>
+          </button>
         </div>
       </div>
 
@@ -479,73 +570,121 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
         </div>
       )}
 
-      {/* Main Split: Question & Options (7 cols) vs 32-Student Grid & Analytics (5 cols) */}
+      {/* Main Split: Question & Options (8 cols) vs 32-Student Grid & Analytics (4 cols) */}
       <div className="flex-1 min-h-0 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
-        {/* Left Column: Big Projector Question Display & 4 Options (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col justify-between bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 overflow-y-auto space-y-4">
+        {/* Left Column: Big Projector Question Display & 4 Options (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col justify-between bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border border-indigo-900/40 rounded-3xl p-5 sm:p-7 overflow-y-auto space-y-5 shadow-2xl">
           {/* Question Header & Content */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-black text-xs border border-cyan-400/40">
-                CÂU HỎI
-              </span>
-              <span className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-xs border border-indigo-400/30">
-                {activeQuestion.bloomLevel || 'Nhận biết'}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 font-black text-xs sm:text-sm border border-cyan-400/50 shadow-sm flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  CÂU HỎI {currentQIndex + 1} / {LESSON_6_QUESTIONS.length}
+                </span>
+                <span className="px-3 py-1.5 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-400/40">
+                  {activeQuestion.bloomLevel || 'Nhận biết'}
+                </span>
+              </div>
+              <span className="text-xs sm:text-sm text-slate-400 font-medium">
+                Bài 6: Mạng thông tin toàn cầu (WWW)
               </span>
             </div>
 
-            <h3 className="text-lg sm:text-2xl font-bold text-white leading-relaxed">
-              {activeQuestion.questionText}
-            </h3>
+            <div className="bg-slate-950/75 border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-inner">
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-snug tracking-tight drop-shadow">
+                {activeQuestion.questionText}
+              </h3>
+            </div>
           </div>
 
-          {/* 4 Big High-Contrast Option Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* 4 Big High-Contrast Kahoot/Quizizz Style Option Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {['A', 'B', 'C', 'D'].map((optKey) => {
               const text = activeQuestion.options?.[optKey];
               const isCorrect = activeQuestion.correctAnswer === optKey;
               const count = counts[optKey] || 0;
               const percent = answeredCount > 0 ? Math.round((count / answeredCount) * 100) : 0;
 
-              let cardStyle = "bg-slate-950/80 border-slate-800 text-slate-200";
-              let badgeStyle = "bg-slate-800 text-slate-300";
+              // 4 Distinct High-Contrast Themes for Cards
+              const optionThemes = {
+                A: {
+                  baseBorder: 'border-rose-500/50 hover:border-rose-400',
+                  baseBg: 'bg-rose-950/25 hover:bg-rose-950/40',
+                  badgeBg: 'bg-gradient-to-tr from-rose-600 to-red-500 text-white shadow-rose-600/40 border-rose-300/40',
+                  barColor: 'bg-rose-500'
+                },
+                B: {
+                  baseBorder: 'border-sky-500/50 hover:border-sky-400',
+                  baseBg: 'bg-sky-950/25 hover:bg-sky-950/40',
+                  badgeBg: 'bg-gradient-to-tr from-sky-600 to-blue-500 text-white shadow-sky-600/40 border-sky-300/40',
+                  barColor: 'bg-sky-500'
+                },
+                C: {
+                  baseBorder: 'border-amber-500/50 hover:border-amber-400',
+                  baseBg: 'bg-amber-950/25 hover:bg-amber-950/40',
+                  badgeBg: 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 shadow-amber-500/40 border-amber-200',
+                  barColor: 'bg-amber-400'
+                },
+                D: {
+                  baseBorder: 'border-emerald-500/50 hover:border-emerald-400',
+                  baseBg: 'bg-emerald-950/25 hover:bg-emerald-950/40',
+                  badgeBg: 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-slate-950 shadow-emerald-600/40 border-emerald-300',
+                  barColor: 'bg-emerald-500'
+                }
+              };
+
+              const theme = optionThemes[optKey];
+              let cardStyle = `${theme.baseBg} ${theme.baseBorder} text-slate-100 shadow-md`;
+              let badgeStyle = theme.badgeBg;
 
               if (questionState === 'REVEALED') {
                 if (isCorrect) {
-                  cardStyle = "bg-emerald-950/60 border-emerald-400 text-white shadow-xl shadow-emerald-500/20 ring-2 ring-emerald-400/50";
-                  badgeStyle = "bg-emerald-400 text-slate-950 font-black";
+                  cardStyle = "bg-gradient-to-br from-emerald-950/95 via-slate-900 to-emerald-950/90 border-2 border-emerald-400 text-white shadow-[0_0_35px_rgba(16,185,129,0.4)] ring-4 ring-emerald-400/40 scale-[1.01]";
+                  badgeStyle = "bg-gradient-to-tr from-emerald-400 to-teal-400 text-slate-950 font-black shadow-lg shadow-emerald-500/50 border border-white";
                 } else {
-                  cardStyle = "bg-slate-950/50 border-slate-800 text-slate-400 opacity-60";
-                  badgeStyle = "bg-slate-800 text-slate-400";
+                  cardStyle = "bg-slate-950/60 border-slate-800 text-slate-400 opacity-40 grayscale-[30%]";
+                  badgeStyle = "bg-slate-800 text-slate-400 border border-slate-700";
                 }
               }
 
               return (
                 <div
                   key={optKey}
-                  className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between min-h-[90px] relative overflow-hidden ${cardStyle}`}
+                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden shadow-lg ${cardStyle}`}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0 ${badgeStyle}`}>
+                  <div className="flex items-start gap-4">
+                    <span className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shrink-0 shadow-md ${badgeStyle}`}>
                       {optKey}
                     </span>
-                    <span className="text-xs sm:text-sm font-semibold leading-snug flex-1">
+                    <span className="text-sm sm:text-base lg:text-lg font-bold leading-relaxed flex-1 pt-1 text-white drop-shadow-sm">
                       {text}
                     </span>
                   </div>
 
-                  {/* Percentage bar if Revealed */}
+                  {/* Percentage bar & student count if Revealed */}
                   {questionState === 'REVEALED' && (
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold">
-                      <div className="flex items-center gap-1.5">
-                        {isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                        <span className={isCorrect ? "text-emerald-400" : "text-slate-400"}>
-                          {count} học sinh ({percent}%)
-                        </span>
+                    <div className="mt-3 pt-2.5 border-t border-slate-700/60 flex items-center justify-between text-xs sm:text-sm font-bold">
+                      <div className="flex items-center gap-2">
+                        {isCorrect ? (
+                          <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/60 text-xs font-black">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            ĐÁP ÁN ĐÚNG
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">
+                            {count} HS ({percent}%)
+                          </span>
+                        )}
+                        {isCorrect && (
+                          <span className="text-emerald-300 font-black text-xs sm:text-sm">
+                            {count} HS ({percent}%)
+                          </span>
+                        )}
                       </div>
-                      <div className="w-24 bg-slate-900 h-2 rounded-full overflow-hidden">
+                      <div className="w-28 sm:w-36 bg-slate-900/90 h-3 rounded-full overflow-hidden border border-slate-700/60">
                         <div 
-                          className={`h-full ${isCorrect ? 'bg-emerald-400' : 'bg-slate-600'}`} 
+                          className={`h-full rounded-full transition-all duration-700 ${isCorrect ? 'bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_#34d399]' : 'bg-slate-600'}`} 
                           style={{ width: `${percent}%` }}
                         />
                       </div>
@@ -558,44 +697,61 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
           {/* Explanation Box on Reveal */}
           {questionState === 'REVEALED' && (
-            <div className="bg-slate-950/90 border border-emerald-500/40 rounded-xl p-3.5 space-y-1.5 animate-fadeIn">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                <Sparkles className="w-4 h-4" />
-                GIẢI THÍCH CHI TIẾT CÂU HỎI
+            <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900/90 to-slate-950 border-2 border-emerald-500/50 rounded-2xl p-4 sm:p-5 space-y-2 animate-fadeIn shadow-xl shadow-emerald-950/40">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-black text-emerald-400 uppercase tracking-wider">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span>GIẢI THÍCH CHI TIẾT CÂU HỎI:</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
                 {activeQuestion.explanation}
               </p>
             </div>
           )}
         </div>
 
-        {/* Right Column: Live 32-Student Response Matrix & Analytics (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden p-3.5">
+        {/* Right Column: Live Student Response Matrix & Analytics (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col bg-slate-900/90 border border-slate-800/80 rounded-3xl overflow-hidden p-4 sm:p-5 shadow-xl">
           {/* Header Stats Strip */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-cyan-400" />
               <h4 className="font-bold text-xs sm:text-sm text-slate-200">
                 TIẾN ĐỘ THU BÀI: {answeredCount} / {totalStudents} HS
               </h4>
             </div>
-            <span className="text-xs font-mono font-bold text-cyan-300">
+            <span className="text-xs sm:text-sm font-mono font-black text-cyan-300">
               {answeredPercentage}%
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden my-2">
+          <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden my-3 border border-slate-800">
             <div 
-              className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300 shadow-[0_0_10px_#22d3ee]"
               style={{ width: `${answeredPercentage}%` }}
             />
           </div>
 
+          {/* Anti-Cheating Privacy Protection Mode Strip */}
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs shrink-0 mb-2">
+            <div className="flex items-center gap-1.5 text-slate-300">
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-semibold text-[11px]">Bảo mật đáp án:</span>
+              <span className="text-[11px] text-emerald-400 font-bold">Chống nhìn bài</span>
+            </div>
+            {questionState === 'REVEALED' && (
+              <button
+                onClick={() => setShowStudentAnswers(!showStudentAnswers)}
+                className="text-[10px] font-bold text-cyan-300 hover:text-cyan-200 flex items-center gap-1 underline"
+              >
+                {showStudentAnswers ? '🔒 Ẩn chữ A,B,C,D' : '👁️ Hiện chữ A,B,C,D'}
+              </button>
+            )}
+          </div>
+
           {/* 32 Student Live Grid */}
-          <div className="flex-1 min-h-0 overflow-y-auto py-2 pr-1">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          <div className="flex-1 min-h-0 overflow-y-auto py-1 pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
               {students.map((stu, idx) => {
                 const res = getStudentResponse(stu, idx);
                 const hasAnswered = !!res;
@@ -619,14 +775,23 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     className={`p-1.5 rounded-lg border text-[11px] flex items-center justify-between transition-all ${cellClass}`}
                     title={stu.fullName}
                   >
-                    <span className="truncate pr-1">
+                    <span className="truncate pr-1 font-semibold">
                       {stu.fullName.split(' ').slice(-1)[0]}
                     </span>
                     {hasAnswered ? (
                       questionState === 'REVEALED' ? (
-                        <span className="text-[10px] font-black">{res.answer}</span>
+                        showStudentAnswers ? (
+                          <span className="text-[10px] font-black">{res.answer}</span>
+                        ) : (
+                          <span className={`text-[10px] font-black ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {isCorrect ? '✓ ĐÚNG' : '✗ SAI'}
+                          </span>
+                        )
                       ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>ĐÃ NỘP</span>
+                        </span>
                       )
                     ) : (
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0"></span>
@@ -797,6 +962,266 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: BẢNG VÀNG VINH DANH TOP 1 - 2 - 3 (DASHBOARD & TUNG HOA RỰC RỠ)   */}
+      {/* ========================================================================= */}
+      {showLeaderboardModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-5xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-amber-400/60 rounded-3xl p-5 sm:p-8 shadow-[0_0_80px_rgba(245,158,11,0.25)] flex flex-col my-auto space-y-6 overflow-hidden">
+            
+            {/* Top Close & Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-amber-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/40 text-slate-950 font-black">
+                  <Trophy className="w-7 h-7 stroke-[2.2]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                      TỔNG KẾT TRÒ CHƠI
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 uppercase tracking-tight font-['Orbitron',sans-serif]">
+                      BẢNG VÀNG VINH DANH TOP 1 - 2 - 3
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Đánh giá thẻ giấy QR • Lớp: <span className="font-bold text-cyan-300">{activeClassName}</span> • THCS Đắk Trôi
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Tung hoa & Close */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={triggerGloriousConfetti}
+                  className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 via-amber-400 to-yellow-400 hover:from-rose-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-amber-500/30 active:scale-95 transition-all animate-pulse"
+                >
+                  <span className="text-base">🌸</span>
+                  <span>TUNG HOA CHÚC MỪNG</span>
+                </button>
+
+                <button
+                  onClick={() => setShowLeaderboardModal(false)}
+                  className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all border border-slate-700"
+                  title="Đóng Bảng Vàng"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* THE PODIUM: BỤC VINH QUANG 3 TẦNG RỰC RỠ */}
+            {(() => {
+              // Calculate Leaderboard rankings
+              const leaderboardList = students.map((stu, idx) => {
+                const currentRes = getStudentResponse(stu, idx);
+                let totalCorrect = 0;
+                let totalAnswered = 0;
+
+                Object.values(questionHistory).forEach((h) => {
+                  if (h.responses) {
+                    const r = h.responses[stu.cardId] || 
+                              h.responses[stu.id] || 
+                              h.responses[stu.studentCode] || 
+                              h.responses[`CARD_${String(idx + 1).padStart(4, '0')}`];
+                    if (r) {
+                      totalAnswered++;
+                      if (r.answer === h.question?.correctAnswer) totalCorrect++;
+                    }
+                  }
+                });
+
+                if (questionState === 'REVEALED' && currentRes && !questionHistory[activeQuestion.id]) {
+                  totalAnswered++;
+                  if (currentRes.answer === activeQuestion.correctAnswer) totalCorrect++;
+                }
+
+                const effectiveCorrect = totalAnswered > 0 ? totalCorrect : (currentRes?.answer === activeQuestion.correctAnswer ? 1 : 0);
+                const points = effectiveCorrect * 100 + (currentRes ? 50 : 0);
+
+                return {
+                  ...stu,
+                  stt: idx + 1,
+                  shortName: stu.fullName ? stu.fullName.split(' ').slice(-1)[0] : `HS ${idx + 1}`,
+                  totalCorrect: effectiveCorrect,
+                  totalAnswered: Math.max(totalAnswered, currentRes ? 1 : 0),
+                  points
+                };
+              }).sort((a, b) => b.points - a.points || b.totalCorrect - a.totalCorrect || a.stt - b.stt);
+
+              const top1 = leaderboardList[0] || { fullName: 'Học sinh 1', points: 100, totalCorrect: 1 };
+              const top2 = leaderboardList[1] || { fullName: 'Học sinh 2', points: 90, totalCorrect: 1 };
+              const top3 = leaderboardList[2] || { fullName: 'Học sinh 3', points: 80, totalCorrect: 1 };
+              const remainingRanks = leaderboardList.slice(3);
+
+              return (
+                <>
+                  <div className="flex items-end justify-center gap-3 sm:gap-6 pt-6 pb-2 max-w-4xl mx-auto w-full">
+                    
+                    {/* TOP 2: Á QUÂN (SILVER / BẠC) */}
+                    <div className="flex-1 flex flex-col items-center max-w-[240px]">
+                      <div className="relative mb-2 flex flex-col items-center">
+                        <div className="text-3xl sm:text-4xl filter drop-shadow">🥈</div>
+                        <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-slate-200 to-slate-400 text-slate-950 shadow-md">
+                          Á QUÂN 🥈
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-slate-900/90 border-2 border-slate-300/80 rounded-2xl p-3 text-center space-y-1 shadow-[0_0_30px_rgba(203,213,225,0.3)] backdrop-blur-md mb-2">
+                        <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top2.fullName}>
+                          {top2.fullName}
+                        </h4>
+                        <div className="text-[11px] font-mono font-bold text-cyan-300">
+                          {top2.points} Điểm
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {top2.totalCorrect} câu đúng
+                        </div>
+                      </div>
+
+                      <div className="w-full h-32 sm:h-36 rounded-t-2xl bg-gradient-to-b from-slate-400 via-slate-600 to-slate-800 border-t-2 border-x-2 border-slate-200 flex flex-col items-center justify-center text-white shadow-xl relative">
+                        <span className="font-['Orbitron',sans-serif] text-3xl sm:text-4xl font-black text-slate-100 drop-shadow">
+                          2
+                        </span>
+                        <span className="text-[10px] uppercase tracking-widest font-black text-slate-300 opacity-80">
+                          SILVER
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* TOP 1: QUÁN QUÂN (GOLD / VÀNG) - CENTER & TALLEST */}
+                    <div className="flex-1 flex flex-col items-center max-w-[280px] -mt-6 z-10">
+                      <div className="relative mb-2 flex flex-col items-center">
+                        <div className="text-4xl sm:text-5xl animate-bounce filter drop-shadow-[0_0_20px_#facc15]">
+                          👑
+                        </div>
+                        <span className="mt-1 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-lg shadow-yellow-500/50 border border-white">
+                          QUÁN QUÂN 👑
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-3 border-yellow-400 rounded-2xl p-4 text-center space-y-1.5 shadow-[0_0_50px_rgba(250,204,21,0.5)] ring-4 ring-yellow-400/30 backdrop-blur-md mb-2">
+                        <h4 className="font-black text-sm sm:text-base text-yellow-300 drop-shadow truncate" title={top1.fullName}>
+                          {top1.fullName}
+                        </h4>
+                        <div className="text-sm font-mono font-black text-white bg-amber-500/30 py-0.5 rounded-lg border border-amber-400/40">
+                          {top1.points} Điểm
+                        </div>
+                        <div className="text-xs font-bold text-emerald-300 flex items-center justify-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>{top1.totalCorrect} câu đúng xuất sắc</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full h-44 sm:h-52 rounded-t-2xl bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700 border-t-4 border-x-4 border-yellow-200 flex flex-col items-center justify-center text-slate-950 shadow-2xl relative">
+                        <span className="font-['Orbitron',sans-serif] text-5xl sm:text-6xl font-black text-slate-950 drop-shadow-md">
+                          1
+                        </span>
+                        <span className="text-xs uppercase tracking-widest font-black text-slate-950 opacity-90">
+                          CHAMPION
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* TOP 3: QUÝ QUÂN (BRONZE / ĐỒNG) */}
+                    <div className="flex-1 flex flex-col items-center max-w-[240px]">
+                      <div className="relative mb-2 flex flex-col items-center">
+                        <div className="text-3xl sm:text-4xl filter drop-shadow">🥉</div>
+                        <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md">
+                          QUÝ QUÂN 🥉
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-slate-900/90 border-2 border-amber-600/80 rounded-2xl p-3 text-center space-y-1 shadow-[0_0_30px_rgba(217,119,6,0.3)] backdrop-blur-md mb-2">
+                        <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top3.fullName}>
+                          {top3.fullName}
+                        </h4>
+                        <div className="text-[11px] font-mono font-bold text-amber-400">
+                          {top3.points} Điểm
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {top3.totalCorrect} câu đúng
+                        </div>
+                      </div>
+
+                      <div className="w-full h-24 sm:h-28 rounded-t-2xl bg-gradient-to-b from-amber-700 via-amber-800 to-slate-900 border-t-2 border-x-2 border-amber-500 flex flex-col items-center justify-center text-white shadow-xl relative">
+                        <span className="font-['Orbitron',sans-serif] text-3xl sm:text-4xl font-black text-amber-200 drop-shadow">
+                          3
+                        </span>
+                        <span className="text-[10px] uppercase tracking-widest font-black text-amber-300 opacity-80">
+                          BRONZE
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* SUMMARY STATS STRIP */}
+                  <div className="grid grid-cols-3 gap-3 max-w-4xl mx-auto w-full">
+                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="text-[11px] text-slate-400 font-bold block">Tổng sĩ số lớp</span>
+                      <span className="text-lg font-black text-cyan-300">{students.length || 32} Học sinh</span>
+                    </div>
+                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="text-[11px] text-slate-400 font-bold block">Độ chính xác toàn lớp</span>
+                      <span className="text-lg font-black text-emerald-400">{accuracyOnTotal}% Đúng</span>
+                    </div>
+                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="text-[11px] text-slate-400 font-bold block">Số câu thử thách</span>
+                      <span className="text-lg font-black text-amber-300">{LESSON_6_QUESTIONS.length} Câu hỏi</span>
+                    </div>
+                  </div>
+
+                  {/* REMAINING STUDENTS RANK TABLE (HẠNG 4 TRỞ ĐI) */}
+                  {remainingRanks.length > 0 && (
+                    <div className="max-w-4xl mx-auto w-full bg-slate-900/60 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+                      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-cyan-400" />
+                        BẢNG XẾP HẠNG CÁC VỊ TRÍ TIẾP THEO (HẠNG 4 - {students.length}):
+                      </span>
+                      <div className="max-h-44 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 gap-2 pr-1">
+                        {remainingRanks.map((stu, i) => (
+                          <div 
+                            key={stu.id || i}
+                            className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs"
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <span className="font-mono font-bold text-[10px] text-slate-500 w-5">
+                                #{i + 4}
+                              </span>
+                              <span className="font-semibold text-slate-200 truncate">
+                                {stu.fullName}
+                              </span>
+                            </div>
+                            <span className="font-mono font-bold text-cyan-400 shrink-0 text-[11px]">
+                              {stu.points}đ
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+
+            {/* Bottom Footer Actions */}
+            <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-xs">
+              <span className="text-slate-400">
+                🎉 Chúc mừng các em học sinh đã hoàn thành xuất sắc thử thách trắc nghiệm thẻ QR!
+              </span>
+              <button
+                onClick={() => setShowLeaderboardModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all border border-slate-700"
+              >
+                Đóng bảng vàng
+              </button>
+            </div>
+
           </div>
         </div>
       )}

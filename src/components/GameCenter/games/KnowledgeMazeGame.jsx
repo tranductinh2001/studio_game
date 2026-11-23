@@ -188,7 +188,7 @@ export default function KnowledgeMazeGame({
           </div>
 
           {/* Node 0: VẠCH XUẤT PHÁT */}
-          <div className="relative flex flex-col items-center z-10 w-16">
+          <div className="relative flex flex-col items-center z-10 w-24">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xs font-black border-2 transition-all ${
               currentStep === 0 
                 ? 'bg-gradient-to-tr from-cyan-500 to-blue-600 border-white text-slate-950 shadow-lg shadow-cyan-500/40 scale-105' 
@@ -196,10 +196,10 @@ export default function KnowledgeMazeGame({
             }`}>
               START
             </div>
-            <span className="mt-3 text-xs font-black text-cyan-300 text-center whitespace-nowrap">
+            <span className="mt-2.5 text-xs font-black text-cyan-300 text-center">
               Xuất Phát
             </span>
-            <span className="text-[10px] text-slate-400 text-center whitespace-nowrap">
+            <span className="text-[10px] text-slate-400 text-center">
               Bắt đầu
             </span>
           </div>
@@ -212,7 +212,7 @@ export default function KnowledgeMazeGame({
             return (
               <div 
                 key={gate.step}
-                className="relative flex flex-col items-center z-10 w-16"
+                className="relative flex flex-col items-center z-10 w-28 text-center"
               >
                 {/* Gate Badge Circle */}
                 <div 
@@ -228,10 +228,10 @@ export default function KnowledgeMazeGame({
                 </div>
 
                 {/* Gate Title & Hint */}
-                <span className="mt-3 text-xs font-black text-white text-center whitespace-nowrap">
+                <span className="mt-2.5 text-xs font-black text-white text-center leading-tight">
                   {gate.title}
                 </span>
-                <span className="text-[10px] text-amber-300/80 text-center max-w-[120px]">
+                <span className="text-[10px] text-amber-300/90 text-center leading-snug mt-0.5">
                   {gate.hint}
                 </span>
               </div>
@@ -239,7 +239,7 @@ export default function KnowledgeMazeGame({
           })}
 
           {/* Treasure Chest at End (Gate 5) */}
-          <div className="relative flex flex-col items-center z-10 w-16">
+          <div className="relative flex flex-col items-center z-10 w-24">
             <div className={`w-16 h-16 flex items-center justify-center transition-transform ${currentStep >= 5 ? 'scale-125 filter drop-shadow-[0_0_20px_#fef08a]' : 'opacity-80'}`}>
               <img 
                 src="/assets/games/knowledge-maze/treasure_chest.svg" 
@@ -247,10 +247,10 @@ export default function KnowledgeMazeGame({
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="mt-3 text-xs font-black text-amber-300 uppercase tracking-wider whitespace-nowrap">
+            <span className="mt-2.5 text-xs font-black text-amber-300 uppercase tracking-wider text-center">
               KHO BÁU
             </span>
-            <span className="text-[10px] text-amber-400/80 text-center whitespace-nowrap">
+            <span className="text-[10px] text-amber-400/90 text-center">
               Đích đến
             </span>
           </div>

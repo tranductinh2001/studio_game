@@ -147,7 +147,7 @@ export default function BoatRaceGame({
     rt.duration = raceDuration;
 
     // Measure lane travel width
-    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.79) : 800;
 
     // Start 60-120 FPS GPU RAF Loop (Direct DOM update: ZERO React re-renders during race)
     const loop = (timestamp) => {
@@ -199,7 +199,7 @@ export default function BoatRaceGame({
     setGameState(GAME_STATES.PLAYING);
     gameAudio.playTick();
 
-    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.81) : 800;
+    const trackWidth = trackRef.current ? (trackRef.current.clientWidth * 0.79) : 800;
 
     const loop = (timestamp) => {
       const elapsed = (timestamp - rt.startTime) + rt.elapsedBeforePause;
@@ -405,9 +405,9 @@ export default function BoatRaceGame({
           style={{ backgroundImage: `url('/assets/games/boat-race/finish_line.svg')`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
         />
 
-        {/* Start Line at Left 4% */}
-        <div className="absolute top-[48%] bottom-4 left-[3%] w-1 border-r-4 border-dashed border-cyan-300/60 z-10 pointer-events-none">
-          <span className="absolute -top-6 -left-3 px-2 py-0.5 rounded text-[10px] font-black bg-cyan-500 text-slate-950 shadow">
+        {/* Start Line at Left 2.5% */}
+        <div className="absolute top-[46%] bottom-4 left-[2.5%] w-1 border-r-4 border-dashed border-cyan-300/60 z-10 pointer-events-none">
+          <span className="absolute -top-7 -left-7 px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md uppercase tracking-wider">
             XUẤT PHÁT
           </span>
         </div>
@@ -442,8 +442,8 @@ export default function BoatRaceGame({
                   ref={(el) => (boatRefs.current[index] = el)}
                   className="absolute flex items-center will-change-transform"
                   style={{
-                    left: '3%',
-                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.81 : 800)}px, 0px, 0)`
+                    left: '4.8%',
+                    transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.79 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team Badge above boat */}

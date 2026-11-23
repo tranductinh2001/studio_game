@@ -530,6 +530,45 @@ app.post('/api/classroom/rooms/:code/groups/upload', (req, res) => {
   res.json(result);
 });
 
+// Real-time Mobile Camera Frame Stream for Group Work Live Visualizer
+app.post('/api/classroom/rooms/:code/camera/frame', (req, res) => {
+  const { groupNumber = 1, frameData, isStreaming = true } = req.body;
+  if (!frameData) {
+    return res.status(400).json({ error: 'Missing frameData' });
+  }
+  classroomStore.broadcast(req.params.code, 'CAMERA_FRAME', {
+    roomCode: req.params.code,
+    groupNumber: parseInt(groupNumber, 10),
+    frameData,
+    isStreaming,
+    timestamp: Date.now()
+  });
+  res.json({ success: true });
+});
+
+// Broadcast Camera Stream Status (Active / Inactive, Active Group)
+app.post('/api/classroom/rooms/:code/camera/status', (req, res) => {
+  const { isStreaming = false, groupNumber = 1 } = req.body;
+  classroomStore.broadcast(req.params.code, 'CAMERA_STATUS', {
+    roomCode: req.params.code,
+    isStreaming,
+    groupNumber: parseInt(groupNumber, 10),
+    timestamp: Date.now()
+  });
+  res.json({ success: true, isStreaming, groupNumber });
+});
+
+// Broadcast Leaderboard Show/Hide to Web Projector
+app.post('/api/classroom/rooms/:code/leaderboard', (req, res) => {
+  const { showLeaderboard = true } = req.body;
+  classroomStore.broadcast(req.params.code, 'SHOW_LEADERBOARD', {
+    roomCode: req.params.code,
+    showLeaderboard: Boolean(showLeaderboard),
+    timestamp: Date.now()
+  });
+  res.json({ success: true, showLeaderboard });
+});
+
 // Real-time Class Analytics
 app.get('/api/classroom/rooms/:code/analytics', (req, res) => {
   const analytics = classroomStore.calculateAnalytics(req.params.code);
