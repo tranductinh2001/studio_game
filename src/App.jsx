@@ -118,10 +118,15 @@ export default function App() {
       }
     });
 
-    // Check URL parameters for direct mobile view (?mode=mobile) or direct tab (?tab=...)
+    // Check URL parameters for direct mobile view (?mode=mobile), direct lesson (?lesson=tin8_bai07), or direct tab (?tab=...)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('mode') === 'mobile' || window.location.pathname === '/mobile') {
       setCurrentTab('mobile-controller');
+    } else if (urlParams.get('lesson') === 'tin8_bai07' || urlParams.get('lesson') === 'tin8' || urlParams.get('tab') === 'tin8') {
+      curriculumService.setActiveLesson('lesson_tin8_bai07');
+      const targetLesson = curriculumService.getLessonById('lesson_tin8_bai07');
+      if (targetLesson) setActiveCurriculumLesson(targetLesson);
+      setCurrentTab('lesson-slide');
     } else if (urlParams.get('tab')) {
       setCurrentTab(urlParams.get('tab'));
     }

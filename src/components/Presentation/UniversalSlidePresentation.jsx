@@ -5,6 +5,7 @@ import {
   AlertCircle, ArrowLeft, ExternalLink, HelpCircle, Eye, Volume2, List
 } from 'lucide-react';
 import LessonSlidePresentation from './LessonSlidePresentation';
+import Tin8Bai07SlidePresentation from './Tin8Bai07SlidePresentation';
 import { curriculumService } from '../../services/curriculumService';
 
 export default function UniversalSlidePresentation({
@@ -40,6 +41,18 @@ export default function UniversalSlidePresentation({
         <div className="flex-1 min-h-0">
           <LessonSlidePresentation onSwitchTab={onSwitchTab} />
         </div>
+      </div>
+    );
+  }
+
+  // If this is Tin học 8 - Bài 7 (Trực quan hoá dữ liệu bằng biểu đồ - Tiết 2), render dedicated interactive presentation!
+  if (activeLesson?.id === 'lesson_tin8_bai07' || (activeLesson?.grade === 8 && activeLesson?.lessonNumber === 7)) {
+    return (
+      <div className="w-full h-full flex flex-col relative">
+        <Tin8Bai07SlidePresentation
+          onSwitchTab={onSwitchTab}
+          onBackToLibrary={onBackToLibrary}
+        />
       </div>
     );
   }
