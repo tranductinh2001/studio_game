@@ -3,7 +3,7 @@ import {
   Camera, Image as ImageIcon, Send, RotateCw, Lock, Eye, Unlock,
   CheckCircle2, Sparkles, Smartphone, ChevronRight, ChevronLeft, Upload, RefreshCw, X, ArrowLeft,
   Users, Check, AlertCircle, Award, Volume2, LogIn, LogOut, Radio, PlayCircle,
-  Video, VideoOff
+  Video, VideoOff, Trophy
 } from 'lucide-react';
 import SmartScanner from '../Scanner/SmartScanner';
 import { classroomService } from '../../services/classroomService';
@@ -112,17 +112,41 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
     refreshRoom(selectedRoomCode);
 
     const unsubscribe = classroomService.subscribeToRoom(selectedRoomCode, (event) => {
-      if (
-        event.type === 'ROOM_STATE' || 
-        event.type === 'QUESTION_UPDATED' || 
-        event.type === 'QUESTION_LOCKED' || 
-        event.type === 'ANSWER_REVEALED' ||
-        event.type === 'RESPONSES_UPDATED' ||
-        event.type === 'ROOM_CLASS_CHANGED' ||
-        event.type === 'ROOM_CREATED'
-      ) {
-        refreshRoom(selectedRoomCode);
+      if (event.type === 'RESPONSES_UPDATED' && event.payload?.responses) {
+        setRoomState(prev => ({
+          ...prev,
+          responses: {
+            ...(prev?.responses || {}),
+            ...event.payload.responses
+          }
+        }));
+      } else if (event.type === 'QUESTION_UPDATED') {
+        const q = event.payload?.activeQuestion || event.payload?.currentQuestion;
+        if (q) {
+          const foundIdx = LESSON_6_QUESTIONS.findIndex(item => item.id === q.id || item.questionText === q.questionText);
+          if (foundIdx !== -1) setCurrentQIndex(foundIdx);
+        }
+        setRoomState(prev => ({
+          ...prev,
+          activeQuestion: q,
+          questionState: event.payload?.questionState || 'COLLECTING',
+          responses: {}
+        }));
+      } else if (event.type === 'QUESTION_LOCKED') {
+        setRoomState(prev => ({ ...prev, questionState: 'LOCKED' }));
+      } else if (event.type === 'ANSWER_REVEALED') {
+        setRoomState(prev => ({ ...prev, questionState: 'REVEALED' }));
+      } else if (event.type === 'ROOM_STATE' || event.type === 'ROOM_CREATED') {
+        if (event.payload) {
+          setRoomState(prev => ({ ...prev, ...event.payload }));
+          if (event.payload.activeQuestion) {
+            const foundIdx = LESSON_6_QUESTIONS.findIndex(item => item.id === event.payload.activeQuestion.id || item.questionText === event.payload.activeQuestion.questionText);
+            if (foundIdx !== -1) setCurrentQIndex(foundIdx);
+          }
+        }
       }
+
+      refreshRoom(selectedRoomCode);
 
       // Synchronize group if switched on projector web screen
       if (event.type === 'CAMERA_STATUS' && event.payload?.groupNumber) {
@@ -158,6 +182,13 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
     if (newIndex >= 0 && newIndex < LESSON_6_QUESTIONS.length) {
       setCurrentQIndex(newIndex);
       const targetQ = LESSON_6_QUESTIONS[newIndex];
+      setRoomState(prev => ({
+        ...prev,
+        activeQuestion: targetQ,
+        questionState: 'COLLECTING',
+        responses: {}
+      }));
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
       try {
         await classroomService.setQuestion(selectedRoomCode, targetQ, 'COLLECTING');
         await refreshRoom(selectedRoomCode);
@@ -760,43 +791,64 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
                 )}
               </div>
 
-              {/* Action Buttons: Lock / Reveal / Re-open */}
+              {/* Action Buttons: Chốt Đáp Án / Mở Lại / Công Bố Đáp Án */}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 {questionState === 'COLLECTING' ? (
                   <button
                     onClick={async () => {
+                      setRoomState(prev => ({ ...prev, questionState: 'LOCKED' }));
+                      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(80);
                       await classroomService.lockQuestion(selectedRoomCode);
                       refreshRoom(selectedRoomCode);
                     }}
-                    className="py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md"
+                    className="py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                    title="Khóa nhận đáp án câu hỏi hiện tại ngay lập tức"
                   >
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Khóa nộp bài</span>
+                    <Lock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Chốt đáp án</span>
                   </button>
                 ) : (
                   <button
                     onClick={async () => {
+                      setRoomState(prev => ({ ...prev, questionState: 'COLLECTING' }));
+                      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(60);
                       await classroomService.setQuestion(selectedRoomCode, activeQ, 'COLLECTING');
                       refreshRoom(selectedRoomCode);
                     }}
-                    className="py-2.5 px-3 rounded-xl text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md"
+                    className="py-2.5 px-3 rounded-xl text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                    title="Mở lại nhận đáp án câu hỏi này"
                   >
-                    <Unlock className="w-3.5 h-3.5" />
+                    <Unlock className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Mở lại nộp bài</span>
                   </button>
                 )}
 
                 <button
                   onClick={async () => {
+                    setRoomState(prev => ({ ...prev, questionState: 'REVEALED' }));
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([60, 60, 100]);
                     await classroomService.revealAnswer(selectedRoomCode);
                     refreshRoom(selectedRoomCode);
                   }}
-                  className="py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md"
+                  className="py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/50 flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                  title="Công bố đáp án đúng lên máy chiếu"
                 >
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Công bố đáp án</span>
                 </button>
               </div>
+
+              {/* Master Classroom Summary & Leaderboard Trigger Button */}
+              <button
+                onClick={async () => {
+                  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                  await classroomService.broadcastLeaderboard(selectedRoomCode, { showLeaderboard: true });
+                }}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500/20 via-yellow-500/25 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/35 text-amber-200 border border-amber-400/50 flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+              >
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <span>🏆 Bảng Thông Số Kết Thúc & Vinh Danh Top 1 2 3</span>
+              </button>
             </div>
 
             {/* Active Question Preview */}

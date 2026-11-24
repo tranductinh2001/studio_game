@@ -29,6 +29,7 @@ export default function SmartScanner({
   }, [propQIndex]);
 
   const [isScanning, setIsScanning] = useState(false);
+  const [questionState, setQuestionState] = useState('COLLECTING');
   const [cameraError, setCameraError] = useState(null);
   const [detectedResponses, setDetectedResponses] = useState({});
   const [studentsMap, setStudentsMap] = useState({});
@@ -88,6 +89,7 @@ export default function SmartScanner({
       const nextQ = questionsList[nextIdx];
       setDetectedResponses({});
       syncedCardsRef.current.clear();
+      setQuestionState('COLLECTING');
       setSyncStatus(`Đã chuyển sang Câu ${nextIdx + 1}`);
       try {
         await classroomService.setQuestion(roomCode, nextQ, 'COLLECTING');
@@ -107,6 +109,7 @@ export default function SmartScanner({
       const prevQ = questionsList[prevIdx];
       setDetectedResponses({});
       syncedCardsRef.current.clear();
+      setQuestionState('COLLECTING');
       setSyncStatus(`Đã quay lại Câu ${prevIdx + 1}`);
       try {
         await classroomService.setQuestion(roomCode, prevQ, 'COLLECTING');
@@ -115,6 +118,43 @@ export default function SmartScanner({
       } catch (err) {
         console.error('Error switching prev question:', err);
       }
+    }
+  };
+
+  // Instant Lock Answers from Camera Scanner
+  const handleLockQuestion = async () => {
+    try {
+      setQuestionState('LOCKED');
+      await classroomService.lockQuestion(roomCode);
+      setSyncStatus('🔒 Đã chốt & khóa nhận đáp án');
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(80);
+    } catch (err) {
+      console.error('Error locking question:', err);
+    }
+  };
+
+  // Instant Unlock Answers from Camera Scanner
+  const handleUnlockQuestion = async () => {
+    try {
+      setQuestionState('COLLECTING');
+      const activeQ = questionsList[currentQIndex];
+      await classroomService.setQuestion(roomCode, activeQ, 'COLLECTING');
+      setSyncStatus('🔓 Đã mở lại cho học sinh nộp bài');
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(60);
+    } catch (err) {
+      console.error('Error unlocking question:', err);
+    }
+  };
+
+  // Instant Reveal Answer from Camera Scanner
+  const handleRevealAnswer = async () => {
+    try {
+      setQuestionState('REVEALED');
+      await classroomService.revealAnswer(roomCode);
+      setSyncStatus('👁️ Đã công bố đáp án lên màn chiếu');
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([60, 60, 100]);
+    } catch (err) {
+      console.error('Error revealing answer:', err);
     }
   };
 
@@ -212,38 +252,45 @@ export default function SmartScanner({
     };
   };
 
+  const flushPendingSyncQueue = async () => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+      syncTimeoutRef.current = null;
+    }
+    const batch = Array.from(pendingSyncQueueRef.current.values());
+    if (batch.length === 0) return;
+    pendingSyncQueueRef.current.clear();
+
+    try {
+      const res = await classroomService.submitResponses(roomCode, batch);
+      if (res && res.locked) {
+        setSyncStatus('⚠️ Câu hỏi đã bị khóa!');
+      } else if (res && (res.success || res.cloudSynced)) {
+        setSyncStatus(`⚡ Realtime: Đã nạp ${res.totalAnswered || batch.length} đáp án lên máy chiếu!`);
+        if (onResponsesUpdated) onResponsesUpdated(batch);
+      }
+    } catch (err) {
+      console.warn('Auto-sync response error:', err);
+    }
+  };
+
   const queueResponseForAutoSync = (respItem) => {
     const lastAnswer = syncedCardsRef.current.get(respItem.cardId);
     if (lastAnswer === respItem.answer) {
-      return;
+      return; // Already submitted this exact answer
     }
 
+    // Check if student rotated card to change answer
+    const isAnswerChanged = Boolean(lastAnswer && lastAnswer !== respItem.answer);
+    syncedCardsRef.current.set(respItem.cardId, respItem.answer);
     pendingSyncQueueRef.current.set(respItem.cardId, respItem);
 
-    if (syncTimeoutRef.current) {
-      clearTimeout(syncTimeoutRef.current);
+    // Instant zero-delay dispatch (<50ms) if student turns card, or rapid throttle batching (35ms)
+    if (isAnswerChanged) {
+      flushPendingSyncQueue();
+    } else if (!syncTimeoutRef.current) {
+      syncTimeoutRef.current = setTimeout(flushPendingSyncQueue, 35);
     }
-
-    syncTimeoutRef.current = setTimeout(async () => {
-      const batch = Array.from(pendingSyncQueueRef.current.values());
-      if (batch.length === 0) return;
-      pendingSyncQueueRef.current.clear();
-
-      try {
-        const res = await classroomService.submitResponses(roomCode, batch);
-        if (res && res.locked) {
-          setSyncStatus('⚠️ Câu hỏi đã bị khóa!');
-        } else if (res && res.success) {
-          batch.forEach(item => {
-            syncedCardsRef.current.set(item.cardId, item.answer);
-          });
-          setSyncStatus(`⚡ Realtime: Đã nạp ${res.totalAnswered || batch.length} đáp án lên máy chiếu!`);
-          if (onResponsesUpdated) onResponsesUpdated(batch);
-        }
-      } catch (err) {
-        console.warn('Auto-sync response error:', err);
-      }
-    }, 120);
   };
 
   // Load students for active class
@@ -310,12 +357,18 @@ export default function SmartScanner({
           const foundIdx = questionsList.findIndex(item => item.id === q.id || item.questionText === q.questionText);
           if (foundIdx !== -1) setCurrentQIndex(foundIdx);
         }
+        setQuestionState(event.payload?.questionState || 'COLLECTING');
         setDetectedResponses({});
         syncedCardsRef.current.clear();
         setSyncStatus('Câu hỏi mới: Sẵn sàng quét thẻ học sinh');
       }
       if (event.type === 'QUESTION_LOCKED') {
-        setSyncStatus('⚠️ Giáo viên đã khóa nhận đáp án');
+        setQuestionState('LOCKED');
+        setSyncStatus('🔒 Đã chốt & khóa nhận đáp án');
+      }
+      if (event.type === 'ANSWER_REVEALED') {
+        setQuestionState('REVEALED');
+        setSyncStatus('👁️ Đã công bố đáp án lên màn chiếu');
       }
     });
 
@@ -659,8 +712,8 @@ export default function SmartScanner({
         }
       });
 
-      // 3. Scan every 75ms to guarantee smooth 60fps video feed and low mobile temperature
-      if (now - lastProcessTimeRef.current >= 75) {
+      // 3. Scan every 45ms (~22 FPS) for instant card rotation detection and ultra-low latency
+      if (now - lastProcessTimeRef.current >= 45) {
         lastProcessTimeRef.current = now;
         if (!procCanvasRef.current) {
           procCanvasRef.current = document.createElement('canvas');
@@ -957,47 +1010,91 @@ export default function SmartScanner({
           )}
         </div>
 
-        {/* QUESTION CONTROLLER HUD INSIDE CAMERA (CHUYỂN CÂU HỎI TRỰC TIẾP KHI ĐANG QUÉT) */}
-        <div className="absolute bottom-14 left-3 right-3 z-30 flex items-center justify-between gap-2 p-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 shadow-2xl pointer-events-auto">
-          {/* Previous Question */}
-          <button
-            onClick={handlePrevQuestion}
-            disabled={currentQIndex === 0}
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed text-slate-200 text-xs font-bold flex items-center gap-1 active:scale-95 transition-all border border-slate-700/60"
-          >
-            <ChevronLeft className="w-4 h-4 text-cyan-400" />
-            <span className="hidden sm:inline">Câu trước</span>
-          </button>
-
-          {/* Current Question Indicator */}
-          <div className="flex-1 text-center px-1">
-            <div className="font-mono font-black text-xs sm:text-sm text-cyan-300 flex items-center justify-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>CÂU {currentQIndex + 1} / {questionsList.length}</span>
+        {/* QUESTION CONTROLLER HUD INSIDE CAMERA (CHUYỂN CÂU HỎI & ĐIỀU KHIỂN PHÒNG TRỰC TIẾP KHI ĐANG QUÉT) */}
+        <div className="absolute bottom-14 left-2 right-2 z-30 flex flex-col gap-1.5 p-2 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-cyan-500/40 shadow-2xl pointer-events-auto">
+          {/* Top Row: Current Question Info & Live Submitted Badge */}
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span className="font-mono font-black text-xs sm:text-sm text-cyan-300 shrink-0">
+                CÂU {currentQIndex + 1}/{questionsList.length}:
+              </span>
+              <span className="text-[11px] text-slate-200 truncate font-semibold" title={questionsList[currentQIndex]?.questionText}>
+                {questionsList[currentQIndex]?.questionText}
+              </span>
             </div>
-            <div className="text-[10px] text-slate-300 truncate max-w-[180px] sm:max-w-xs mx-auto">
-              {questionsList[currentQIndex]?.questionText}
+
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-[11px] font-bold text-emerald-300 shrink-0">
+              <Users className="w-3 h-3 text-emerald-400" />
+              <span>{detectedCount}/{totalStudents} HS</span>
             </div>
           </div>
 
-          {/* Next Question or Leaderboard */}
-          {currentQIndex < questionsList.length - 1 ? (
+          {/* Action Controls Row */}
+          <div className="flex items-center justify-between gap-1.5 pt-0.5">
+            {/* Previous Question */}
             <button
-              onClick={handleNextQuestion}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-emerald-500/30 active:scale-95 transition-all"
+              onClick={handlePrevQuestion}
+              disabled={currentQIndex === 0}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 text-xs font-bold flex items-center gap-1 active:scale-95 transition-all border border-slate-700/60"
+              title="Câu trước"
             >
-              <span>Câu tiếp</span>
-              <ChevronRight className="w-4 h-4 text-slate-950" />
+              <ChevronLeft className="w-4 h-4 text-cyan-400" />
+              <span className="hidden xs:inline">Trước</span>
             </button>
-          ) : (
+
+            {/* Quick Lock / Unlock Button */}
+            {questionState === 'COLLECTING' ? (
+              <button
+                onClick={handleLockQuestion}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/50 flex items-center gap-1 active:scale-95 transition-all shadow-md"
+                title="Khóa không cho nộp thêm"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Chốt đáp án</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleUnlockQuestion}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/50 flex items-center gap-1 active:scale-95 transition-all shadow-md"
+                title="Mở lại nhận nộp bài"
+              >
+                <Unlock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Mở lại</span>
+              </button>
+            )}
+
+            {/* Quick Reveal Button */}
             <button
-              onClick={handleFinishAndShowLeaderboard}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-yellow-500/40 active:scale-95 transition-all animate-pulse"
+              onClick={handleRevealAnswer}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/50 flex items-center gap-1 active:scale-95 transition-all shadow-md"
+              title="Công bố đáp án đúng lên máy chiếu"
             >
-              <Trophy className="w-4 h-4 text-slate-950" />
-              <span>Tổng kết</span>
+              <Eye className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Công bố</span>
             </button>
-          )}
+
+            {/* Next Question or Leaderboard */}
+            {currentQIndex < questionsList.length - 1 ? (
+              <button
+                onClick={handleNextQuestion}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-emerald-500/30 active:scale-95 transition-all"
+                title="Sang câu tiếp theo"
+              >
+                <span>Tiếp</span>
+                <ChevronRight className="w-4 h-4 text-slate-950" />
+              </button>
+            ) : (
+              <button
+                onClick={handleFinishAndShowLeaderboard}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-lg shadow-yellow-500/40 active:scale-95 transition-all animate-pulse"
+                title="Hiện bảng vinh danh và tổng kết"
+              >
+                <Trophy className="w-4 h-4 text-slate-950" />
+                <span>Tổng kết</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Bottom Floating Stats Bar */}

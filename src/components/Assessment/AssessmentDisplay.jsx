@@ -88,16 +88,25 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
         setQuestionState(event.payload.questionState || 'COLLECTING');
         setResponses(event.payload.responses || {});
       } else if (event.type === 'RESPONSES_UPDATED') {
-        setResponses(event.payload.responses || {});
-        setAnalytics(event.payload.analytics);
+        // Merge responses incrementally so newly scanned cards don't wipe existing ones
+        setResponses(prev => ({
+          ...prev,
+          ...(event.payload.responses || {})
+        }));
+        if (event.payload.analytics) {
+          setAnalytics(event.payload.analytics);
+        }
       } else if (event.type === 'QUESTION_LOCKED') {
         setQuestionState('LOCKED');
       } else if (event.type === 'ANSWER_REVEALED') {
         setQuestionState('REVEALED');
         triggerConfetti();
-      } else if (event.type === 'SHOW_LEADERBOARD') {
+      } else if (event.type === 'SHOW_LEADERBOARD' || event.type === 'LEADERBOARD_TOGGLED') {
         setShowLeaderboardModal(true);
         triggerGloriousConfetti();
+      } else if (event.type === 'QUESTION_RESET') {
+        setQuestionState('COLLECTING');
+        setResponses({});
       } else if (event.type === 'ROOM_CLASS_CHANGED' || event.type === 'ROOM_STATE' || event.type === 'ROOM_CREATED') {
         const payload = event.payload;
         if (payload.activeQuestion) {
@@ -757,22 +766,22 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                 const hasAnswered = !!res;
                 const isCorrect = hasAnswered && res.answer === activeQuestion.correctAnswer;
 
-                let cellClass = "bg-slate-950 border-slate-800 text-slate-400";
+                let cellClass = "bg-slate-950/80 border-slate-800/80 text-slate-400 hover:border-slate-700";
                 if (hasAnswered) {
                   if (questionState === 'REVEALED') {
                     cellClass = isCorrect 
-                      ? "bg-emerald-950/80 border-emerald-500 text-emerald-300 font-bold" 
-                      : "bg-red-950/80 border-red-500/80 text-red-300";
+                      ? "bg-gradient-to-r from-emerald-950/90 to-emerald-900/70 border-emerald-400 text-emerald-200 font-bold shadow-md shadow-emerald-500/20 ring-1 ring-emerald-400/50" 
+                      : "bg-red-950/80 border-red-500/80 text-red-300 ring-1 ring-red-500/30";
                   } else {
-                    // Answered but not revealed: Show green glowing card WITHOUT showing answer!
-                    cellClass = "bg-cyan-950/60 border-cyan-400/80 text-cyan-300 font-bold shadow-sm shadow-cyan-500/20";
+                    // Answered but not revealed: Gradual neon glow popup & emerald highlight!
+                    cellClass = "bg-gradient-to-r from-cyan-950/90 via-emerald-950/80 to-cyan-950/90 border-emerald-400 text-emerald-300 font-bold shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-400/60 animate-in fade-in zoom-in-95 duration-500";
                   }
                 }
 
                 return (
                   <div
-                    key={stu.id}
-                    className={`p-1.5 rounded-lg border text-[11px] flex items-center justify-between transition-all ${cellClass}`}
+                    key={stu.id || idx}
+                    className={`p-1.5 rounded-lg border text-[11px] flex items-center justify-between transition-all duration-300 ${cellClass}`}
                     title={stu.fullName}
                   >
                     <span className="truncate pr-1 font-semibold">
@@ -781,20 +790,22 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     {hasAnswered ? (
                       questionState === 'REVEALED' ? (
                         showStudentAnswers ? (
-                          <span className="text-[10px] font-black">{res.answer}</span>
+                          <span className="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-slate-900 border border-emerald-400/50 text-emerald-300">
+                            {res.answer}
+                          </span>
                         ) : (
-                          <span className={`text-[10px] font-black ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          <span className={`px-1.5 py-0.2 rounded text-[10px] font-black ${isCorrect ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-red-500/20 text-red-300 border border-red-500/40'}`}>
                             {isCorrect ? '✓ ĐÚNG' : '✗ SAI'}
                           </span>
                         )
                       ) : (
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-400/40 animate-pulse">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                           <span>ĐÃ NỘP</span>
                         </span>
                       )
                     ) : (
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-700/80 shrink-0"></span>
                     )}
                   </div>
                 );
@@ -1160,19 +1171,39 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
                   </div>
 
-                  {/* SUMMARY STATS STRIP */}
-                  <div className="grid grid-cols-3 gap-3 max-w-4xl mx-auto w-full">
-                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
-                      <span className="text-[11px] text-slate-400 font-bold block">Tổng sĩ số lớp</span>
-                      <span className="text-lg font-black text-cyan-300">{students.length || 32} Học sinh</span>
+                  {/* SUMMARY STATS STRIP & CLASSROOM ANALYTICS OVERVIEW */}
+                  <div className="space-y-2.5 max-w-4xl mx-auto w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
+                        <span className="text-[11px] text-slate-400 font-bold block">Sĩ số lớp</span>
+                        <span className="text-base sm:text-lg font-black text-cyan-300">{students.length || 32} Học sinh</span>
+                      </div>
+                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
+                        <span className="text-[11px] text-slate-400 font-bold block">Đã tham gia nộp bài</span>
+                        <span className="text-base sm:text-lg font-black text-emerald-400">{submittedCount} / {students.length || 32} HS</span>
+                      </div>
+                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
+                        <span className="text-[11px] text-slate-400 font-bold block">Độ chính xác toàn lớp</span>
+                        <span className="text-base sm:text-lg font-black text-yellow-300">{accuracyOnAnswered}% Đúng</span>
+                      </div>
+                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
+                        <span className="text-[11px] text-slate-400 font-bold block">Số câu thử thách</span>
+                        <span className="text-base sm:text-lg font-black text-amber-300">{LESSON_6_QUESTIONS.length} Câu hỏi</span>
+                      </div>
                     </div>
-                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
-                      <span className="text-[11px] text-slate-400 font-bold block">Độ chính xác toàn lớp</span>
-                      <span className="text-lg font-black text-emerald-400">{accuracyOnTotal}% Đúng</span>
-                    </div>
-                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-center">
-                      <span className="text-[11px] text-slate-400 font-bold block">Số câu thử thách</span>
-                      <span className="text-lg font-black text-amber-300">{LESSON_6_QUESTIONS.length} Câu hỏi</span>
+
+                    {/* Options Distribution Breakdown */}
+                    <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                        <BarChart3 className="w-4 h-4 text-cyan-400" />
+                        <span>Phổ lựa chọn đáp án hiện tại:</span>
+                      </span>
+                      <div className="flex items-center gap-2 font-mono font-bold">
+                        <span className="px-2 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-500/40">A: {tallies.A || 0} HS ({Math.round(((tallies.A || 0) / (submittedCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-500/40">B: {tallies.B || 0} HS ({Math.round(((tallies.B || 0) / (submittedCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C: {tallies.C || 0} HS ({Math.round(((tallies.C || 0) / (submittedCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-500/40">D: {tallies.D || 0} HS ({Math.round(((tallies.D || 0) / (submittedCount || 1)) * 100)}%)</span>
+                      </div>
                     </div>
                   </div>
 
