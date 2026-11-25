@@ -87,8 +87,6 @@ export class ConversationController {
     if (this.bargeInTimer) clearTimeout(this.bargeInTimer);
     if (this.acousticCooldownTimer) clearTimeout(this.acousticCooldownTimer);
 
-    speechRec.startContinuous();
-
     if (initialGreeting) {
       const greetingDisplay = this.config.welcomeGreeting;
       const greetingSpeech = this.config.welcomeGreetingSpeech;
@@ -98,6 +96,7 @@ export class ConversationController {
       });
       this.speak(greetingDisplay, 'GREETING', greetingSpeech);
     } else {
+      speechRec.startContinuous();
       this.transitionToListening();
     }
   }
@@ -351,9 +350,20 @@ export class ConversationController {
     }
   }
 
-  // Phát âm thanh giọng nói và đồng bộ phụ đề
+  // Phát âm thanh giọng nói và đồng bộ phụ đề (Tự động tắt mic hoàn toàn để tránh Mark tự thu âm tiếng của mình)
   speak(text, targetEmotion = 'SPEAKING', speechTextOverride = null) {
     if (!text || !text.trim()) return;
+
+    if (this.acousticCooldownTimer) {
+      clearTimeout(this.acousticCooldownTimer);
+      this.acousticCooldownTimer = null;
+    }
+
+    // Ngắt micro ngay lập tức trước khi loa phát tiếng Mark
+    speechRec.mute();
+    if (typeof speechRec.setSpeakingMode === 'function') {
+      speechRec.setSpeakingMode(true);
+    }
 
     this.lastSpokenText = text;
     this.setState(AGENT_STATES.SPEAKING);
@@ -364,7 +374,10 @@ export class ConversationController {
     const textToSpeak = speechTextOverride || normalizeTextForSpeech(text);
 
     speechSynth.speak(textToSpeak, () => {
-      // Khi đọc xong, áp dụng khoảng lặng triệt tiêu tiếng vang phòng học (800ms)
+      if (typeof speechRec.setSpeakingMode === 'function') {
+        speechRec.setSpeakingMode(false);
+      }
+      // Khi đọc xong, áp dụng khoảng lặng triệt tiêu tiếng vang phòng học (800ms) trước khi mở lại mic
       if (this.acousticCooldownTimer) clearTimeout(this.acousticCooldownTimer);
       this.acousticCooldownTimer = setTimeout(() => {
         if (this.isSessionActive) {

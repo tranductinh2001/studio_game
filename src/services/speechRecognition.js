@@ -86,6 +86,9 @@ class SpeechRecognitionService {
     };
 
     this.recognition.onresult = (event) => {
+      // Tuyệt đối bỏ qua mọi kết quả nếu mic đang mute (Mark đang nói / đang xử lý)
+      if (this.isMuted) return;
+
       let currentInterim = '';
       let currentFinal = '';
 
@@ -110,8 +113,6 @@ class SpeechRecognitionService {
         }
         return;
       }
-
-      if (this.isMuted) return; // Muted while bot speaks if barge-in was handled
 
       this.accumulatedTranscript = activeText;
 
