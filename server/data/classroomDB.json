@@ -2790,40 +2790,40 @@
   "activeRooms": {
     "WB-601": {
       "roomCode": "WB-601",
-      "classId": "CLASS_6A",
-      "className": "Lớp 6A",
+      "classId": "CLASS_6B",
+      "className": "Lớp 6B",
       "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "currentQuestion": {
-        "id": "Q_02",
-        "questionText": "Siêu văn bản (Hypertext) là loại văn bản có đặc điểm nổi bật nào dưới đây?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web, viết tắt là WWW) được hiểu chính xác là:",
         "options": {
-          "A": "Chỉ chứa duy nhất các chữ viết và con số in màu đen.",
-          "B": "Là cuốn sách giáo khoa in trên khổ giấy dày cỡ lớn.",
-          "C": "Tích hợp nhiều dạng dữ liệu (chữ, hình ảnh, âm thanh, video) và chứa các siêu liên kết.",
-          "D": "Không thể mở xem được trên máy tính hay điện thoại thông minh."
+          "A": "Mạng nối các máy tính qua dây cáp trong phòng tin học của trường.",
+          "B": "Mạng thông tin toàn cầu liên kết các website trên Internet.",
+          "C": "Một trò chơi điện tử trực tuyến nhiều người chơi trên điện thoại.",
+          "D": "Thiết bị dùng để phát sóng mạng không dây Wi-Fi trong gia đình."
         },
-        "correctAnswer": "C",
-        "explanation": "[Phần 1 SGK: Siêu văn bản] Siêu văn bản là văn bản tích hợp nhiều dạng dữ liệu khác nhau và đặc biệt có chứa các siêu liên kết đến văn bản khác (SGK Tin học 6 trang 24).",
+        "correctAnswer": "B",
+        "explanation": "[Phần 1 SGK: Tổ chức thông tin] World Wide Web (gọi tắt là web) là mạng thông tin toàn cầu, liên kết các website trên Internet với nhau (SGK Tin học 6 trang 24).",
         "bloomLevel": "Nhận biết",
         "difficulty": "Dễ"
       },
       "activeQuestion": {
-        "id": "Q_02",
-        "questionText": "Siêu văn bản (Hypertext) là loại văn bản có đặc điểm nổi bật nào dưới đây?",
+        "id": "Q_01",
+        "questionText": "Mạng thông tin toàn cầu (World Wide Web, viết tắt là WWW) được hiểu chính xác là:",
         "options": {
-          "A": "Chỉ chứa duy nhất các chữ viết và con số in màu đen.",
-          "B": "Là cuốn sách giáo khoa in trên khổ giấy dày cỡ lớn.",
-          "C": "Tích hợp nhiều dạng dữ liệu (chữ, hình ảnh, âm thanh, video) và chứa các siêu liên kết.",
-          "D": "Không thể mở xem được trên máy tính hay điện thoại thông minh."
+          "A": "Mạng nối các máy tính qua dây cáp trong phòng tin học của trường.",
+          "B": "Mạng thông tin toàn cầu liên kết các website trên Internet.",
+          "C": "Một trò chơi điện tử trực tuyến nhiều người chơi trên điện thoại.",
+          "D": "Thiết bị dùng để phát sóng mạng không dây Wi-Fi trong gia đình."
         },
-        "correctAnswer": "C",
-        "explanation": "[Phần 1 SGK: Siêu văn bản] Siêu văn bản là văn bản tích hợp nhiều dạng dữ liệu khác nhau và đặc biệt có chứa các siêu liên kết đến văn bản khác (SGK Tin học 6 trang 24).",
+        "correctAnswer": "B",
+        "explanation": "[Phần 1 SGK: Tổ chức thông tin] World Wide Web (gọi tắt là web) là mạng thông tin toàn cầu, liên kết các website trên Internet với nhau (SGK Tin học 6 trang 24).",
         "bloomLevel": "Nhận biết",
         "difficulty": "Dễ"
       },
       "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
-      "totalStudents": 32,
+      "totalStudents": 33,
       "studentResponses": {},
       "responses": {},
       "groupSubmissions": {
@@ -2878,7 +2878,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-25T05:48:26.437Z",
+      "lastUpdated": "2026-11-25T06:18:26.439Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }
