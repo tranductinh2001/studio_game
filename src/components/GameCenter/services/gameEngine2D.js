@@ -94,3 +94,21 @@ export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed 
   return prog;
 }
 
+/**
+ * Silently overrides the winning racer mid-race and gently accelerates
+ * remaining race progress so the chosen team finishes early without any sound cues.
+ */
+export function applyStealthEarlyFinish(rt, target) {
+  if (!rt || !target) return;
+  rt.targetWinner = target;
+  rt.determinedWinner = target;
+  if (!rt.isFinished && rt.startTime > 0 && rt.duration > 0) {
+    const now = performance.now();
+    const currentElapsed = (now - rt.startTime) + (rt.elapsedBeforePause || 0);
+    const targetElapsed = rt.duration * 0.78;
+    if (currentElapsed < targetElapsed) {
+      rt.elapsedBeforePause = (rt.elapsedBeforePause || 0) + (targetElapsed - currentElapsed);
+    }
+  }
+}
+

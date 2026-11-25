@@ -18,7 +18,11 @@ export default function StealthWinnerControl({
   const isRigged = secretControl?.mode === 'teacher_rigged' || secretControl?.mode === 'weighted_random';
   const activeTargetId = secretControl?.targetTeamId || secretControl?.targetStudentId;
 
-  const handlePickWinner = (item) => {
+  const handlePickWinner = (e, item) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (onUpdateSecretControl) {
       onUpdateSecretControl({
         ...secretControl,
@@ -35,7 +39,11 @@ export default function StealthWinnerControl({
     setTimeout(() => setJustLocked(false), 1000);
   };
 
-  const handleResetFair = () => {
+  const handleResetFair = (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (onUpdateSecretControl) {
       onUpdateSecretControl({
         ...secretControl,
@@ -51,16 +59,21 @@ export default function StealthWinnerControl({
   const displayItems = items.slice(0, 8);
 
   return (
-    <div className="absolute bottom-2.5 left-2.5 z-40 flex items-center gap-1.5 select-none">
-      {/* Hidden/Discreet Corner Trigger Dot */}
+    <div
+      className="absolute bottom-2.5 left-2.5 z-40 flex items-center gap-1.5 select-none"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Hidden/Discreet Corner Trigger Dot (Zero sound on click) */}
       <button
         type="button"
-        onClick={() => setIsExpanded((prev) => !prev)}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          setIsExpanded((prev) => !prev);
+        }}
         className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
           isExpanded
             ? 'bg-slate-800/95 border border-slate-500/70 opacity-95'
-            : justLocked
-            ? 'bg-emerald-500/30 border border-emerald-400/60 opacity-80 scale-110'
             : 'bg-slate-900/40 border border-slate-700/30 opacity-15 hover:opacity-75'
         }`}
         title="•"
@@ -68,15 +81,15 @@ export default function StealthWinnerControl({
         <span
           className={`w-2 h-2 rounded-full transition-colors ${
             justLocked
-              ? 'bg-emerald-400'
+              ? 'bg-slate-300/80'
               : isRigged
-              ? 'bg-amber-400/80'
+              ? 'bg-slate-300/70'
               : 'bg-slate-400/70'
           }`}
         />
       </button>
 
-      {/* Compact Stealth Micro-Bar (No suspicious labels) */}
+      {/* Compact Stealth Micro-Bar (No suspicious labels, zero click sound) */}
       {isExpanded && (
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-950/90 backdrop-blur-md border border-slate-700/70 shadow-2xl animate-in fade-in duration-150">
           {displayItems.map((item, idx) => {
@@ -85,7 +98,7 @@ export default function StealthWinnerControl({
               <button
                 key={item.id || idx}
                 type="button"
-                onClick={() => handlePickWinner(item)}
+                onClick={(e) => handlePickWinner(e, item)}
                 title={item.shortName || item.name}
                 className={`relative w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all active:scale-90 ${
                   isSelected
@@ -108,7 +121,7 @@ export default function StealthWinnerControl({
 
           <button
             type="button"
-            onClick={handleResetFair}
+            onClick={(e) => handleResetFair(e)}
             title="Ngẫu nhiên"
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ml-0.5 border ${
               !isRigged

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
-import { GAME_STATES, pickRaceWinner, computeRacerProgress } from '../services/gameEngine2D';
+import { GAME_STATES, pickRaceWinner, computeRacerProgress, applyStealthEarlyFinish } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
 import StealthWinnerControl from '../StealthWinnerControl';
 import { CharacterAvatar } from '../services/characterAvatars';
@@ -648,8 +648,7 @@ export default function BoatRaceGame({
           onUpdateSecretControl={onUpdateSecretControl}
           onLiveOverrideWinner={(target) => {
             if (target) {
-              runtimeRef.current.targetWinner = target;
-              runtimeRef.current.determinedWinner = target;
+              applyStealthEarlyFinish(runtimeRef.current, target);
             }
           }}
         />
