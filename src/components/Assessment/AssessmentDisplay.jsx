@@ -219,60 +219,68 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
     });
   };
 
-  // Super High-Impact Glorious Confetti & Flower Burst (Tung hoa & Pháo hoa rực rỡ)
+  // Super High-Impact Glorious Confetti & Flower Burst (Tung hoa rực rỡ & âm thanh kéo dài ~4.5s)
   const triggerGloriousConfetti = () => {
-    // 1. Play triumphant fanfare audio synthesized with Web Audio API
+    // 1. Play extended triumphant fanfare + celebratory shimmer (~4.2s) via Web Audio API
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
         const now = ctx.currentTime;
-        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+        const notes = [
+          // Opening fanfare arpeggio
+          { f: 523.25, t: 0.0, d: 0.25, v: 0.30 },
+          { f: 659.25, t: 0.12, d: 0.25, v: 0.30 },
+          { f: 783.99, t: 0.24, d: 0.25, v: 0.32 },
+          { f: 1046.50, t: 0.38, d: 0.85, v: 0.38 },
+          // Second celebratory phrase
+          { f: 783.99, t: 1.05, d: 0.22, v: 0.28 },
+          { f: 880.00, t: 1.22, d: 0.22, v: 0.28 },
+          { f: 987.77, t: 1.40, d: 0.25, v: 0.30 },
+          { f: 1046.50, t: 1.62, d: 1.15, v: 0.38 },
+          // Grand finale chord sustain
+          { f: 523.25, t: 2.55, d: 1.55, v: 0.22 },
+          { f: 659.25, t: 2.55, d: 1.55, v: 0.22 },
+          { f: 783.99, t: 2.55, d: 1.55, v: 0.24 },
+          { f: 1046.50, t: 2.55, d: 1.65, v: 0.30 },
+          { f: 1318.51, t: 2.75, d: 1.45, v: 0.20 },
+        ];
+        notes.forEach(({ f, t, d, v }) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
-          gain.gain.setValueAtTime(0.35, now + idx * 0.1);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.65);
+          osc.frequency.setValueAtTime(f, now + t);
+          gain.gain.setValueAtTime(0.001, now + t);
+          gain.gain.linearRampToValueAtTime(v, now + t + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + t + d);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(now + idx * 0.1);
-          osc.stop(now + idx * 0.1 + 0.65);
+          osc.start(now + t);
+          osc.stop(now + t + d + 0.05);
         });
       }
     } catch (e) {}
 
-    // 2. Multi-stage celebratory confetti cannons (Tung hoa rực rỡ hai bên và từ trên xuống)
-    confetti({
-      particleCount: 90,
-      spread: 60,
-      origin: { x: 0.15, y: 0.7 },
-      colors: ['#facc15', '#fbbf24', '#34d399', '#22d3ee', '#f43f5e']
-    });
-    confetti({
-      particleCount: 90,
-      spread: 60,
-      origin: { x: 0.85, y: 0.7 },
-      colors: ['#facc15', '#fbbf24', '#34d399', '#22d3ee', '#f43f5e']
-    });
+    // 2. Multi-stage celebratory confetti cannons (~4.5 seconds continuous show)
+    const palette = ['#facc15', '#ffd700', '#34d399', '#22d3ee', '#f43f5e', '#a855f7', '#fb923c'];
+    const burstSides = (count = 85) => {
+      confetti({ particleCount: count, angle: 60, spread: 65, origin: { x: 0.08, y: 0.72 }, colors: palette });
+      confetti({ particleCount: count, angle: 120, spread: 65, origin: { x: 0.92, y: 0.72 }, colors: palette });
+    };
 
+    burstSides(95);
     setTimeout(() => {
-      confetti({
-        particleCount: 140,
-        spread: 100,
-        origin: { x: 0.5, y: 0.35 },
-        colors: ['#facc15', '#ffd700', '#ff69b4', '#00ffff', '#7fff00', '#e11d48']
-      });
-    }, 350);
-
+      confetti({ particleCount: 150, spread: 110, origin: { x: 0.5, y: 0.35 }, colors: palette });
+    }, 400);
+    setTimeout(() => burstSides(80), 1100);
     setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        spread: 120,
-        origin: { x: 0.5, y: 0.55 },
-        colors: ['#facc15', '#fbbf24', '#a855f7', '#38bdf8']
-      });
-    }, 850);
+      confetti({ particleCount: 130, spread: 130, origin: { x: 0.5, y: 0.45 }, colors: palette });
+    }, 1900);
+    setTimeout(() => burstSides(75), 2700);
+    setTimeout(() => {
+      confetti({ particleCount: 110, spread: 140, origin: { x: 0.5, y: 0.28 }, colors: palette });
+    }, 3500);
+    setTimeout(() => burstSides(60), 4100);
   };
 
   const handleSetQuestion = async (q) => {
@@ -1071,12 +1079,32 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
               return (
                 <>
+                  <style>{`
+                    @keyframes podiumRise {
+                      0% { opacity: 0; transform: translateY(40px) scale(0.92); }
+                      70% { opacity: 1; transform: translateY(-6px) scale(1.03); }
+                      100% { opacity: 1; transform: translateY(0) scale(1); }
+                    }
+                    @keyframes crownFloat {
+                      0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
+                      50% { transform: translateY(-8px) rotate(3deg) scale(1.08); }
+                    }
+                    @keyframes goldGlow {
+                      0%, 100% { box-shadow: 0 0 35px rgba(250,204,21,0.45); }
+                      50% { box-shadow: 0 0 65px rgba(250,204,21,0.85); }
+                    }
+                    .anim-podium-1 { animation: podiumRise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both; }
+                    .anim-podium-2 { animation: podiumRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
+                    .anim-podium-3 { animation: podiumRise 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+                    .anim-crown { animation: crownFloat 2.2s ease-in-out infinite; }
+                    .anim-gold-glow { animation: goldGlow 2.4s ease-in-out infinite; }
+                  `}</style>
                   <div className="flex items-end justify-center gap-3 sm:gap-6 pt-6 pb-2 max-w-4xl mx-auto w-full">
                     
                     {/* TOP 2: Á QUÂN (SILVER / BẠC) */}
-                    <div className="flex-1 flex flex-col items-center max-w-[240px]">
+                    <div className="flex-1 flex flex-col items-center max-w-[240px] anim-podium-2">
                       <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-3xl sm:text-4xl filter drop-shadow">🥈</div>
+                        <div className="text-3xl sm:text-4xl filter drop-shadow animate-pulse">🥈</div>
                         <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-slate-200 to-slate-400 text-slate-950 shadow-md">
                           Á QUÂN 🥈
                         </span>
@@ -1086,10 +1114,10 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                         <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top2.fullName}>
                           {top2.fullName}
                         </h4>
-                        <div className="text-[11px] font-mono font-bold text-cyan-300">
+                        <div className="text-xs sm:text-sm font-mono font-bold text-cyan-300">
                           {top2.points} Điểm
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[11px] text-slate-300">
                           {top2.totalCorrect} câu đúng
                         </div>
                       </div>
@@ -1105,9 +1133,9 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     </div>
 
                     {/* TOP 1: QUÁN QUÂN (GOLD / VÀNG) - CENTER & TALLEST */}
-                    <div className="flex-1 flex flex-col items-center max-w-[280px] -mt-6 z-10">
+                    <div className="flex-1 flex flex-col items-center max-w-[280px] -mt-6 z-10 anim-podium-1">
                       <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-4xl sm:text-5xl animate-bounce filter drop-shadow-[0_0_20px_#facc15]">
+                        <div className="text-4xl sm:text-5xl anim-crown filter drop-shadow-[0_0_20px_#facc15]">
                           👑
                         </div>
                         <span className="mt-1 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-lg shadow-yellow-500/50 border border-white">
@@ -1115,11 +1143,11 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                         </span>
                       </div>
 
-                      <div className="w-full bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-3 border-yellow-400 rounded-2xl p-4 text-center space-y-1.5 shadow-[0_0_50px_rgba(250,204,21,0.5)] ring-4 ring-yellow-400/30 backdrop-blur-md mb-2">
+                      <div className="w-full bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-3 border-yellow-400 rounded-2xl p-4 text-center space-y-1.5 anim-gold-glow ring-4 ring-yellow-400/30 backdrop-blur-md mb-2">
                         <h4 className="font-black text-sm sm:text-base text-yellow-300 drop-shadow truncate" title={top1.fullName}>
                           {top1.fullName}
                         </h4>
-                        <div className="text-sm font-mono font-black text-white bg-amber-500/30 py-0.5 rounded-lg border border-amber-400/40">
+                        <div className="text-sm sm:text-base font-mono font-black text-white bg-amber-500/30 py-0.5 rounded-lg border border-amber-400/40">
                           {top1.points} Điểm
                         </div>
                         <div className="text-xs font-bold text-emerald-300 flex items-center justify-center gap-1">
@@ -1139,9 +1167,9 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     </div>
 
                     {/* TOP 3: QUÝ QUÂN (BRONZE / ĐỒNG) */}
-                    <div className="flex-1 flex flex-col items-center max-w-[240px]">
+                    <div className="flex-1 flex flex-col items-center max-w-[240px] anim-podium-3">
                       <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-3xl sm:text-4xl filter drop-shadow">🥉</div>
+                        <div className="text-3xl sm:text-4xl filter drop-shadow animate-pulse">🥉</div>
                         <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md">
                           QUÝ QUÂN 🥉
                         </span>
@@ -1151,10 +1179,10 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                         <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top3.fullName}>
                           {top3.fullName}
                         </h4>
-                        <div className="text-[11px] font-mono font-bold text-amber-400">
+                        <div className="text-xs sm:text-sm font-mono font-bold text-amber-400">
                           {top3.points} Điểm
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[11px] text-slate-300">
                           {top3.totalCorrect} câu đúng
                         </div>
                       </div>
@@ -1207,29 +1235,34 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     </div>
                   </div>
 
-                  {/* REMAINING STUDENTS RANK TABLE (HẠNG 4 TRỞ ĐI) */}
+                  {/* REMAINING STUDENTS RANK TABLE (HẠNG 4 TRỞ ĐI - TO RÕ KHI CHIẾU) */}
                   {remainingRanks.length > 0 && (
-                    <div className="max-w-4xl mx-auto w-full bg-slate-900/60 border border-slate-800 rounded-2xl p-3.5 space-y-2">
-                      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-cyan-400" />
-                        BẢNG XẾP HẠNG CÁC VỊ TRÍ TIẾP THEO (HẠNG 4 - {students.length}):
+                    <div className="max-w-5xl mx-auto w-full bg-slate-900/75 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xl">
+                      <span className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                        <Users className="w-4 h-4 text-cyan-400" />
+                        BẢNG XẾP HẠNG CÁC THÀNH VIÊN KHÁC (HẠNG 4 - {students.length}):
                       </span>
-                      <div className="max-h-44 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 gap-2 pr-1">
+                      <div className="max-h-72 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pr-1">
                         {remainingRanks.map((stu, i) => (
                           <div 
                             key={stu.id || i}
-                            className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs"
+                            className="p-3 rounded-xl bg-slate-950/90 border border-slate-700/80 flex items-center justify-between gap-3 hover:border-cyan-500/60 transition-colors"
                           >
-                            <div className="flex items-center gap-2 truncate">
-                              <span className="font-mono font-bold text-[10px] text-slate-500 w-5">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="font-mono font-black text-sm text-cyan-300 bg-slate-800/90 px-2 py-1 rounded-lg shrink-0">
                                 #{i + 4}
                               </span>
-                              <span className="font-semibold text-slate-200 truncate">
-                                {stu.fullName}
-                              </span>
+                              <div className="min-w-0">
+                                <div className="font-bold text-sm sm:text-base text-slate-100 truncate" title={stu.fullName}>
+                                  {stu.fullName}
+                                </div>
+                                <div className="text-xs text-slate-400 font-medium">
+                                  {stu.totalCorrect} câu đúng
+                                </div>
+                              </div>
                             </div>
-                            <span className="font-mono font-bold text-cyan-400 shrink-0 text-[11px]">
-                              {stu.points}đ
+                            <span className="font-mono font-black text-sm sm:text-base text-cyan-200 bg-cyan-500/20 border border-cyan-400/40 px-2.5 py-1 rounded-xl shrink-0">
+                              {stu.points} Điểm
                             </span>
                           </div>
                         ))}

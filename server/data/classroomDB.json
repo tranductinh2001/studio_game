@@ -2837,7 +2837,7 @@
           "groupNumber": 2,
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
           "caption": "Bài nhóm 2 test",
-          "timestamp": "2026-11-25T03:46:57.442Z"
+          "timestamp": "2026-11-25T05:39:12.479Z"
         }
       },
       "groupWorks": {
@@ -2851,7 +2851,7 @@
           "groupNumber": 2,
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
           "caption": "Bài nhóm 2 test",
-          "timestamp": "2026-11-25T03:46:57.442Z"
+          "timestamp": "2026-11-25T05:39:12.479Z"
         }
       },
       "history": [],
@@ -2878,7 +2878,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-25T03:47:36.606Z",
+      "lastUpdated": "2026-11-25T05:40:14.682Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }
