@@ -65,7 +65,7 @@ export const voiceService = {
     }
 
     const cleanText = text.replace(/[*_~`#]/g, '').trim();
-    const hash = crypto.createHash('md5').update(`${cleanText}_${voice}_${rate}_${pitch}`).digest('hex').slice(0, 12);
+    const hash = crypto.createHash('md5').update(`${cleanText}_${voice}_${rate}_${pitch}_v2`).digest('hex').slice(0, 12);
     const fileName = `tts_${hash}.mp3`;
     const outPath = path.join(PUBLIC_AUDIO_DIR, fileName);
 

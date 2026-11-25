@@ -18,15 +18,30 @@ import json
 def get_hash(text):
     return hashlib.md5(text.encode('utf-8')).hexdigest()[:10]
 
+import re
+
+def is_vietnamese_text(text, voice=""):
+    if voice and voice.lower().startswith("vi"):
+        return True
+    return bool(re.search(r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]", text or ""))
+
 async def synth_edge_tts(text, voice, rate, pitch, out_path):
     import edge_tts
-    comm = edge_tts.Communicate(text, voice=voice, rate=rate, pitch=pitch)
-    await comm.save(out_path)
+    try:
+        comm = edge_tts.Communicate(text, voice=voice, rate=rate, pitch=pitch)
+        await comm.save(out_path)
+    except Exception:
+        # Retry with default prosody if custom rate/pitch causes NoAudioReceived
+        comm = edge_tts.Communicate(text, voice=voice)
+        await comm.save(out_path)
 
-def synth_gtts(text, accent, slow, out_path):
+def synth_gtts(text, accent, slow, out_path, voice=""):
     from gtts import gTTS
-    tld = 'co.uk' if accent == 'uk' else 'com'
-    tts = gTTS(text=text, lang='en', tld=tld, slow=slow)
+    if is_vietnamese_text(text, voice):
+        tts = gTTS(text=text, lang='vi', tld='com', slow=slow)
+    else:
+        tld = 'co.uk' if accent == 'uk' else 'com'
+        tts = gTTS(text=text, lang='en', tld=tld, slow=slow)
     tts.save(out_path)
 
 def apply_learner_filter(in_path, out_path, speed=0.88, mic_simulate=True):
@@ -115,7 +130,7 @@ def main():
             return 0
         except Exception as e:
             try:
-                synth_gtts(args.text, args.accent, False, out_path)
+                synth_gtts(args.text, args.accent, False, out_path, args.voice)
                 print(json.dumps({"success": True, "engine": "gTTS-Fallback", "notice": str(e), "path": out_path}))
                 return 0
             except Exception as e2:
@@ -129,7 +144,7 @@ def main():
             # Generate base voice at neutral rate, let ffmpeg handle exact speed & room mic filter
             asyncio.run(synth_edge_tts(args.text, args.voice, "+0%", args.pitch, temp_raw))
         except Exception:
-            synth_gtts(args.text, args.accent, False, temp_raw)
+            synth_gtts(args.text, args.accent, False, temp_raw, args.voice)
             
         try:
             apply_learner_filter(temp_raw, out_path, speed=args.speed, mic_simulate=args.mic_sim)
