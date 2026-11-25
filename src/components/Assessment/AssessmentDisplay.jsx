@@ -1180,7 +1180,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                       </div>
                       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
                         <span className="text-[11px] text-slate-400 font-bold block">Đã tham gia nộp bài</span>
-                        <span className="text-base sm:text-lg font-black text-emerald-400">{submittedCount} / {students.length || 32} HS</span>
+                        <span className="text-base sm:text-lg font-black text-emerald-400">{answeredCount} / {students.length || 32} HS</span>
                       </div>
                       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
                         <span className="text-[11px] text-slate-400 font-bold block">Độ chính xác toàn lớp</span>
@@ -1199,10 +1199,10 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                         <span>Phổ lựa chọn đáp án hiện tại:</span>
                       </span>
                       <div className="flex items-center gap-2 font-mono font-bold">
-                        <span className="px-2 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-500/40">A: {tallies.A || 0} HS ({Math.round(((tallies.A || 0) / (submittedCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-500/40">B: {tallies.B || 0} HS ({Math.round(((tallies.B || 0) / (submittedCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C: {tallies.C || 0} HS ({Math.round(((tallies.C || 0) / (submittedCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-500/40">D: {tallies.D || 0} HS ({Math.round(((tallies.D || 0) / (submittedCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-500/40">A: {counts.A || 0} HS ({Math.round(((counts.A || 0) / (answeredCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-500/40">B: {counts.B || 0} HS ({Math.round(((counts.B || 0) / (answeredCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C: {counts.C || 0} HS ({Math.round(((counts.C || 0) / (answeredCount || 1)) * 100)}%)</span>
+                        <span className="px-2 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-500/40">D: {counts.D || 0} HS ({Math.round(((counts.D || 0) / (answeredCount || 1)) * 100)}%)</span>
                       </div>
                     </div>
                   </div>

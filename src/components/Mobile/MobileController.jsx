@@ -436,14 +436,27 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
     }
   };
 
-  // Helper calculations for responses and tallies
+  // Helper calculations for responses and tallies (deduplicated per student across cardId/studentId aliases)
   const responses = roomState?.responses || {};
-  const submittedCount = Object.keys(responses).length;
+  const sourceResponses = (roomState?.studentResponses && Object.keys(roomState.studentResponses).length > 0)
+    ? roomState.studentResponses
+    : responses;
+  const seenStudentKeys = new Set();
+  const uniqueResponses = [];
+  Object.entries(sourceResponses).forEach(([k, r]) => {
+    if (!r || !r.answer) return;
+    const dedupKey = r.studentId || r.cardId || k;
+    if (!seenStudentKeys.has(dedupKey)) {
+      seenStudentKeys.add(dedupKey);
+      uniqueResponses.push(r);
+    }
+  });
+  const submittedCount = uniqueResponses.length;
   const totalStudents = studentsList.length || 32;
   const progressPercent = Math.min(100, Math.round((submittedCount / (totalStudents || 1)) * 100));
 
   const tally = { A: 0, B: 0, C: 0, D: 0 };
-  Object.values(responses).forEach((r) => {
+  uniqueResponses.forEach((r) => {
     if (r && r.answer && tally[r.answer] !== undefined) {
       tally[r.answer]++;
     }
