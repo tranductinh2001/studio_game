@@ -388,18 +388,26 @@ export default function App() {
   };
 
   // Execute teacher scripted scenarios
-  const handleExecuteScriptStep = (stepNumber) => {
+  const handleExecuteScriptStep = (stepInput) => {
+    const stepNumber = typeof stepInput === 'object' && stepInput !== null ? stepInput.step : stepInput;
     setCurrentScriptStep(stepNumber);
-    const step = conversationScripts.scripts.find((s) => s.step === stepNumber);
+    const stepsList = conversationScripts.warmupSteps || [];
+    const step = (typeof stepInput === 'object' && stepInput !== null)
+      ? stepInput
+      : stepsList.find((s) => s.step === stepNumber);
     if (!step) return;
 
-    if (step.action === 'transitionLesson') {
-      handleTriggerTransitionLesson();
+    if (step.action === 'TRANSITION_LESSON' || step.action === 'transitionLesson' || step.triggerBanner) {
+      conversationController.speak(step.text || step.webbyResponse, step.emotion || 'HAPPY');
+      setTimeout(() => {
+        handleTriggerTransitionLesson();
+      }, 2800);
       return;
     }
 
-    if (step.webbyResponse) {
-      conversationController.speak(step.webbyResponse, step.emotion || 'SPEAKING');
+    const replyText = step.text || step.webbyResponse;
+    if (replyText) {
+      conversationController.speak(replyText, step.emotion || 'SPEAKING');
     }
   };
 
@@ -717,8 +725,8 @@ export default function App() {
               />
             </div>
 
-            {/* Bottom Interactivity: Subtitles & Voice Controls */}
-            <footer className="pb-3 sm:pb-5 pt-1 space-y-2 sm:space-y-3 shrink-0">
+            {/* Bottom Interactivity: Subtitles, Smart Guiding Questions & Voice Controls */}
+            <footer className="pb-3 sm:pb-5 pt-1 space-y-2 sm:space-y-2.5 shrink-0">
               <SubtitleDisplay
                 currentSpeaker={currentSpeaker}
                 text={subtitleText}
@@ -726,6 +734,39 @@ export default function App() {
                 isSpeaking={agentState === 'SPEAKING'}
                 isListening={agentState === 'LISTENING'}
               />
+
+              {/* Smart Guiding Question Chips & Lesson Objectives Trigger */}
+              <div className="max-w-5xl mx-auto px-3 flex flex-wrap items-center justify-center gap-1.5">
+                <button
+                  onClick={() => handleExecuteScriptStep(4)}
+                  className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/35 hover:to-blue-500/35 text-cyan-200 border border-cyan-400/50 transition-all shadow-sm"
+                  title="Mark dẫn dắt và chốt 3 mục tiêu Bài 6 (Sau bài này em sẽ...)"
+                >
+                  🎯 Mục tiêu Bài 6
+                </button>
+                {[
+                  { label: '🌐 WWW là gì?', q: 'Mạng thông tin toàn cầu (WWW) là gì?' },
+                  { label: '📘 Website vs Trang web?', q: 'Website và trang web khác nhau thế nào?' },
+                  { label: '🔗 Siêu liên kết?', q: 'Siêu liên kết có tác dụng gì?' },
+                  { label: '🧭 Trình duyệt web?', q: 'Trình duyệt web dùng để làm gì?' },
+                  { label: '🌤️ Tra từ điển & Thời tiết?', q: 'Làm sao để tra từ điển, xem tin thời tiết hoặc thời sự trên web?' }
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleManualSubmit(chip.q)}
+                    className="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-cyan-300 border border-slate-700/80 hover:border-cyan-500/50 transition-all"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+                <button
+                  onClick={handleTriggerTransitionLesson}
+                  className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-black bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-md transition-all"
+                  title="Chuyển cảnh vào Bài 6: Mạng thông tin toàn cầu"
+                >
+                  🚀 Vào Bài 6
+                </button>
+              </div>
 
               <VoiceControlBar
                 isSessionActive={isSessionActive}

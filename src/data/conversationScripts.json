@@ -5,53 +5,61 @@
       "id": "greeting_everyday_hook",
       "speaker": "Mark",
       "emotion": "GREETING",
-      "text": "Xin chào các bạn học sinh lớp 6 yêu quý! Xin chào quý thầy cô giáo! Mình là Mark – trợ lý AI của lớp mình hôm nay. Cho Mark hỏi nhỏ nhé: Khi muốn tìm lời giải một bài toán khó, xem video hướng dẫn gấp giấy Origami, hoặc tìm lời một bài hát yêu thích, các bạn thường làm gì trên điện thoại hoặc máy tính nào?",
+      "text": "Xin chào các bạn học sinh lớp 6 trường THCS Đắk Trôi thân yêu! Xin kính chào quý thầy cô giáo! Mình là Mark – trợ lý AI đồng hành cùng lớp mình hôm nay. Cho Mark hỏi nhỏ nhé: Hằng ngày khi muốn tra từ điển tiếng Anh, xem dự báo thời tiết ngày mai, hay đọc tin thời sự, các bạn thường làm thế nào trên máy tính hoặc điện thoại?",
       "action": "WAIT_FOR_RESPONSE",
-      "expectedContext": "search, google, youtube, internet, tra cứu, lên mạng"
+      "expectedContext": "search, google, youtube, internet, tra cứu, lên mạng, tra từ điển, xem thời tiết"
     },
     {
       "step": 2,
       "id": "question_everyday_wonder",
       "speaker": "Mark",
       "emotion": "THINKING",
-      "text": "Thế các bạn có bao giờ tự hỏi: Vì sao chúng mình đang ngồi ở trường THCS Đắk Trôi, giữa núi rừng Tây Nguyên, mà chỉ cần một cú nhấp chuột là có thể xem ngay hình ảnh tháp Eiffel ở Pháp, ngắm cá voi bơi lội dưới đáy đại dương, hay xem dự báo thời tiết tại Pleiku ngày mai ngay tức thì không? Điều kỳ diệu gì đã mang cả thế giới về trước mắt chúng ta như vậy nhỉ?",
+      "text": "Tuyệt vời quá! Thế các bạn có bao giờ tự hỏi: Vì sao chúng mình đang ngồi ở lớp học tại Đắk Trôi mà chỉ cần một cú nhấp chuột là có thể xem ngay tin tức cả nước, nghe bài giảng hay, hoặc tra cứu hàng triệu thông tin trên khắp thế giới? Điều gì đã biến Internet thành kho tàng tri thức kỳ diệu như vậy nhỉ?",
       "action": "LISTEN",
-      "feedbackCorrect": "Tuyệt cú mèo! Đúng là nhờ có mạng Internet kết nối các máy tính khắp hành tinh! Nhưng các bạn ơi, Internet mới chỉ là những con đường cao tốc và sợi cáp truyền dẫn thôi...",
-      "feedbackGeneric": "Chuẩn xác luôn! Nhờ có mạng máy tính và Internet toàn cầu! Tuy nhiên, Internet mới chỉ là hạ tầng kết nối các thiết bị thôi..."
+      "feedbackCorrect": "Chính xác luôn! Nhờ có mạng Internet kết nối các máy tính toàn cầu, và đặc biệt là dịch vụ thông tin chạy trên nền Internet...",
+      "feedbackGeneric": "Rất thông minh! Nhờ có Internet kết nối các thiết bị khắp hành tinh, nhưng để đọc và xem được thông tin sinh động thì chúng ta cần đến một hệ thống đặc biệt!"
     },
     {
       "step": 3,
       "id": "question_cognitive_conflict",
       "speaker": "Mark",
       "emotion": "SPEAKING",
-      "text": "Vậy các bạn thử tưởng tượng nhé: Nếu Internet giống như hệ thống đường cao tốc, thì cái gì được xây dựng dọc theo con đường đó để chứa hàng triệu bài học, hình ảnh và video cho chúng ta đọc mỗi ngày? Và chiếc 'cánh cửa thần kỳ' nào giúp chúng ta bấm vào một dòng chữ màu xanh là nhảy ngay sang một trang thông tin mới?",
+      "text": "Các bạn thử tưởng tượng nhé: Nếu Internet giống như hệ thống đường cao tốc, thì các trang thông tin chứa chữ, ảnh, video nằm dọc theo con đường đó gọi là gì? Và chúng ta dùng phần mềm gì (như Chrome hay Cốc Cốc) để mở và xem các trang thông tin ấy?",
       "action": "LISTEN",
-      "feedbackCorrect": "Xuất sắc! Các bạn trả lời quá đỉnh! Đó chính là các website, các trang siêu văn bản, và chiếc cánh cửa thần kỳ đó chính là Siêu liên kết (Hyperlink)!",
-      "feedbackGeneric": "Rất chính xác! Đó chính là các website chứa kho thông tin khổng lồ, và các 'siêu liên kết' giúp kết nối các trang web lại với nhau!"
+      "feedbackCorrect": "Xuất sắc! Đó chính là các Website trên Mạng thông tin toàn cầu (World Wide Web), và phần mềm mở chúng chính là Trình duyệt web!",
+      "feedbackGeneric": "Chuẩn không cần chỉnh! Đó là các trang web, website thuộc Mạng thông tin toàn cầu (WWW) và phần mềm Trình duyệt web!"
     },
     {
       "step": 4,
+      "id": "lesson_objectives_bridge",
+      "speaker": "Mark",
+      "emotion": "HAPPY",
+      "text": "Đỉnh của chóp! Và sau Bài 6: Mạng thông tin toàn cầu hôm nay, lớp mình sẽ chinh phục trọn vẹn 3 mục tiêu quan trọng: Một là trình bày được khái niệm World Wide Web, website, địa chỉ website và trình duyệt; Hai là xem và nêu được các thông tin chính trên một trang web cho trước; Ba là tự tin khai thác thông tin hữu ích như tra từ điển, xem thời tiết và thời sự!",
+      "action": "WAIT_FOR_RESPONSE"
+    },
+    {
+      "step": 5,
       "id": "conclusion_transition",
       "speaker": "Mark",
       "emotion": "HAPPY",
-      "text": "Tất cả kho tàng khổng lồ đó tạo nên một mạng lưới vĩ đại bao trùm khắp hành tinh, mang tên: Mạng thông tin toàn cầu – World Wide Web! Để giải mã xem mạng này hoạt động thế nào, website là gì, và chiếc kính thần kỳ Trình duyệt web giúp chúng ta khám phá tri thức ra sao, Mark xin trân trọng kính mời thầy Trần Đức Tình cùng lớp mình bước vào Bài 6: MẠNG THÔNG TIN TOÀN CẦU!",
+      "text": "Tất cả 3 mục tiêu tuyệt vời đó sẽ được giải mã ngay trong tiết học sôi nổi hôm nay! Mark xin trân trọng kính mời thầy Trần Đức Tình cùng các bạn lớp 6 bước vào Bài 6: MẠNG THÔNG TIN TOÀN CẦU!",
       "action": "TRANSITION_LESSON",
       "triggerBanner": true
     }
   ],
   "offTopicResponses": [
-    "Đó là một câu hỏi rất thú vị! Nhưng hôm nay Mark và các bạn đang có một nhiệm vụ khám phá Mạng thông tin toàn cầu hấp dẫn hơn nhiều. Chúng mình cùng quay lại chủ đề bài học nhé!",
-    "Câu hỏi hay và ngộ nghĩnh quá! Tuy nhiên, nhiệm vụ chính của Mark hôm nay là cùng lớp mình khám phá thế giới Internet và các website. Chúng mình cùng tập trung vào bài học nhé!",
-    "Mark rất thích sự tò mò của bạn! Nhưng bây giờ chúng mình hãy cùng tập trung giải đáp xem Mạng thông tin toàn cầu kỳ diệu như thế nào đã nhé!"
+    "Câu hỏi thú vị quá! Nhưng hôm nay Mark và lớp 6 đang cùng thầy Tình khám phá 3 mục tiêu siêu hay của Bài 6: Mạng thông tin toàn cầu. Chúng mình quay lại chủ đề chính nhé!",
+    "Mark rất thích sự tò mò của bạn! Nhưng trước tiên hãy cùng Mark giải mã xem WWW, website và trình duyệt web hoạt động thế nào đã nha!",
+    "Ý tưởng rất ngộ nghĩnh! Giờ chúng mình tập trung vào bài học Mạng thông tin toàn cầu để lát nữa còn thi đấu Đấu trường Game và Quét thẻ QR nữa nhé!"
   ],
   "encourageResponses": [
-    "Gần đúng rồi đấy! Bạn liên tưởng thêm một chút nhé: Khi lên mạng tìm thông tin, chúng ta thường mở phần mềm nào (như Chrome hay Cốc Cốc) để xem nội dung nào?",
-    "Ý tưởng của bạn rất hay! Thử liên hệ thêm xem chiếc máy tính kết nối mạng giúp chúng mình đọc sách báo và xem video như thế nào nhé!",
-    "Cố lên nào các bạn ơi, các bạn đang đi rất đúng hướng rồi đấy!"
+    "Gần đúng rồi đấy! Bạn gợi nhớ thêm nhé: Khi muốn mở một trang web, ta thường nhấp đúp vào biểu tượng phần mềm nào (Chrome, Cốc Cốc, Edge)?",
+    "Ý tưởng rất hay! Bạn thử đoán xem dòng chữ màu xanh có gạch chân khi bấm vào sẽ nhảy sang trang khác gọi là gì nào?",
+    "Cố lên nào các bạn ơi, câu trả lời đang đi rất đúng hướng rồi đấy!"
   ],
   "praiseResponses": [
-    "Xuất sắc! Một câu trả lời cực kỳ chính xác và đầy tinh thần khám phá!",
-    "Tuyệt vời ông mặt trời! Lớp 6 chúng mình trả lời rất thông minh và nhanh nhạy!",
-    "Quá chuẩn luôn! Đúng là các công dân số tương lai của trường THCS Đắk Trôi!"
+    "Xuất sắc! Một câu trả lời cực kỳ thông minh và bám sát mục tiêu bài học!",
+    "Tuyệt vời! Các bạn học sinh lớp 6 trường THCS Đắk Trôi giỏi quá đi thôi!",
+    "Quá chuẩn luôn! Xứng đáng là những công dân số tài năng của lớp mình!"
   ]
 }

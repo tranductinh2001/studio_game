@@ -121,6 +121,24 @@
       "question": "Chúng ta có nên tin tất cả thông tin trên Internet không?",
       "answer": "Tuyệt đối không nên tin tất cả nhé! Trên mạng có cả thông tin sai lệch, các bạn cần kiểm tra nguồn tin uy tín và hỏi thầy cô hoặc bố mẹ!",
       "followup": "Một lời khuyên thông minh: Hãy luôn là những công dân nhí lướt mạng an toàn và tỉnh táo nhé!"
+    },
+    {
+      "id": 13,
+      "question": "Sau bài 6 hôm nay, chúng ta sẽ đạt được những mục tiêu gì?",
+      "answer": "Sau bài 6: Mạng thông tin toàn cầu, lớp mình sẽ nắm vững 3 mục tiêu: Một là trình bày sơ lược được khái niệm World Wide Web, website, địa chỉ website và trình duyệt; Hai là xem và nêu được các thông tin chính trên một trang web cho trước; Ba là tự tin khai thác thông tin trên các trang web thông dụng như tra từ điển, xem tin thời tiết, thời sự!",
+      "followup": "Bạn nào háo hức nhất với kỹ năng tra từ điển hay xem dự báo thời tiết trên web nào?"
+    },
+    {
+      "id": 14,
+      "question": "Làm sao để tra từ điển, xem tin thời tiết hoặc thời sự trên web?",
+      "answer": "Rất đơn giản! Bạn chỉ cần mở trình duyệt web, nhập chính xác địa chỉ website uy tín (như trang dự báo thời tiết, báo điện tử hoặc từ điển trực tuyến) vào thanh địa chỉ rồi nhấn phím Enter!",
+      "followup": "Khi mở một trang web tin tức, làm sao để biết đâu là các thông tin chính trên trang đó nhỉ?"
+    },
+    {
+      "id": 15,
+      "question": "Địa chỉ của website dùng để làm gì và gõ ở đâu?",
+      "answer": "Địa chỉ website giống như số nhà giúp trình duyệt tìm đúng trang web cần mở. Chúng ta gõ địa chỉ website vào Thanh địa chỉ (Address Bar) ở trên cùng của cửa sổ trình duyệt!",
+      "followup": "Nhớ gõ đúng từng ký tự không dấu cách rồi nhấn Enter nhé!"
     }
   ]
 }

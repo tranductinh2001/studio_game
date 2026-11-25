@@ -144,6 +144,16 @@ export default function LessonSlidePresentation({ onSwitchTab }) {
             <span className="hidden md:inline">Đấu trường QR</span>
           </button>
 
+          {/* Open Printable/Projectable Worksheet */}
+          <button
+            onClick={() => window.open('/phieu_hoc_tap_tin6_bai06.html', '_blank', 'noopener,noreferrer')}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 text-emerald-300 transition-all shadow-sm"
+            title="Mở Phiếu học tập (Hoạt động 2.1 & 2.3) để chiếu cho HS trình bày / In A4"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden md:inline">Phiếu Học Tập</span>
+          </button>
+
           {/* Open in dedicated new window */}
           <button
             onClick={openInNewWindow}
