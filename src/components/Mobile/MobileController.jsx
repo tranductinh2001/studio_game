@@ -199,14 +199,14 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
   };
 
   // Handle Mobile Photo Capture for Group Poster
-  const handlePhotoCapture = (e) => {
+  const handlePhotoCapture = (e, autoUpload = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
@@ -229,10 +229,33 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
 
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
         setCapturedPhotoUrl(compressedDataUrl);
+
+        if (autoUpload) {
+          setIsUploadingPhoto(true);
+          setPhotoUploadStatus(`Đang gửi ảnh Nhóm ${selectedGroup} lên máy chiếu...`);
+          try {
+            await classroomService.uploadGroupWork(selectedRoomCode, {
+              groupNumber: selectedGroup,
+              imageUrl: compressedDataUrl,
+              caption: `Ảnh chụp bài làm Nhóm ${selectedGroup} từ Camera ĐT`
+            });
+            setPhotoUploadStatus(`Đã show bài Nhóm ${selectedGroup} lên màn hình thành công!`);
+            setTimeout(() => {
+              setCapturedPhotoUrl(null);
+              setPhotoUploadStatus('');
+            }, 3000);
+          } catch (err) {
+            console.error(err);
+            setPhotoUploadStatus('Lỗi khi gửi ảnh!');
+          } finally {
+            setIsUploadingPhoto(false);
+          }
+        }
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   // Upload Group Poster Photo
@@ -738,6 +761,27 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
               <ChevronRight className="w-5 h-5 text-slate-950 group-hover:translate-x-1 transition-transform shrink-0" />
             </button>
 
+            {/* QUICK LAUNCH CTA: MỞ CAMERA CHỤP / SOI BÀI NHÓM LÊN MÀN HÌNH */}
+            <button
+              onClick={() => setActiveSubTab('group-camera')}
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all transform active:scale-98 group border border-blue-300/30"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-950/25 flex items-center justify-center shrink-0">
+                  <Video className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-black uppercase tracking-wide">
+                    MỞ CAMERA SHOW BÀI NHÓM LÊN MÀN HÌNH
+                  </div>
+                  <div className="text-[11px] font-medium text-blue-100/90">
+                    Chụp ảnh hoặc soi trực tiếp bài Nhóm 1–4 lên máy chiếu
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform shrink-0" />
+            </button>
+
             {/* GAME CONTROLLER: QUESTION SWITCHER & ACTIONS FOR TEACHER */}
             <div className="bg-slate-900/95 border border-cyan-500/40 rounded-2xl p-3.5 space-y-3 shadow-lg">
               <div className="flex items-center justify-between">
@@ -1178,6 +1222,24 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
               )}
             </div>
 
+            {/* QUICK NATIVE CAMERA CAPTURE & AUTO-SHOW (Works 100% on both HTTP LAN & HTTPS) */}
+            <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-3.5 space-y-2.5 shadow-lg">
+              <label className="cursor-pointer w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5 active:scale-98 transition-all">
+                <Camera className="w-5 h-5 text-slate-950" />
+                <span>{isUploadingPhoto ? 'ĐANG GỬI LÊN MÀN HÌNH...' : `MỞ CAMERA ĐT CHỤP SHOW NHÓM ${selectedGroup}`}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => handlePhotoCapture(e, true)}
+                />
+              </label>
+              <p className="text-[11px] text-slate-400 text-center">
+                Mở thẳng Camera điện thoại chụp 1 tấm và <strong>tự động chiếu ngay</strong> lên màn hình PC (chạy ổn định cả Wi-Fi nội bộ).
+              </p>
+            </div>
+
             {/* FALLBACK: TẢI ẢNH TỪ THƯ VIỆN ĐIỆN THOẠI NẾU KHÔNG DÙNG LIVE CAM */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -1191,7 +1253,7 @@ export default function MobileController({ roomCode: propRoomCode = 'WB-601', on
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handlePhotoCapture}
+                  onChange={(e) => handlePhotoCapture(e, false)}
                 />
               </label>
 
