@@ -2821,7 +2821,7 @@
         "bloomLevel": "Thông hiểu",
         "difficulty": "Trung bình"
       },
-      "questionState": "REVEALED",
+      "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
       "totalStudents": 32,
       "studentResponses": {},
@@ -2832,6 +2832,12 @@
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
           "caption": "Poster Tin học 6 - Nhóm 1",
           "timestamp": "2026-11-16T02:17:57.403Z"
+        },
+        "group_2": {
+          "groupNumber": 2,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
+          "caption": "Bài nhóm 2 test",
+          "timestamp": "2026-11-25T03:46:57.442Z"
         }
       },
       "groupWorks": {
@@ -2840,6 +2846,12 @@
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
           "caption": "Poster Tin học 6 - Nhóm 1",
           "timestamp": "2026-11-16T02:17:57.403Z"
+        },
+        "2": {
+          "groupNumber": 2,
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
+          "caption": "Bài nhóm 2 test",
+          "timestamp": "2026-11-25T03:46:57.442Z"
         }
       },
       "history": [],
@@ -2866,7 +2878,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-24T10:06:07.515Z",
+      "lastUpdated": "2026-11-25T03:47:36.606Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }

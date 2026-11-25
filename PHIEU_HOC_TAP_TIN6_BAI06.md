@@ -55,3 +55,4 @@
 > - **Bước 1:** Khởi động trình duyệt web (nhấp đúp Google Chrome, Cốc Cốc hoặc Edge).
 > - **Bước 2:** Nhập chính xác địa chỉ website (URL) vào **Thanh địa chỉ (Address Bar)** nằm ở phía trên cùng cửa sổ trình duyệt.
 > - **Bước 3:** Nhấn phím **Enter** để trình duyệt mở và hiển thị trang web.
+

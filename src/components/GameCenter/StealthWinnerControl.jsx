@@ -71,21 +71,19 @@ export default function StealthWinnerControl({
           e.preventDefault();
           setIsExpanded((prev) => !prev);
         }}
-        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
-          isExpanded
+        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${isExpanded
             ? 'bg-slate-800/95 border border-slate-500/70 opacity-95'
             : 'bg-slate-900/40 border border-slate-700/30 opacity-15 hover:opacity-75'
-        }`}
+          }`}
         title="•"
       >
         <span
-          className={`w-2 h-2 rounded-full transition-colors ${
-            justLocked
+          className={`w-2 h-2 rounded-full transition-colors ${justLocked
               ? 'bg-slate-300/80'
               : isRigged
-              ? 'bg-slate-300/70'
-              : 'bg-slate-400/70'
-          }`}
+                ? 'bg-slate-300/70'
+                : 'bg-slate-400/70'
+            }`}
         />
       </button>
 
@@ -100,11 +98,10 @@ export default function StealthWinnerControl({
                 type="button"
                 onClick={(e) => handlePickWinner(e, item)}
                 title={item.shortName || item.name}
-                className={`relative w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all active:scale-90 ${
-                  isSelected
+                className={`relative w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all active:scale-90 ${isSelected
                     ? 'ring-2 ring-amber-400 scale-110 shadow-md'
                     : 'opacity-80 hover:opacity-100 hover:scale-105'
-                }`}
+                  }`}
                 style={{ backgroundColor: item.color || '#334155', color: '#0f172a' }}
               >
                 {item.characterImage ? (
@@ -123,11 +120,10 @@ export default function StealthWinnerControl({
             type="button"
             onClick={(e) => handleResetFair(e)}
             title="Ngẫu nhiên"
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ml-0.5 border ${
-              !isRigged
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ml-0.5 border ${!isRigged
                 ? 'bg-cyan-500/20 border-cyan-400/60 text-cyan-300'
                 : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             🎲
           </button>
