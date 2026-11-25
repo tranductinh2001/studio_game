@@ -171,9 +171,11 @@ export default function SmartScanner({
 
   // Persistent overlay storage so bounding boxes don't vanish after 16ms
   const activeOverlaysRef = useRef(new Map()); // cardKey -> { corners, studentName, answer, color, bgColor, expiresAt }
-  const procCanvasRef = useRef(null); // Offscreen processing canvas for high performance QR detection
+  const procCanvasRef = useRef(null); // Offscreen downscaled processing canvas (<= 720px) for ultra-fast QR detection
   const nativeDetectorRef = useRef(null); // Hardware BarcodeDetector for simultaneous multi-QR
   const nativeDetectorBusyRef = useRef(false);
+  const contrastBufferRef = useRef(null); // Reusable buffer to avoid GC pauses
+  const scanFrameCounterRef = useRef(0);
 
   // Auto-streaming queue to instantly push detected responses to Teacher Desktop in real time
   const pendingSyncQueueRef = useRef(new Map());
@@ -287,12 +289,8 @@ export default function SmartScanner({
     syncedCardsRef.current.set(respItem.cardId, respItem.answer);
     pendingSyncQueueRef.current.set(respItem.cardId, respItem);
 
-    // Instant zero-delay dispatch (<50ms) if student turns card, or rapid throttle batching (35ms)
-    if (isAnswerChanged) {
-      flushPendingSyncQueue();
-    } else if (!syncTimeoutRef.current) {
-      syncTimeoutRef.current = setTimeout(flushPendingSyncQueue, 35);
-    }
+    // Instant zero-delay dispatch whenever a new card is scanned or a student rotates their card
+    flushPendingSyncQueue();
   };
 
   // Load students for active class
@@ -715,48 +713,62 @@ export default function SmartScanner({
         }
       });
 
-      // 3. Scan every 30ms (~33 FPS) with hardware BarcodeDetector + multi-pass adaptive-contrast jsQR
-      if (now - lastProcessTimeRef.current >= 30) {
+      // 3. Fast QR pipeline (~30 FPS, downscaled <=720px, zero React re-renders unless card/answer changes)
+      if (now - lastProcessTimeRef.current >= 32) {
         lastProcessTimeRef.current = now;
+        scanFrameCounterRef.current += 1;
+        const frameNo = scanFrameCounterRef.current;
+
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        // Downscale processing canvas to max 720px wide (7x fewer pixels than 1080p -> ~6ms per frame)
+        const targetW = Math.min(720, vw);
+        const targetH = Math.max(1, Math.round((vh * targetW) / vw));
+        const scaleX = vw / targetW;
+        const scaleY = vh / targetH;
+
         if (!procCanvasRef.current) {
           procCanvasRef.current = document.createElement('canvas');
         }
         const proc = procCanvasRef.current;
-        if (proc.width !== video.videoWidth || proc.height !== video.videoHeight) {
-          proc.width = video.videoWidth;
-          proc.height = video.videoHeight;
+        if (proc.width !== targetW || proc.height !== targetH) {
+          proc.width = targetW;
+          proc.height = targetH;
         }
         const pCtx = proc.getContext('2d', { willReadFrequently: true });
-        pCtx.drawImage(video, 0, 0, proc.width, proc.height);
-        const imageData = pCtx.getImageData(0, 0, proc.width, proc.height);
+        pCtx.drawImage(video, 0, 0, targetW, targetH);
+        const imageData = pCtx.getImageData(0, 0, targetW, targetH);
 
-        const processDetectedWebbyQr = (rawData, location) => {
-          const cId = parseCardData(rawData);
-          if (!cId || !location) return false;
-          const { topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner } = location;
-          const { answer, angle } = calculateAnswerFromCorners(location);
-          const student = resolveStudent(cId);
-          const targetKey = student.cardId || cId;
+        const scaleCorner = (pt) => ({ x: pt.x * scaleX, y: pt.y * scaleY });
 
-          const pNum = (cId || '').replace(/\D+/g, '');
+        const commitDetectedCard = ({ targetKey, corners, student, quizizzCode, pNum, answer, angle, cardType }) => {
+          const prevOverlay = activeOverlaysRef.current.get(targetKey);
+          const isNewOrChanged = !prevOverlay || prevOverlay.answer !== answer;
+
           activeOverlaysRef.current.set(targetKey, {
-            corners: [topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner],
+            corners,
             studentName: student.fullName,
             shortName: student.fullName ? student.fullName.split(' ').slice(-1)[0] : '',
-            quizizzCode: `P ${pNum || ''}`,
+            quizizzCode,
             pNum,
             answer,
             color: '#10b981',
-            expiresAt: now + 800
+            expiresAt: now + 700
           });
+
+          // Skip expensive React state updates, sound & vibration if card already holds the same answer
+          if (!isNewOrChanged && syncedCardsRef.current.get(targetKey) === answer) {
+            return;
+          }
 
           const respItem = {
             cardId: targetKey,
+            quizizzCode,
             studentCode: student.studentCode,
             studentName: student.fullName,
             answer,
             angle,
-            cardType: 'Webby QR',
+            cardType,
             detectedAt: new Date().toISOString()
           };
 
@@ -765,62 +777,47 @@ export default function SmartScanner({
             [targetKey]: respItem
           }));
 
-          setLastScannedStudent({ name: student.fullName, answer, angle });
+          setLastScannedStudent({
+            name: cardType === 'Quizizz Q-Card' ? `${student.fullName} (${quizizzCode})` : student.fullName,
+            answer,
+            angle
+          });
           playScanChime(answer);
           queueResponseForAutoSync(respItem);
 
-          if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
+          if (navigator.vibrate) navigator.vibrate([35, 25, 35]);
+        };
+
+        const processDetectedWebbyQr = (rawData, location, isFullResCoords = false) => {
+          const cId = parseCardData(rawData);
+          if (!cId || !location) return false;
+          const { answer, angle } = calculateAnswerFromCorners(location);
+          const student = resolveStudent(cId);
+          const targetKey = student.cardId || cId;
+          const pNum = (cId || '').replace(/\D+/g, '');
+
+          const rawCorners = [
+            location.topLeftCorner,
+            location.topRightCorner,
+            location.bottomRightCorner,
+            location.bottomLeftCorner
+          ];
+          const corners = isFullResCoords ? rawCorners : rawCorners.map(scaleCorner);
+
+          commitDetectedCard({
+            targetKey,
+            corners,
+            student,
+            quizizzCode: `P ${pNum || ''}`,
+            pNum,
+            answer,
+            angle,
+            cardType: 'Webby QR'
+          });
           return true;
         };
 
-        // A. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4)
-        try {
-          const qCards = detectQuizizzCards(imageData);
-          if (qCards && qCards.length > 0) {
-            qCards.forEach((q) => {
-              const { participant, cardId, quizizzCode, answer, visualAngle, corners } = q;
-              const student = resolveStudent(cardId, quizizzCode);
-              const targetKey = student.cardId || cardId;
-
-              activeOverlaysRef.current.set(targetKey, {
-                corners,
-                studentName: student.fullName,
-                shortName: student.fullName ? student.fullName.split(' ').slice(-1)[0] : '',
-                quizizzCode,
-                pNum: participant,
-                answer,
-                color: '#10b981',
-                expiresAt: now + 800
-              });
-
-              const respItem = {
-                cardId: targetKey,
-                quizizzCode,
-                studentCode: student.studentCode,
-                studentName: student.fullName,
-                answer,
-                angle: visualAngle,
-                cardType: 'Quizizz Q-Card',
-                detectedAt: new Date().toISOString()
-              };
-
-              setDetectedResponses((prev) => ({
-                ...prev,
-                [targetKey]: respItem
-              }));
-
-              setLastScannedStudent({ name: `${student.fullName} (${quizizzCode})`, answer, angle: visualAngle });
-              playScanChime(answer);
-              queueResponseForAutoSync(respItem);
-
-              if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
-            });
-          }
-        } catch (err) {
-          // ignore scan error
-        }
-
-        // B1. Hardware-accelerated native BarcodeDetector (multi-QR simultaneous detection on Chrome/Android)
+        // A. Hardware-accelerated native BarcodeDetector directly on <video> (0 CPU pixel copy, multi-QR)
         if (typeof window !== 'undefined' && 'BarcodeDetector' in window && !nativeDetectorBusyRef.current) {
           nativeDetectorBusyRef.current = true;
           if (!nativeDetectorRef.current) {
@@ -831,7 +828,7 @@ export default function SmartScanner({
             }
           }
           if (nativeDetectorRef.current) {
-            nativeDetectorRef.current.detect(proc).then((barcodes) => {
+            nativeDetectorRef.current.detect(video).then((barcodes) => {
               if (Array.isArray(barcodes) && barcodes.length > 0) {
                 barcodes.forEach((bc) => {
                   if (bc.rawValue && Array.isArray(bc.cornerPoints) && bc.cornerPoints.length >= 4) {
@@ -840,7 +837,7 @@ export default function SmartScanner({
                       topRightCorner: bc.cornerPoints[1],
                       bottomRightCorner: bc.cornerPoints[2],
                       bottomLeftCorner: bc.cornerPoints[3]
-                    });
+                    }, true);
                   }
                 });
               }
@@ -852,19 +849,24 @@ export default function SmartScanner({
           }
         }
 
-        // B2. Scan Webby QR via jsQR (raw frame + adaptive contrast stretch fallback for dim/distant cards)
+        // B. Scan Webby QR via jsQR on fast 720px buffer (dontInvert = 2x faster for paper cards)
+        let webbyHit = false;
         try {
           let code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'attemptBoth'
+            inversionAttempts: 'dontInvert'
           });
 
-          if (!code) {
-            // Adaptive contrast boost on a lightweight copy for faint/low-light paper QR cards
-            const boosted = new Uint8ClampedArray(imageData.data.length);
+          // Every 4th frame if nothing found, try reusable adaptive-contrast stretch (for dim/distant cards)
+          if (!code && frameNo % 4 === 0) {
+            const len = imageData.data.length;
+            if (!contrastBufferRef.current || contrastBufferRef.current.length !== len) {
+              contrastBufferRef.current = new Uint8ClampedArray(len);
+            }
+            const boosted = contrastBufferRef.current;
             const src = imageData.data;
-            for (let i = 0; i < src.length; i += 4) {
+            for (let i = 0; i < len; i += 4) {
               const lum = (src[i] * 77 + src[i + 1] * 150 + src[i + 2] * 29) >> 8;
-              const stretched = lum < 95 ? 0 : (lum > 165 ? 255 : Math.min(255, Math.max(0, (lum - 95) * 3.6)));
+              const stretched = lum < 95 ? 0 : (lum > 165 ? 255 : ((lum - 95) * 3.6) | 0);
               boosted[i] = stretched;
               boosted[i + 1] = stretched;
               boosted[i + 2] = stretched;
@@ -876,10 +878,36 @@ export default function SmartScanner({
           }
 
           if (code) {
-            processDetectedWebbyQr(code.data, code.location);
+            webbyHit = processDetectedWebbyQr(code.data, code.location, false);
           }
         } catch (err) {
           // ignore scan error
+        }
+
+        // C. Scan Quizizz Paper Mode Q-Cards (ArUco 4x4) on 720px buffer (skip if Webby QR already hit this frame)
+        if (!webbyHit) {
+          try {
+            const qCards = detectQuizizzCards(imageData);
+            if (qCards && qCards.length > 0) {
+              qCards.forEach((q) => {
+                const { participant, cardId, quizizzCode, answer, visualAngle, corners } = q;
+                const student = resolveStudent(cardId, quizizzCode);
+                const targetKey = student.cardId || cardId;
+                commitDetectedCard({
+                  targetKey,
+                  corners: corners.map(scaleCorner),
+                  student,
+                  quizizzCode,
+                  pNum: participant,
+                  answer,
+                  angle: visualAngle,
+                  cardType: 'Quizizz Q-Card'
+                });
+              });
+            }
+          } catch (err) {
+            // ignore scan error
+          }
         }
       }
     }
