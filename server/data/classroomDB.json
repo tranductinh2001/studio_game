@@ -2795,31 +2795,31 @@
       "school": "TRƯỜNG TH & THCS ĐĂK TRÔI",
       "currentQuestion": {
         "id": "Q_02",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+        "questionText": "Siêu văn bản (Hypertext) là loại văn bản có đặc điểm nổi bật nào dưới đây?",
         "options": {
-          "A": "Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng",
-          "B": "WWW là hạ tầng mạng phần cứng, còn Internet là trang web",
-          "C": "Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet",
-          "D": "Muốn dùng Internet thì nhất thiết phải cài đặt WWW"
+          "A": "Chỉ chứa duy nhất các chữ viết và con số in màu đen.",
+          "B": "Là cuốn sách giáo khoa in trên khổ giấy dày cỡ lớn.",
+          "C": "Tích hợp nhiều dạng dữ liệu (chữ, hình ảnh, âm thanh, video) và chứa các siêu liên kết.",
+          "D": "Không thể mở xem được trên máy tính hay điện thoại thông minh."
         },
         "correctAnswer": "C",
-        "explanation": "Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.",
-        "bloomLevel": "Thông hiểu",
-        "difficulty": "Trung bình"
+        "explanation": "[Phần 1 SGK: Siêu văn bản] Siêu văn bản là văn bản tích hợp nhiều dạng dữ liệu khác nhau và đặc biệt có chứa các siêu liên kết đến văn bản khác (SGK Tin học 6 trang 24).",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
       "activeQuestion": {
         "id": "Q_02",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+        "questionText": "Siêu văn bản (Hypertext) là loại văn bản có đặc điểm nổi bật nào dưới đây?",
         "options": {
-          "A": "Internet và WWW là hai tên gọi khác nhau của cùng một đối tượng",
-          "B": "WWW là hạ tầng mạng phần cứng, còn Internet là trang web",
-          "C": "Internet là hạ tầng mạng kết nối, còn WWW là một dịch vụ thông tin hoạt động trên Internet",
-          "D": "Muốn dùng Internet thì nhất thiết phải cài đặt WWW"
+          "A": "Chỉ chứa duy nhất các chữ viết và con số in màu đen.",
+          "B": "Là cuốn sách giáo khoa in trên khổ giấy dày cỡ lớn.",
+          "C": "Tích hợp nhiều dạng dữ liệu (chữ, hình ảnh, âm thanh, video) và chứa các siêu liên kết.",
+          "D": "Không thể mở xem được trên máy tính hay điện thoại thông minh."
         },
         "correctAnswer": "C",
-        "explanation": "Internet là mạng liên kết các mạng máy tính toàn cầu (hạ tầng mạng), còn WWW chỉ là một trong các dịch vụ chạy trên Internet.",
-        "bloomLevel": "Thông hiểu",
-        "difficulty": "Trung bình"
+        "explanation": "[Phần 1 SGK: Siêu văn bản] Siêu văn bản là văn bản tích hợp nhiều dạng dữ liệu khác nhau và đặc biệt có chứa các siêu liên kết đến văn bản khác (SGK Tin học 6 trang 24).",
+        "bloomLevel": "Nhận biết",
+        "difficulty": "Dễ"
       },
       "questionState": "COLLECTING",
       "activeQuestionIndex": 0,
@@ -2837,7 +2837,7 @@
           "groupNumber": 2,
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
           "caption": "Bài nhóm 2 test",
-          "timestamp": "2026-11-25T05:39:12.479Z"
+          "timestamp": "2026-11-25T05:47:43.855Z"
         }
       },
       "groupWorks": {
@@ -2851,7 +2851,7 @@
           "groupNumber": 2,
           "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFElEQVR42mNk+M9Qz0AEYBxVSF+FAAhKDveksOjmAAAAAElFTkSuQmCC",
           "caption": "Bài nhóm 2 test",
-          "timestamp": "2026-11-25T05:39:12.479Z"
+          "timestamp": "2026-11-25T05:47:43.855Z"
         }
       },
       "history": [],
@@ -2860,7 +2860,7 @@
         "roomCode": "WB-601",
         "classId": "CLASS_6A",
         "className": "Lớp 6A",
-        "questionText": "Phát biểu nào sau đây là ĐÚNG khi nói về mối quan hệ giữa Internet và Mạng thông tin toàn cầu (WWW)?",
+        "questionText": "Siêu văn bản (Hypertext) là loại văn bản có đặc điểm nổi bật nào dưới đây?",
         "correctAnswer": "C",
         "totalStudents": 32,
         "totalAnswered": 0,
@@ -2878,7 +2878,7 @@
       },
       "status": "ACTIVE",
       "startedAt": "2026-11-16T16:04:48.073Z",
-      "lastUpdated": "2026-11-25T05:40:14.682Z",
+      "lastUpdated": "2026-11-25T05:48:26.437Z",
       "questionBank": "LESSON_6",
       "timerSeconds": 60
     }

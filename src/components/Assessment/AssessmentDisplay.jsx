@@ -989,22 +989,22 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
       {/* MODAL: BẢNG VÀNG VINH DANH TOP 1 - 2 - 3 (DASHBOARD & TUNG HOA RỰC RỠ)   */}
       {/* ========================================================================= */}
       {showLeaderboardModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="relative w-full max-w-5xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-amber-400/60 rounded-3xl p-5 sm:p-8 shadow-[0_0_80px_rgba(245,158,11,0.25)] flex flex-col my-auto space-y-6 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden">
+          <div className="relative w-full max-w-7xl max-h-[94vh] bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-amber-400/60 rounded-3xl p-4 sm:p-6 shadow-[0_0_80px_rgba(245,158,11,0.25)] flex flex-col space-y-4 overflow-y-auto lg:overflow-hidden">
             
             {/* Top Close & Header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-amber-500/30">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-amber-500/30 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/40 text-slate-950 font-black">
-                  <Trophy className="w-7 h-7 stroke-[2.2]" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/40 text-slate-950 font-black">
+                  <Trophy className="w-6 h-6 stroke-[2.2]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/40">
                       TỔNG KẾT TRÒ CHƠI
                     </span>
-                    <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 uppercase tracking-tight font-['Orbitron',sans-serif]">
-                      BẢNG VÀNG VINH DANH TOP 1 - 2 - 3
+                    <h2 className="text-lg sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 uppercase tracking-tight font-['Orbitron',sans-serif]">
+                      BẢNG VÀNG VINH DANH & ĐÁNH GIÁ
                     </h2>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
@@ -1017,7 +1017,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
               <div className="flex items-center gap-2">
                 <button
                   onClick={triggerGloriousConfetti}
-                  className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 via-amber-400 to-yellow-400 hover:from-rose-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-amber-500/30 active:scale-95 transition-all animate-pulse"
+                  className="px-4 py-2 rounded-2xl bg-gradient-to-r from-rose-500 via-amber-400 to-yellow-400 hover:from-rose-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-amber-500/30 active:scale-95 transition-all animate-pulse"
                 >
                   <span className="text-base">🌸</span>
                   <span>TUNG HOA CHÚC MỪNG</span>
@@ -1025,7 +1025,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
 
                 <button
                   onClick={() => setShowLeaderboardModal(false)}
-                  className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all border border-slate-700"
+                  className="p-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all border border-slate-700"
                   title="Đóng Bảng Vàng"
                 >
                   <X className="w-5 h-5" />
@@ -1075,7 +1075,7 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
               const top1 = leaderboardList[0] || { fullName: 'Học sinh 1', points: 100, totalCorrect: 1 };
               const top2 = leaderboardList[1] || { fullName: 'Học sinh 2', points: 90, totalCorrect: 1 };
               const top3 = leaderboardList[2] || { fullName: 'Học sinh 3', points: 80, totalCorrect: 1 };
-              const remainingRanks = leaderboardList.slice(3);
+              const participatedCount = leaderboardList.filter((s) => s.totalAnswered > 0 || s.points > 0).length;
 
               return (
                 <>
@@ -1099,176 +1099,182 @@ export default function AssessmentDisplay({ roomCode = 'WB-601', currentQuestion
                     .anim-crown { animation: crownFloat 2.2s ease-in-out infinite; }
                     .anim-gold-glow { animation: goldGlow 2.4s ease-in-out infinite; }
                   `}</style>
-                  <div className="flex items-end justify-center gap-3 sm:gap-6 pt-6 pb-2 max-w-4xl mx-auto w-full">
-                    
-                    {/* TOP 2: Á QUÂN (SILVER / BẠC) */}
-                    <div className="flex-1 flex flex-col items-center max-w-[240px] anim-podium-2">
-                      <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-3xl sm:text-4xl filter drop-shadow animate-pulse">🥈</div>
-                        <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-slate-200 to-slate-400 text-slate-950 shadow-md">
-                          Á QUÂN 🥈
-                        </span>
-                      </div>
 
-                      <div className="w-full bg-slate-900/90 border-2 border-slate-300/80 rounded-2xl p-3 text-center space-y-1 shadow-[0_0_30px_rgba(203,213,225,0.3)] backdrop-blur-md mb-2">
-                        <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top2.fullName}>
-                          {top2.fullName}
-                        </h4>
-                        <div className="text-xs sm:text-sm font-mono font-bold text-cyan-300">
-                          {top2.points} Điểm
-                        </div>
-                        <div className="text-[11px] text-slate-300">
-                          {top2.totalCorrect} câu đúng
-                        </div>
-                      </div>
-
-                      <div className="w-full h-32 sm:h-36 rounded-t-2xl bg-gradient-to-b from-slate-400 via-slate-600 to-slate-800 border-t-2 border-x-2 border-slate-200 flex flex-col items-center justify-center text-white shadow-xl relative">
-                        <span className="font-['Orbitron',sans-serif] text-3xl sm:text-4xl font-black text-slate-100 drop-shadow">
-                          2
-                        </span>
-                        <span className="text-[10px] uppercase tracking-widest font-black text-slate-300 opacity-80">
-                          SILVER
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* TOP 1: QUÁN QUÂN (GOLD / VÀNG) - CENTER & TALLEST */}
-                    <div className="flex-1 flex flex-col items-center max-w-[280px] -mt-6 z-10 anim-podium-1">
-                      <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-4xl sm:text-5xl anim-crown filter drop-shadow-[0_0_20px_#facc15]">
-                          👑
-                        </div>
-                        <span className="mt-1 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-lg shadow-yellow-500/50 border border-white">
-                          QUÁN QUÂN 👑
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-3 border-yellow-400 rounded-2xl p-4 text-center space-y-1.5 anim-gold-glow ring-4 ring-yellow-400/30 backdrop-blur-md mb-2">
-                        <h4 className="font-black text-sm sm:text-base text-yellow-300 drop-shadow truncate" title={top1.fullName}>
-                          {top1.fullName}
-                        </h4>
-                        <div className="text-sm sm:text-base font-mono font-black text-white bg-amber-500/30 py-0.5 rounded-lg border border-amber-400/40">
-                          {top1.points} Điểm
-                        </div>
-                        <div className="text-xs font-bold text-emerald-300 flex items-center justify-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{top1.totalCorrect} câu đúng xuất sắc</span>
-                        </div>
-                      </div>
-
-                      <div className="w-full h-44 sm:h-52 rounded-t-2xl bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700 border-t-4 border-x-4 border-yellow-200 flex flex-col items-center justify-center text-slate-950 shadow-2xl relative">
-                        <span className="font-['Orbitron',sans-serif] text-5xl sm:text-6xl font-black text-slate-950 drop-shadow-md">
-                          1
-                        </span>
-                        <span className="text-xs uppercase tracking-widest font-black text-slate-950 opacity-90">
-                          CHAMPION
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* TOP 3: QUÝ QUÂN (BRONZE / ĐỒNG) */}
-                    <div className="flex-1 flex flex-col items-center max-w-[240px] anim-podium-3">
-                      <div className="relative mb-2 flex flex-col items-center">
-                        <div className="text-3xl sm:text-4xl filter drop-shadow animate-pulse">🥉</div>
-                        <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md">
-                          QUÝ QUÂN 🥉
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-slate-900/90 border-2 border-amber-600/80 rounded-2xl p-3 text-center space-y-1 shadow-[0_0_30px_rgba(217,119,6,0.3)] backdrop-blur-md mb-2">
-                        <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top3.fullName}>
-                          {top3.fullName}
-                        </h4>
-                        <div className="text-xs sm:text-sm font-mono font-bold text-amber-400">
-                          {top3.points} Điểm
-                        </div>
-                        <div className="text-[11px] text-slate-300">
-                          {top3.totalCorrect} câu đúng
-                        </div>
-                      </div>
-
-                      <div className="w-full h-24 sm:h-28 rounded-t-2xl bg-gradient-to-b from-amber-700 via-amber-800 to-slate-900 border-t-2 border-x-2 border-amber-500 flex flex-col items-center justify-center text-white shadow-xl relative">
-                        <span className="font-['Orbitron',sans-serif] text-3xl sm:text-4xl font-black text-amber-200 drop-shadow">
-                          3
-                        </span>
-                        <span className="text-[10px] uppercase tracking-widest font-black text-amber-300 opacity-80">
-                          BRONZE
-                        </span>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* SUMMARY STATS STRIP & CLASSROOM ANALYTICS OVERVIEW */}
-                  <div className="space-y-2.5 max-w-4xl mx-auto w-full">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
-                        <span className="text-[11px] text-slate-400 font-bold block">Sĩ số lớp</span>
-                        <span className="text-base sm:text-lg font-black text-cyan-300">{students.length || 32} Học sinh</span>
-                      </div>
-                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
-                        <span className="text-[11px] text-slate-400 font-bold block">Đã tham gia nộp bài</span>
-                        <span className="text-base sm:text-lg font-black text-emerald-400">{answeredCount} / {students.length || 32} HS</span>
-                      </div>
-                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
-                        <span className="text-[11px] text-slate-400 font-bold block">Độ chính xác toàn lớp</span>
-                        <span className="text-base sm:text-lg font-black text-yellow-300">{accuracyOnAnswered}% Đúng</span>
-                      </div>
-                      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center shadow-md">
-                        <span className="text-[11px] text-slate-400 font-bold block">Số câu thử thách</span>
-                        <span className="text-base sm:text-lg font-black text-amber-300">{LESSON_6_QUESTIONS.length} Câu hỏi</span>
-                      </div>
-                    </div>
-
-                    {/* Options Distribution Breakdown */}
-                    <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span className="font-bold text-slate-300 flex items-center gap-1.5">
-                        <BarChart3 className="w-4 h-4 text-cyan-400" />
-                        <span>Phổ lựa chọn đáp án hiện tại:</span>
-                      </span>
-                      <div className="flex items-center gap-2 font-mono font-bold">
-                        <span className="px-2 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-500/40">A: {counts.A || 0} HS ({Math.round(((counts.A || 0) / (answeredCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-500/40">B: {counts.B || 0} HS ({Math.round(((counts.B || 0) / (answeredCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C: {counts.C || 0} HS ({Math.round(((counts.C || 0) / (answeredCount || 1)) * 100)}%)</span>
-                        <span className="px-2 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-500/40">D: {counts.D || 0} HS ({Math.round(((counts.D || 0) / (answeredCount || 1)) * 100)}%)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* REMAINING STUDENTS RANK TABLE (HẠNG 4 TRỞ ĐI - TO RÕ KHI CHIẾU) */}
-                  {remainingRanks.length > 0 && (
-                    <div className="max-w-5xl mx-auto w-full bg-slate-900/75 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xl">
-                      <span className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                        <Users className="w-4 h-4 text-cyan-400" />
-                        BẢNG XẾP HẠNG CÁC THÀNH VIÊN KHÁC (HẠNG 4 - {students.length}):
-                      </span>
-                      <div className="max-h-72 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pr-1">
-                        {remainingRanks.map((stu, i) => (
-                          <div 
-                            key={stu.id || i}
-                            className="p-3 rounded-xl bg-slate-950/90 border border-slate-700/80 flex items-center justify-between gap-3 hover:border-cyan-500/60 transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="font-mono font-black text-sm text-cyan-300 bg-slate-800/90 px-2 py-1 rounded-lg shrink-0">
-                                #{i + 4}
-                              </span>
-                              <div className="min-w-0">
-                                <div className="font-bold text-sm sm:text-base text-slate-100 truncate" title={stu.fullName}>
-                                  {stu.fullName}
-                                </div>
-                                <div className="text-xs text-slate-400 font-medium">
-                                  {stu.totalCorrect} câu đúng
-                                </div>
-                              </div>
-                            </div>
-                            <span className="font-mono font-black text-sm sm:text-base text-cyan-200 bg-cyan-500/20 border border-cyan-400/40 px-2.5 py-1 rounded-xl shrink-0">
-                              {stu.points} Điểm
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 flex-1 min-h-0">
+                    {/* CỘT TRÁI: BỤC VINH DANH TOP 1-2-3 & THỐNG KÊ TỔNG QUAN */}
+                    <div className="lg:col-span-6 flex flex-col justify-between space-y-3">
+                      <div className="flex items-end justify-center gap-2.5 sm:gap-4 pt-5 pb-1 w-full">
+                        
+                        {/* TOP 2: Á QUÂN */}
+                        <div className="flex-1 flex flex-col items-center max-w-[200px] anim-podium-2">
+                          <div className="relative mb-1.5 flex flex-col items-center">
+                            <div className="text-2xl sm:text-3xl filter drop-shadow animate-pulse">🥈</div>
+                            <span className="mt-0.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-slate-200 to-slate-400 text-slate-950 shadow-md">
+                              Á QUÂN
                             </span>
                           </div>
-                        ))}
+                          <div className="w-full bg-slate-900/90 border-2 border-slate-300/80 rounded-2xl p-2.5 text-center space-y-0.5 shadow-[0_0_25px_rgba(203,213,225,0.3)] mb-1.5">
+                            <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top2.fullName}>
+                              {top2.fullName}
+                            </h4>
+                            <div className="text-xs sm:text-sm font-mono font-bold text-cyan-300">
+                              {top2.points} Điểm
+                            </div>
+                            <div className="text-[11px] text-slate-300">
+                              {top2.totalCorrect} câu đúng
+                            </div>
+                          </div>
+                          <div className="w-full h-24 sm:h-28 rounded-t-2xl bg-gradient-to-b from-slate-400 via-slate-600 to-slate-800 border-t-2 border-x-2 border-slate-200 flex flex-col items-center justify-center text-white shadow-xl">
+                            <span className="font-['Orbitron',sans-serif] text-2xl sm:text-3xl font-black text-slate-100">2</span>
+                            <span className="text-[9px] uppercase tracking-widest font-black text-slate-300 opacity-80">SILVER</span>
+                          </div>
+                        </div>
+
+                        {/* TOP 1: QUÁN QUÂN */}
+                        <div className="flex-1 flex flex-col items-center max-w-[230px] -mt-4 z-10 anim-podium-1">
+                          <div className="relative mb-1.5 flex flex-col items-center">
+                            <div className="text-3xl sm:text-4xl anim-crown filter drop-shadow-[0_0_20px_#facc15]">👑</div>
+                            <span className="mt-0.5 px-3 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 shadow-lg border border-white">
+                              QUÁN QUÂN
+                            </span>
+                          </div>
+                          <div className="w-full bg-gradient-to-b from-amber-950/90 via-slate-900 to-slate-950 border-3 border-yellow-400 rounded-2xl p-3 text-center space-y-1 anim-gold-glow ring-4 ring-yellow-400/30 mb-1.5">
+                            <h4 className="font-black text-sm sm:text-base text-yellow-300 drop-shadow truncate" title={top1.fullName}>
+                              {top1.fullName}
+                            </h4>
+                            <div className="text-sm sm:text-base font-mono font-black text-white bg-amber-500/30 py-0.5 rounded-lg border border-amber-400/40">
+                              {top1.points} Điểm
+                            </div>
+                            <div className="text-[11px] font-bold text-emerald-300 flex items-center justify-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>{top1.totalCorrect} câu đúng</span>
+                            </div>
+                          </div>
+                          <div className="w-full h-32 sm:h-36 rounded-t-2xl bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-700 border-t-4 border-x-4 border-yellow-200 flex flex-col items-center justify-center text-slate-950 shadow-2xl">
+                            <span className="font-['Orbitron',sans-serif] text-4xl sm:text-5xl font-black text-slate-950">1</span>
+                            <span className="text-[10px] uppercase tracking-widest font-black text-slate-950 opacity-90">CHAMPION</span>
+                          </div>
+                        </div>
+
+                        {/* TOP 3: QUÝ QUÂN */}
+                        <div className="flex-1 flex flex-col items-center max-w-[200px] anim-podium-3">
+                          <div className="relative mb-1.5 flex flex-col items-center">
+                            <div className="text-2xl sm:text-3xl filter drop-shadow animate-pulse">🥉</div>
+                            <span className="mt-0.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md">
+                              QUÝ QUÂN
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-900/90 border-2 border-amber-600/80 rounded-2xl p-2.5 text-center space-y-0.5 shadow-[0_0_25px_rgba(217,119,6,0.3)] mb-1.5">
+                            <h4 className="font-black text-xs sm:text-sm text-slate-100 truncate" title={top3.fullName}>
+                              {top3.fullName}
+                            </h4>
+                            <div className="text-xs sm:text-sm font-mono font-bold text-amber-400">
+                              {top3.points} Điểm
+                            </div>
+                            <div className="text-[11px] text-slate-300">
+                              {top3.totalCorrect} câu đúng
+                            </div>
+                          </div>
+                          <div className="w-full h-20 sm:h-24 rounded-t-2xl bg-gradient-to-b from-amber-700 via-amber-800 to-slate-900 border-t-2 border-x-2 border-amber-500 flex flex-col items-center justify-center text-white shadow-xl">
+                            <span className="font-['Orbitron',sans-serif] text-2xl sm:text-3xl font-black text-amber-200">3</span>
+                            <span className="text-[9px] uppercase tracking-widest font-black text-amber-300 opacity-80">BRONZE</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SUMMARY STATS STRIP & CLASSROOM ANALYTICS OVERVIEW */}
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center shadow-md">
+                            <span className="text-[11px] text-slate-400 font-bold block">Sĩ số lớp</span>
+                            <span className="text-sm sm:text-base font-black text-cyan-300">{students.length || 32} HS</span>
+                          </div>
+                          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center shadow-md">
+                            <span className="text-[11px] text-slate-400 font-bold block">Đã tham gia</span>
+                            <span className="text-sm sm:text-base font-black text-emerald-400">{Math.max(answeredCount, participatedCount)} / {students.length || 32} HS</span>
+                          </div>
+                          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center shadow-md">
+                            <span className="text-[11px] text-slate-400 font-bold block">Chính xác</span>
+                            <span className="text-sm sm:text-base font-black text-yellow-300">{accuracyOnAnswered}% Đúng</span>
+                          </div>
+                          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center shadow-md">
+                            <span className="text-[11px] text-slate-400 font-bold block">Thử thách</span>
+                            <span className="text-sm sm:text-base font-black text-amber-300">{LESSON_6_QUESTIONS.length} Câu</span>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                            <BarChart3 className="w-4 h-4 text-cyan-400" />
+                            <span>Phổ đáp án hiện tại:</span>
+                          </span>
+                          <div className="flex items-center gap-1.5 font-mono font-bold">
+                            <span className="px-2 py-0.5 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-500/40">A: {counts.A || 0}</span>
+                            <span className="px-2 py-0.5 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-500/40">B: {counts.B || 0}</span>
+                            <span className="px-2 py-0.5 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">C: {counts.C || 0}</span>
+                            <span className="px-2 py-0.5 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-500/40">D: {counts.D || 0}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  )}
+
+                    {/* CỘT PHẢI: DANH SÁCH TẤT CẢ HỌC SINH THAM GIA & SỐ ĐIỂM ĐÁNH GIÁ */}
+                    <div className="lg:col-span-6 bg-slate-900/80 border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 flex flex-col min-h-[280px] lg:max-h-[60vh] shadow-xl">
+                      <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-800 shrink-0">
+                        <span className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wide flex items-center gap-2">
+                          <Users className="w-4 h-4 text-cyan-400" />
+                          BẢNG ĐIỂM HỌC SINH THAM GIA ({leaderboardList.length} HS)
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          Có điểm: {participatedCount} HS
+                        </span>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
+                        {leaderboardList.map((stu, i) => {
+                          const hasScore = stu.points > 0 || stu.totalAnswered > 0;
+                          return (
+                            <div 
+                              key={stu.id || i}
+                              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
+                                i === 0
+                                  ? 'bg-amber-950/50 border-amber-400/70 shadow-md'
+                                  : hasScore
+                                  ? 'bg-slate-950/95 border-cyan-500/50 shadow-sm'
+                                  : 'bg-slate-950/60 border-slate-800/80 opacity-85'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={`font-mono font-black text-xs px-2 py-1 rounded-lg shrink-0 ${
+                                  i === 0 ? 'bg-amber-400 text-slate-950' :
+                                  i === 1 ? 'bg-slate-300 text-slate-950' :
+                                  i === 2 ? 'bg-amber-600 text-white' :
+                                  'bg-slate-800 text-cyan-300'
+                                }`}>
+                                  #{i + 1}
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="font-bold text-sm text-slate-100 truncate" title={stu.fullName}>
+                                    {stu.fullName}
+                                  </div>
+                                  <div className="text-[11px] text-slate-400 font-medium">
+                                    Đúng {stu.totalCorrect}/{Math.max(stu.totalAnswered, 1)} câu
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`font-mono font-black text-sm px-2.5 py-1 rounded-xl shrink-0 border ${
+                                hasScore
+                                  ? 'text-emerald-200 bg-emerald-500/20 border-emerald-400/50'
+                                  : 'text-slate-400 bg-slate-900 border-slate-700'
+                              }`}>
+                                {stu.points}đ
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 </>
               );
             })()}
