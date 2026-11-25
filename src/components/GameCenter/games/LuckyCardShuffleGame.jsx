@@ -8,11 +8,14 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES, pickRaceWinner } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 export default function LuckyCardShuffleGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -29,7 +32,7 @@ export default function LuckyCardShuffleGame({
   const [shuffleOffset, setShuffleOffset] = useState(0);
 
   // Mode: individual or team
-  const isIndividual = settings?.gameMode === 'individual';
+  const isIndividual = (settings?.mode || settings?.gameMode) === 'individual';
   const rawPool = isIndividual ? students : teams;
 
   // Filtered candidate pool
@@ -58,10 +61,13 @@ export default function LuckyCardShuffleGame({
       const num = parseInt(e.key, 10);
       if (!isNaN(num) && num >= 1 && num <= rawPool.length) {
         const target = rawPool[num - 1];
-        if (target) {
-          secretControl.targetTeamId = target.id;
-          secretControl.targetStudentId = target.id;
-          secretControl.mode = 'teacher_rigged';
+        if (target && onUpdateSecretControl) {
+          onUpdateSecretControl({
+            ...secretControl,
+            mode: 'teacher_rigged',
+            targetTeamId: target.id,
+            targetStudentId: target.id
+          });
           gameAudio.playTick();
         }
       }
@@ -281,9 +287,13 @@ export default function LuckyCardShuffleGame({
 
               {/* Big Avatar Display */}
               <div className="my-auto flex flex-col items-center">
-                <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-6xl shadow-xl shadow-indigo-500/40 border-2 border-white/60 mb-3 animate-bounce">
-                  {winner?.avatar || winner?.icon || '🧑‍🎓'}
-                </div>
+                {winner?.characterImage ? (
+                  <CharacterAvatar team={winner} size="xl" className="w-28 h-28 mb-3 ring-4 ring-amber-400/60 shadow-xl animate-bounce" />
+                ) : (
+                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-6xl shadow-xl shadow-indigo-500/40 border-2 border-white/60 mb-3 animate-bounce">
+                    {winner?.avatar || winner?.icon || '🧑‍🎓'}
+                  </div>
+                )}
                 <h3 className="text-xl font-black text-white">
                   {winner?.name || 'Học Sinh May Mắn'}
                 </h3>
@@ -330,9 +340,13 @@ export default function LuckyCardShuffleGame({
                 🃏 ĐÃ CHỌN ĐƯỢC ỨNG VIÊN
               </span>
 
-              <div className="w-16 h-16 rounded-2xl my-2 flex items-center justify-center text-4xl shadow-lg bg-indigo-600/30 border border-indigo-400/40">
-                {winner.avatar || winner.icon || '🧑‍🎓'}
-              </div>
+              {winner.characterImage ? (
+                <CharacterAvatar team={winner} size="lg" className="my-2 ring-2 ring-indigo-400/60" />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl my-2 flex items-center justify-center text-4xl shadow-lg bg-indigo-600/30 border border-indigo-400/40">
+                  {winner.avatar || winner.icon || '🧑‍🎓'}
+                </div>
+              )}
 
               <h2 className="text-2xl font-black text-white mt-1">
                 {winner.name}
@@ -368,6 +382,13 @@ export default function LuckyCardShuffleGame({
           targetName={winner?.name || 'Học Sinh May Mắn'}
           onClose={() => setShowChallengeModal(false)}
           onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={candidatePool.length > 0 ? candidatePool : rawPool}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
         />
       </div>
     </div>

@@ -123,19 +123,17 @@ export default function GameCenterHeader({
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
         </button>
 
-        {/* Secret Teacher Rigging Panel Toggle (Shift+G or F2) */}
+        {/* Discreet Stealth Panel Toggle (F2 or Shift+G) - low-profile so students don't notice */}
         <button
           onClick={onToggleSecretPanel}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
             isSecretPanelOpen
-              ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
-              : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700/80 text-slate-400 hover:text-slate-200'
+              ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300 opacity-90'
+              : 'bg-transparent text-slate-600 opacity-25 hover:opacity-75 hover:bg-slate-900'
           }`}
-          title="Bảng điều khiển bí mật của giáo viên (Phím tắt: F2 hoặc Shift+G)"
+          title="F2"
         >
-          <Shield className="w-3.5 h-3.5 text-amber-400" />
-          <span className="hidden sm:inline">Bảng Bí Mật</span>
-          <span className="text-[10px] text-slate-500 font-mono">F2</span>
+          <Shield className="w-3.5 h-3.5" />
         </button>
 
         {/* Teacher Configuration Modal */}

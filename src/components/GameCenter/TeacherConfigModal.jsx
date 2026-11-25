@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, UserPlus, Settings, Volume2, VolumeX, Music, Clock, 
-  Trash2, Edit3, Plus, Check, RefreshCw, X, Shield, Sparkles, Palette 
+  Trash2, Edit3, Plus, Check, RefreshCw, X, Shield, Sparkles, Palette, Upload, Image as ImageIcon 
 } from 'lucide-react';
 import { PRESET_COLORS, PRESET_ICONS, PRESET_AVATARS } from './services/gameStorage';
+import { CHARACTER_PRESETS, CharacterAvatar } from './services/characterAvatars';
 
 export default function TeacherConfigModal({
   isOpen,
@@ -25,9 +26,11 @@ export default function TeacherConfigModal({
 
   // Team Form editing state
   const [editingTeamId, setEditingTeamId] = useState(null);
+  const [pickingCharForTeamId, setPickingCharForTeamId] = useState(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamShortName, setNewTeamShortName] = useState('');
   const [newTeamIcon, setNewTeamIcon] = useState('🐺');
+  const [newTeamCharId, setNewTeamCharId] = useState(CHARACTER_PRESETS[0].id);
   const [newTeamColor, setNewTeamColor] = useState('#0ea5e9');
 
   // Student Form editing state
@@ -35,7 +38,47 @@ export default function TeacherConfigModal({
   const [newStudentTeamId, setNewStudentTeamId] = useState(teams[0]?.id || 'TEAM_1');
   const [filterTeam, setFilterTeam] = useState('ALL');
 
+  // Sync modal state whenever config or isOpen changes
+  useEffect(() => {
+    if (isOpen && config) {
+      setTeams(config.teams || []);
+      setStudents(config.students || []);
+      setGameMode(config.gameMode || config.settings?.mode || 'team');
+      setSettings(config.settings || {
+        roundDuration: 25,
+        soundEnabled: true,
+        bgmEnabled: true,
+        gameSpeed: 1.0
+      });
+      setPickingCharForTeamId(null);
+    }
+  }, [isOpen, config]);
+
   if (!isOpen) return null;
+
+  // Upload custom character image (resized to 160x160 for fast localStorage)
+  const handleUploadCharacterImage = (teamId, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 160;
+        const ctx = canvas.getContext('2d');
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 160, 160);
+        const dataUrl = canvas.toDataURL('image/png');
+        handleUpdateTeam(teamId, { characterId: 'custom', characterImage: dataUrl });
+        setPickingCharForTeamId(null);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Save all changes
   const handleSave = () => {
@@ -53,15 +96,18 @@ export default function TeacherConfigModal({
   const handleAddTeam = () => {
     const nextNum = teams.length + 1;
     const colorPreset = PRESET_COLORS[(nextNum - 1) % PRESET_COLORS.length];
+    const charPreset = CHARACTER_PRESETS.find(c => c.id === newTeamCharId) || CHARACTER_PRESETS[(nextNum - 1) % CHARACTER_PRESETS.length];
     const newTeam = {
       id: `TEAM_${Date.now()}`,
       number: nextNum,
       name: newTeamName.trim() || `Đội Mới (Nhóm ${nextNum})`,
       shortName: newTeamShortName.trim() || `Nhóm ${nextNum}`,
-      icon: newTeamIcon || PRESET_ICONS[(nextNum - 1) % PRESET_ICONS.length],
+      icon: charPreset.badge || newTeamIcon || PRESET_ICONS[(nextNum - 1) % PRESET_ICONS.length],
+      characterId: charPreset.id,
+      characterImage: charPreset.image,
       color: newTeamColor || colorPreset.color,
       gradient: colorPreset.gradient,
-      avatar: newTeamIcon || '🐺',
+      avatar: charPreset.badge || newTeamIcon || '🐺',
       score: 0,
       wins: 0
     };
@@ -196,30 +242,96 @@ export default function TeacherConfigModal({
                 </span>
               </div>
 
-              {/* Team list grid */}
+              {/* Team list grid with Character Portraits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {teams.map((t) => (
+                {teams.map((t, idx) => (
                   <div
                     key={t.id}
-                    className="p-3.5 rounded-2xl bg-slate-950/80 border-2 border-slate-800 hover:border-slate-700 flex flex-col justify-between space-y-2 shadow-lg"
+                    className="relative p-3.5 rounded-2xl bg-slate-950/80 border-2 border-slate-800 hover:border-slate-700 flex flex-col justify-between space-y-2.5 shadow-lg"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-slate-950 font-mono shadow-md"
-                          style={{ backgroundColor: t.color }}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <button
+                          type="button"
+                          onClick={() => setPickingCharForTeamId(pickingCharForTeamId === t.id ? null : t.id)}
+                          className="relative group shrink-0 rounded-full focus:outline-none"
+                          title="Bấm để đổi hình ảnh nhân vật"
                         >
-                          {t.number}
-                        </span>
-                        <div>
-                          <p className="font-extrabold text-sm text-white">{t.shortName}</p>
-                          <p className="text-[10px] text-slate-400 truncate max-w-[140px]">{t.name}</p>
+                          <CharacterAvatar team={t} index={idx} size="lg" className="group-hover:brightness-110 transition-all" />
+                          <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shadow border border-white text-[10px] font-black">
+                            ✎
+                          </span>
+                        </button>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className="px-1.5 py-0.5 rounded text-[10px] font-black text-slate-950 font-mono shrink-0"
+                              style={{ backgroundColor: t.color }}
+                            >
+                              #{t.number}
+                            </span>
+                            <input
+                              type="text"
+                              value={t.shortName}
+                              onChange={(e) => handleUpdateTeam(t.id, { shortName: e.target.value })}
+                              className="w-full bg-transparent border-b border-transparent focus:border-cyan-400 font-extrabold text-sm text-white outline-none truncate"
+                              title="Bấm để sửa tên ngắn"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={t.name}
+                            onChange={(e) => handleUpdateTeam(t.id, { name: e.target.value })}
+                            className="w-full bg-transparent border-b border-transparent focus:border-cyan-400 text-[11px] text-slate-400 focus:text-slate-200 outline-none truncate"
+                            title="Bấm để sửa tên đầy đủ"
+                          />
                         </div>
                       </div>
-                      <span className="text-2xl">{t.icon}</span>
                     </div>
 
-                    {/* Color & Icon Pickers for Team */}
+                    {/* Inline Character Image Picker */}
+                    {pickingCharForTeamId === t.id && (
+                      <div className="p-2.5 rounded-xl bg-slate-900 border border-cyan-500/40 space-y-2 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-cyan-300">
+                          <span>Chọn nhân vật cho {t.shortName}:</span>
+                          <label className="cursor-pointer px-2 py-0.5 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 flex items-center gap-1">
+                            <Upload className="w-3 h-3" />
+                            <span>Tải ảnh</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleUploadCharacterImage(t.id, e.target.files?.[0])}
+                            />
+                          </label>
+                        </div>
+                        <div className="grid grid-cols-6 gap-1.5">
+                          {CHARACTER_PRESETS.map((char) => (
+                            <button
+                              key={char.id}
+                              type="button"
+                              onClick={() => {
+                                handleUpdateTeam(t.id, {
+                                  characterId: char.id,
+                                  characterImage: char.image,
+                                  icon: char.badge,
+                                  avatar: char.badge
+                                });
+                                setPickingCharForTeamId(null);
+                              }}
+                              title={char.name}
+                              className={`p-0.5 rounded-full border-2 transition-all hover:scale-110 ${
+                                t.characterId === char.id ? 'border-cyan-400 ring-2 ring-cyan-400/40' : 'border-transparent'
+                              }`}
+                            >
+                              <img src={char.image} alt={char.name} className="w-8 h-8 rounded-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Color, Icon & Delete */}
                     <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
                         <input
@@ -236,6 +348,14 @@ export default function TeacherConfigModal({
                         >
                           {PRESET_ICONS.map(ic => <option key={ic} value={ic}>{ic}</option>)}
                         </select>
+                        <button
+                          type="button"
+                          onClick={() => setPickingCharForTeamId(pickingCharForTeamId === t.id ? null : t.id)}
+                          className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-bold text-cyan-300 flex items-center gap-1"
+                        >
+                          <ImageIcon className="w-3 h-3" />
+                          <span>Đổi nhân vật</span>
+                        </button>
                       </div>
 
                       <button
@@ -262,7 +382,7 @@ export default function TeacherConfigModal({
                     type="text"
                     value={newTeamShortName}
                     onChange={(e) => setNewTeamShortName(e.target.value)}
-                    placeholder="Tên ngắn (VD: Nhóm 5)"
+                    placeholder="Tên ngắn (VD: Nhóm 7)"
                     className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
                   />
                   <input
@@ -274,11 +394,11 @@ export default function TeacherConfigModal({
                   />
                   <div className="flex items-center gap-2">
                     <select
-                      value={newTeamIcon}
-                      onChange={(e) => setNewTeamIcon(e.target.value)}
-                      className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-base"
+                      value={newTeamCharId}
+                      onChange={(e) => setNewTeamCharId(e.target.value)}
+                      className="flex-1 px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
                     >
-                      {PRESET_ICONS.map(ic => <option key={ic} value={ic}>{ic} Biểu tượng</option>)}
+                      {CHARACTER_PRESETS.map(c => <option key={c.id} value={c.id}>{c.badge} {c.name}</option>)}
                     </select>
                     <input
                       type="color"

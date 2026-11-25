@@ -8,6 +8,8 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 const MAZE_GATES = [
   { step: 1, title: 'Cổng 1: Mạng WWW', hint: 'Khái niệm WWW & Siêu văn bản' },
@@ -20,6 +22,7 @@ export default function KnowledgeMazeGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -164,16 +167,14 @@ export default function KnowledgeMazeGame({
         {/* Connecting Pathway Line */}
         <div className="relative w-full flex items-center justify-between">
           
-          {/* Dynamic Hopping Pawn Adventurer */}
+          {/* Dynamic Hopping Pawn Adventurer with Team Character Avatar */}
           <div 
             className="absolute -top-16 z-30 flex flex-col items-center pointer-events-none transition-all duration-700 [transition-timing-function:cubic-bezier(0.34,1.4,0.64,1)] will-change-[left,transform] -translate-x-1/2"
             style={{
               left: `calc(${Math.min(currentStep, 5) * 20}% + 32px)`
             }}
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 border-2 border-white flex items-center justify-center text-2xl shadow-xl shadow-cyan-500/50 animate-bounce">
-              {activeTeam?.icon || '🧙'}
-            </div>
+            <CharacterAvatar team={activeTeam} index={currentTeamIndex} size="md" className="ring-2 ring-white shadow-xl shadow-cyan-500/50 animate-bounce" />
             <span className="mt-0.5 px-2 py-0.5 rounded text-[9px] font-black bg-cyan-500 text-slate-950 shadow whitespace-nowrap">
               {activeTeam?.shortName}
             </span>
@@ -272,8 +273,9 @@ export default function KnowledgeMazeGame({
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-amber-400/60 p-6 shadow-2xl shadow-amber-500/30 flex flex-col items-center text-center">
               
-              <div className="w-24 h-24 mb-2">
-                <img src="/assets/games/knowledge-maze/treasure_chest.svg" alt="Treasure" className="w-full h-full object-contain filter drop-shadow" />
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <CharacterAvatar team={winner} size="xl" className="ring-4 ring-amber-400/60 shadow-2xl" />
+                <img src="/assets/games/knowledge-maze/treasure_chest.svg" alt="Treasure" className="w-16 h-16 object-contain filter drop-shadow" />
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
@@ -297,6 +299,19 @@ export default function KnowledgeMazeGame({
             </div>
           </div>
         )}
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={teams}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+          onLiveOverrideWinner={(target) => {
+            if (target) {
+              const idx = teams.findIndex((t) => t.id === target.id);
+              if (idx !== -1) setCurrentTeamIndex(idx);
+            }
+          }}
+        />
       </div>
     </div>
   );

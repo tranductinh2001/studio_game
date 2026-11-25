@@ -8,6 +8,8 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES, pickRaceWinner, computeRacerProgress } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 // Fun duck accessories based on lane index
 const DUCK_ACCESSORIES = [
@@ -25,6 +27,7 @@ export default function DuckRaceGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -44,7 +47,7 @@ export default function DuckRaceGame({
   const badgeRefs = useRef([]);
 
   // Mode: 'team' or 'individual'
-  const isIndividual = settings?.gameMode === 'individual';
+  const isIndividual = (settings?.mode || settings?.gameMode) === 'individual';
   const participants = useMemo(() => {
     if (isIndividual && students.length > 0) {
       return students.slice(0, 8); // Top 8 students for clean river lanes
@@ -435,12 +438,18 @@ export default function DuckRaceGame({
                 key={item.id}
                 className="relative w-full h-14 flex items-center border-b border-sky-400/20"
               >
-                {/* Lane marker badge */}
-                <div 
-                  className="absolute left-2 w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shadow"
-                  style={{ backgroundColor: item.color || '#f59e0b', color: '#fff' }}
-                >
-                  {item.number || index + 1}
+                {/* Lane marker badge with Character Avatar */}
+                <div className="absolute left-2 flex items-center gap-1 z-10">
+                  {!isIndividual ? (
+                    <CharacterAvatar team={item} index={index} size="sm" />
+                  ) : (
+                    <div
+                      className="w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shadow"
+                      style={{ backgroundColor: item.color || '#f59e0b', color: '#fff' }}
+                    >
+                      {item.number || index + 1}
+                    </div>
+                  )}
                 </div>
 
                 {/* 2D CARTOON DUCK SPRITE (GPU translate3d) */}
@@ -524,8 +533,9 @@ export default function DuckRaceGame({
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-amber-400/60 p-6 shadow-2xl shadow-amber-500/30 flex flex-col items-center text-center">
               
-              <div className="w-24 h-24 mb-3">
-                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
+              <div className="flex items-center justify-center gap-3 mb-3">
+                {!isIndividual && <CharacterAvatar team={winner} size="xl" className="ring-4 ring-amber-400/60 shadow-2xl" />}
+                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-16 h-16 object-contain filter drop-shadow" />
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
@@ -596,6 +606,19 @@ export default function DuckRaceGame({
           targetName={winner?.name || 'Vịt Về Đích'}
           onClose={() => setShowChallengeModal(false)}
           onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={participants}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+          onLiveOverrideWinner={(target) => {
+            if (target) {
+              runtimeRef.current.targetWinner = target;
+              runtimeRef.current.determinedWinner = target;
+            }
+          }}
         />
       </div>
     </div>

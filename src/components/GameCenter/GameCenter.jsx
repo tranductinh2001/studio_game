@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   loadGameConfig, saveGameConfig, loadSecretControl, 
-  saveSecretControl, recordGameResult 
+  saveSecretControl, recordGameResult, gameStorage 
 } from './services/gameStorage';
 import { gameAudio } from './services/gameAudioSynth';
 
@@ -51,9 +51,19 @@ export default function GameCenter({ onSwitchTab }) {
 
   // Handle saving new config from modal
   const handleSaveConfig = (newConfig) => {
-    setConfig(newConfig);
-    saveGameConfig(newConfig);
-    gameAudio.setMute(!newConfig.settings.soundEnabled);
+    const syncedMode = newConfig.gameMode || newConfig.settings?.mode || 'team';
+    const normalized = {
+      ...newConfig,
+      gameMode: syncedMode,
+      settings: {
+        ...newConfig.settings,
+        mode: syncedMode,
+        gameMode: syncedMode
+      }
+    };
+    setConfig(normalized);
+    saveGameConfig(normalized);
+    gameAudio.setMute(!normalized.settings.soundEnabled);
   };
 
   // Handle updating secret control
@@ -64,12 +74,26 @@ export default function GameCenter({ onSwitchTab }) {
 
   // Handle setting updates from header
   const handleUpdateSettings = (settingsPatch) => {
+    const nextMode = settingsPatch.mode || settingsPatch.gameMode || config.settings?.mode || config.gameMode || 'team';
     const updated = {
       ...config,
-      settings: { ...config.settings, ...settingsPatch }
+      gameMode: nextMode,
+      settings: {
+        ...config.settings,
+        ...settingsPatch,
+        mode: nextMode,
+        gameMode: nextMode
+      }
     };
     setConfig(updated);
     saveGameConfig(updated);
+  };
+
+  const handleResetDefaultConfig = () => {
+    const def = gameStorage.resetToDefault();
+    setConfig(def);
+    setSecretControl(def.secretControl || { mode: 'fair_random', targetTeamId: def.teams?.[0]?.id });
+    gameAudio.setMute(!def.settings?.soundEnabled);
   };
 
   // Record game history / score result
@@ -98,7 +122,12 @@ export default function GameCenter({ onSwitchTab }) {
       teams: config.teams,
       students: config.students,
       secretControl: secretControl,
-      settings: config.settings,
+      onUpdateSecretControl: handleUpdateSecretControl,
+      settings: {
+        ...config.settings,
+        mode: config.settings?.mode || config.gameMode || 'team',
+        gameMode: config.settings?.gameMode || config.settings?.mode || config.gameMode || 'team'
+      },
       onRecordResult: handleRecordResult,
       onOpenTeacherPanel: () => setIsSecretPanelOpen(true)
     };
@@ -163,8 +192,9 @@ export default function GameCenter({ onSwitchTab }) {
         onClose={() => setIsSecretPanelOpen(false)}
         teams={config.teams}
         students={config.students}
-        secretState={secretControl}
-        onUpdateSecretState={handleUpdateSecretControl}
+        gameMode={config.settings?.mode || config.gameMode || 'team'}
+        secretControl={secretControl}
+        onUpdateSecretControl={handleUpdateSecretControl}
       />
 
       {/* Teacher Configuration Modal */}
@@ -172,7 +202,8 @@ export default function GameCenter({ onSwitchTab }) {
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
         config={config}
-        onSave={handleSaveConfig}
+        onSaveConfig={handleSaveConfig}
+        onResetDefault={handleResetDefaultConfig}
       />
     </div>
   );

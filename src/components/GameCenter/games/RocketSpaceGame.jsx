@@ -8,11 +8,14 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES, pickRaceWinner, computeRacerProgress } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 export default function RocketSpaceGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -421,12 +424,9 @@ export default function RocketSpaceGame({
                 key={team.id}
                 className="relative w-full h-14 flex items-center border-b border-indigo-500/20"
               >
-                {/* Team Number */}
-                <div 
-                  className="absolute left-2 w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shadow"
-                  style={{ backgroundColor: team.color || '#3b82f6', color: '#fff' }}
-                >
-                  {team.number || index + 1}
+                {/* Team Character Avatar */}
+                <div className="absolute left-2 flex items-center z-10">
+                  <CharacterAvatar team={team} index={index} size="sm" />
                 </div>
 
                 {/* Rocket Sprite */}
@@ -434,13 +434,13 @@ export default function RocketSpaceGame({
                   ref={(el) => (rocketRefs.current[index] = el)}
                   className="absolute flex items-center will-change-transform"
                   style={{
-                    left: '3%',
+                    left: '4.5%',
                     transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.80 : 800)}px, 0px, 0)`
                   }}
                 >
                   {/* Floating Team Badge above rocket */}
                   <div className="absolute -top-6 left-6 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
-                    <span className="text-xs">{team.icon || '🚀'}</span>
+                    <CharacterAvatar team={team} index={index} size="xs" />
                     <span className="text-[11px] font-bold text-white">{team.shortName || team.name}</span>
                     <span 
                       ref={(el) => (badgeRefs.current[index] = el)}
@@ -511,8 +511,9 @@ export default function RocketSpaceGame({
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-cyan-400/60 p-6 shadow-2xl shadow-cyan-500/30 flex flex-col items-center text-center">
               
-              <div className="w-24 h-24 mb-3">
-                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <CharacterAvatar team={winner} size="xl" className="ring-4 ring-cyan-400/60 shadow-2xl" />
+                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-16 h-16 object-contain filter drop-shadow" />
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 uppercase tracking-widest mb-1">
@@ -582,6 +583,19 @@ export default function RocketSpaceGame({
           targetName={winner?.name || 'Đội Chiến Thắng'}
           onClose={() => setShowChallengeModal(false)}
           onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={teams}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+          onLiveOverrideWinner={(target) => {
+            if (target) {
+              runtimeRef.current.targetWinner = target;
+              runtimeRef.current.determinedWinner = target;
+            }
+          }}
         />
       </div>
     </div>

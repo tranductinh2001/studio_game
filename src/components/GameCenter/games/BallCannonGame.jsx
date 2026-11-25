@@ -8,6 +8,8 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 const TARGET_ZONES = [
   { score: 100, label: 'TÂM VÀNG (100 PTS)', ring: 'Tâm Vàng', color: '#facc15' },
@@ -20,6 +22,7 @@ export default function BallCannonGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -266,13 +269,19 @@ export default function BallCannonGame({
         {/* Carnival Striped Backdrop */}
         <div className="absolute inset-0 pointer-events-none opacity-15 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500 via-transparent to-transparent" />
 
-        {/* LEFT: Cartoon Brass Cannon & Rower/Shooter Character */}
+        {/* LEFT: Cartoon Brass Cannon & Shooter Character */}
         <div 
           ref={cannonRef}
           className="relative z-10 flex flex-col items-center"
           style={recoiling ? { animation: 'cannonRecoilAnim 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28)' } : {}}
         >
-          <div className="w-48 h-36">
+          <div className="relative w-48 h-36 flex items-center">
+            <CharacterAvatar
+              team={activeTeam}
+              index={selectedTeamIndex}
+              size="lg"
+              className="absolute -left-4 bottom-2 z-20 ring-2 ring-amber-300 shadow-xl"
+            />
             <img 
               src="/assets/games/ball-cannon/cannon.svg" 
               alt="Cannon" 
@@ -324,8 +333,9 @@ export default function BallCannonGame({
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border-2 border-amber-400/60 p-6 shadow-2xl shadow-amber-500/30 flex flex-col items-center text-center">
               
-              <div className="w-20 h-20 mb-2">
-                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-full h-full object-contain filter drop-shadow" />
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <CharacterAvatar team={activeTeam} index={selectedTeamIndex} size="xl" className="ring-4 ring-amber-400/60 shadow-xl" />
+                <img src="/assets/games/common/trophy_gold.svg" alt="Trophy" className="w-16 h-16 object-contain filter drop-shadow" />
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
@@ -366,6 +376,19 @@ export default function BallCannonGame({
           targetName={activeTeam?.name || 'Đội Bắn Pháo'}
           onClose={() => setShowChallengeModal(false)}
           onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={teams}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+          onLiveOverrideWinner={(target) => {
+            if (target) {
+              const idx = teams.findIndex((t) => t.id === target.id);
+              if (idx !== -1) setSelectedTeamIndex(idx);
+            }
+          }}
         />
       </div>
     </div>

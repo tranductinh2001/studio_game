@@ -236,10 +236,10 @@ export class ConversationMemory {
   // Lấy lời khen ngợi ngẫu nhiên nhưng không bao giờ lặp lại câu vừa dùng
   getDiversePraise() {
     const available = PRAISE_POOL.filter(p => !this.praiseHistory.slice(-3).includes(p));
-    const chosen = available.length > 0 
+    const chosen = available.length > 0
       ? available[Math.floor(Math.random() * available.length)]
       : PRAISE_POOL[0];
-    
+
     this.praiseHistory.push(chosen);
     if (this.praiseHistory.length > 6) this.praiseHistory.shift();
     return chosen;

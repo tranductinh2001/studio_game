@@ -8,11 +8,14 @@ import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES, easeOutQuint } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 export default function LuckyWheelGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -31,8 +34,9 @@ export default function LuckyWheelGame({
 
   // Sync mode from settings
   useEffect(() => {
-    if (settings?.gameMode) {
-      setMode(settings.gameMode);
+    const m = settings?.mode || settings?.gameMode;
+    if (m) {
+      setMode(m);
     }
   }, [settings]);
 
@@ -520,10 +524,14 @@ export default function LuckyWheelGame({
                 🎡 KẾT QUẢ VÒNG QUAY MAY MẮN
               </span>
 
-              <div className="w-16 h-16 rounded-2xl my-2 flex items-center justify-center text-3xl shadow-lg"
-                style={{ backgroundColor: winner.color || '#7c3aed' }}>
-                {winner.icon || winner.avatar || '⭐'}
-              </div>
+              {winner.characterImage ? (
+                <CharacterAvatar team={winner} size="xl" className="my-2 ring-4 ring-purple-400/50 shadow-xl" />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl my-2 flex items-center justify-center text-3xl shadow-lg"
+                  style={{ backgroundColor: winner.color || '#7c3aed' }}>
+                  {winner.icon || winner.avatar || '⭐'}
+                </div>
+              )}
 
               <h2 className="text-2xl font-black text-white mt-1">
                 {winner.name}
@@ -559,6 +567,18 @@ export default function LuckyWheelGame({
           targetName={winner?.name || 'Đối tượng được chọn'}
           onClose={() => setShowChallengeModal(false)}
           onConfirmSuccess={() => setShowChallengeModal(false)}
+        />
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={activeItems}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+          onLiveOverrideWinner={(target) => {
+            if (target) {
+              wheelRef.current.targetItem = target;
+            }
+          }}
         />
       </div>
     </div>

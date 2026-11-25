@@ -4,6 +4,8 @@
 // and the Teacher's Secret Rigging / Priority State.
 // =========================================================================
 
+import { CHARACTER_PRESETS } from './characterAvatars';
+
 const STORAGE_KEY = 'webby_game_center_config_v2';
 
 // 32 Default Students of Class 6A - THCS Đắk Trôi (Mang Yang, Gia Lai)
@@ -53,6 +55,8 @@ export const DEFAULT_TEAMS = [
     name: 'Đội Sói Xanh (Nhóm 1)',
     shortName: 'Nhóm 1',
     icon: '🐺',
+    characterId: 'char_wolf',
+    characterImage: CHARACTER_PRESETS[0].image,
     color: '#0ea5e9', // Sky blue
     gradient: 'from-sky-500 to-blue-600',
     avatar: '🐺',
@@ -65,6 +69,8 @@ export const DEFAULT_TEAMS = [
     name: 'Đội Đại Bàng (Nhóm 2)',
     shortName: 'Nhóm 2',
     icon: '🦅',
+    characterId: 'char_eagle',
+    characterImage: CHARACTER_PRESETS[1].image,
     color: '#f59e0b', // Amber
     gradient: 'from-amber-500 to-orange-600',
     avatar: '🦅',
@@ -77,6 +83,8 @@ export const DEFAULT_TEAMS = [
     name: 'Đội Rồng Lửa (Nhóm 3)',
     shortName: 'Nhóm 3',
     icon: '🐉',
+    characterId: 'char_dragon',
+    characterImage: CHARACTER_PRESETS[2].image,
     color: '#ef4444', // Red
     gradient: 'from-rose-500 to-red-600',
     avatar: '🐉',
@@ -89,6 +97,8 @@ export const DEFAULT_TEAMS = [
     name: 'Chiến Binh Số (Nhóm 4)',
     shortName: 'Nhóm 4',
     icon: '⚔️',
+    characterId: 'char_knight',
+    characterImage: CHARACTER_PRESETS[3].image,
     color: '#10b981', // Emerald
     gradient: 'from-emerald-500 to-teal-600',
     avatar: '⚔️',
@@ -101,6 +111,8 @@ export const DEFAULT_TEAMS = [
     name: 'Đội Thần Tốc (Nhóm 5)',
     shortName: 'Nhóm 5',
     icon: '⚡',
+    characterId: 'char_flash',
+    characterImage: CHARACTER_PRESETS[4].image,
     color: '#8b5cf6', // Purple
     gradient: 'from-purple-500 to-indigo-600',
     avatar: '⚡',
@@ -113,6 +125,8 @@ export const DEFAULT_TEAMS = [
     name: 'Đội Sao Băng (Nhóm 6)',
     shortName: 'Nhóm 6',
     icon: '🌠',
+    characterId: 'char_astro',
+    characterImage: CHARACTER_PRESETS[5].image,
     color: '#ec4899', // Pink
     gradient: 'from-pink-500 to-rose-600',
     avatar: '🌠',
@@ -264,6 +278,16 @@ export class GameStorageService {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.teams) && parsed.teams.length > 0) {
+          // Ensure every team has a characterId & characterImage
+          parsed.teams = parsed.teams.map((t, idx) => {
+            if (t.characterImage) return t;
+            const preset = CHARACTER_PRESETS[idx % CHARACTER_PRESETS.length];
+            return {
+              ...t,
+              characterId: t.characterId || preset.id,
+              characterImage: preset.image
+            };
+          });
           return parsed;
         }
       }

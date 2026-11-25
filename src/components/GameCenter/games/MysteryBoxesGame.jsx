@@ -7,6 +7,8 @@ import {
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
 import { GAME_STATES } from '../services/gameEngine2D';
+import StealthWinnerControl from '../StealthWinnerControl';
+import { CharacterAvatar } from '../services/characterAvatars';
 
 const REWARD_TYPES = [
   { type: 'star', title: 'Ngôi Sao May Mắn', points: 10, icon: '⭐', desc: 'Cộng trực tiếp +10 điểm vào bảng xếp hạng!' },
@@ -21,6 +23,7 @@ export default function MysteryBoxesGame({
   teams = [],
   students = [],
   secretControl = {},
+  onUpdateSecretControl,
   settings = {},
   onRecordResult,
   onOpenTeacherPanel
@@ -53,6 +56,7 @@ export default function MysteryBoxesGame({
         id: `BOX_${i + 1}`,
         number: i + 1,
         color: boxColors[i % boxColors.length],
+        team: team,
         teamName: team?.shortName || `Hộp ${i + 1}`,
         reward,
         question: q,
@@ -70,8 +74,13 @@ export default function MysteryBoxesGame({
   const handleBoxClick = (box) => {
     if (openedBoxIds.has(box.id)) return;
 
+    // If teacher secretly rigged a winning team, grant top prize (+20đ Cúp Thần Tốc) to that team's box
+    const isRigged = secretControl?.mode === 'teacher_rigged' && secretControl?.targetTeamId;
+    const isRiggedTarget = isRigged && (box.team?.id === secretControl.targetTeamId || String(box.number) === String(secretControl.targetTeamId));
+    const effectiveBox = isRiggedTarget ? { ...box, reward: REWARD_TYPES[1] } : box;
+
     gameAudio.playPop();
-    setSelectedBox(box);
+    setSelectedBox(effectiveBox);
     setOpenedBoxIds(prev => new Set([...prev, box.id]));
     setGameState(GAME_STATES.PLAYING);
 
@@ -199,10 +208,13 @@ export default function MysteryBoxesGame({
                   )}
                 </div>
 
-                {/* Team / Box Label */}
-                <span className="mt-2 text-xs font-bold text-slate-200 text-center">
-                  {box.teamName}
-                </span>
+                {/* Team / Box Label with Character Avatar */}
+                <div className="mt-2 flex items-center justify-center gap-1.5">
+                  {box.team && <CharacterAvatar team={box.team} size="xs" />}
+                  <span className="text-xs font-bold text-slate-200 text-center">
+                    {box.teamName}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -274,6 +286,13 @@ export default function MysteryBoxesGame({
             </div>
           </div>
         )}
+
+        {/* Stealth Hidden Winner Control */}
+        <StealthWinnerControl
+          items={teams}
+          secretControl={secretControl}
+          onUpdateSecretControl={onUpdateSecretControl}
+        />
       </div>
     </div>
   );
