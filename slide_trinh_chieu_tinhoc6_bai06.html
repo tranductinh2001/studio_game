@@ -211,20 +211,36 @@
             </button>
           </div>
 
-          <div id="khoi-dong-details" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-base sm:text-lg text-slate-100">
-            <div class="bg-slate-950/85 p-3 rounded-xl border border-slate-800">
+          <div id="khoi-dong-details" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-base sm:text-lg text-slate-100 items-stretch">
+            <div class="md:col-span-4 bg-slate-950/85 p-3 rounded-xl border border-slate-800 flex flex-col justify-center">
               <p class="text-amber-300 font-black mb-1 text-sm sm:text-base">📖 TÌNH HUỐNG MỞ ĐẦU:</p>
               <p class="leading-snug text-slate-200 font-medium">
                 Bạn An muốn tìm tài liệu <strong class="text-white">Tin học 6</strong> và xem hình ảnh <strong class="text-cyan-300">Trường THCS Đắk Trôi</strong>. Nhờ Internet &amp; WWW, An ngồi tại nhà vẫn xem được mọi thông tin trên khắp thế giới!
               </p>
             </div>
 
-            <div class="bg-cyan-950/45 p-3 rounded-xl border border-cyan-500/40">
+            <div class="md:col-span-4 bg-cyan-950/45 p-3 rounded-xl border border-cyan-500/40 flex flex-col justify-center">
               <p class="text-cyan-300 font-black mb-1 text-sm sm:text-base">❓ CÂU HỎI KHƠI GỢI:</p>
               <p class="leading-snug text-slate-100 font-medium">
                 Thông tin trên Internet được tổ chức ra sao? Làm thế nào để máy tính mở được trang web đó?
                 <span class="text-yellow-300 font-black block pt-1">➔ Cùng khám phá Bài 6 hôm nay!</span>
               </p>
+            </div>
+
+            <div
+              onclick="openImageZoom('/assets/images/hinh_3_1_website.png', 'Hình 3.1. Hình minh họa một website (Trang chủ • Trang web • Siêu liên kết • Website)')"
+              class="md:col-span-4 bg-white rounded-xl p-2 border-2 border-cyan-400/80 shadow-lg cursor-pointer hover:scale-[1.03] transition-all flex flex-col items-center justify-center group relative overflow-hidden"
+              title="Bấm để phóng to Hình 3.1 cho cả lớp quan sát"
+            >
+              <img
+                src="/assets/images/hinh_3_1_website.png"
+                alt="Hình 3.1. Hình minh họa một website"
+                className="max-h-32 w-auto object-contain"
+                style="max-height: 128px; width: auto; object-fit: contain;"
+              />
+              <span class="mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-sky-600 text-white group-hover:bg-sky-500 transition-colors">
+                🔍 Bấm phóng to Hình 3.1
+              </span>
             </div>
           </div>
         </div>
@@ -530,6 +546,11 @@
                 <span class="text-emerald-400 font-black text-base shrink-0">👉</span>
                 <div class="leading-relaxed">
                   <strong class="text-white">Website &amp; Trang chủ (Homepage):</strong> Website là tập hợp các trang web liên quan dưới 1 địa chỉ chung (VD: <code class="text-cyan-300 font-mono font-bold">thcsdaktroi.edu.vn</code>); trang đầu tiên mở ra khi vào website gọi là <span class="text-emerald-300 font-black">Trang chủ</span>.
+                  <div class="mt-2">
+                    <button onclick="openImageZoom('/assets/images/hinh_3_1_website.png', 'Hình 3.1. Hình minh họa một website (Trang chủ • Trang web • Siêu liên kết • Website)')" class="px-3 py-1.5 rounded-xl text-sm font-black bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-400/50 transition-all inline-flex items-center gap-1.5">
+                      <span>🖼️ Phóng to Hình 3.1: Minh họa Website</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1985,6 +2006,31 @@
       requestAnimationFrame(animateNetwork);
     }
     animateNetwork();
+  </script>
+  <!-- Fullscreen Image Zoom Lightbox Modal (Hình 3.1 Website) -->
+  <div id="image-zoom-modal" onclick="closeImageZoom()" class="fixed inset-0 z-[100] hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 cursor-pointer">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-4 sm:p-6 max-w-4xl w-full shadow-2xl border-4 border-cyan-400 flex flex-col items-center space-y-3 relative cursor-default">
+      <button onclick="closeImageZoom()" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-slate-900 hover:bg-rose-600 text-white font-black text-lg flex items-center justify-center shadow-lg transition-colors" title="Đóng">✕</button>
+      <img id="image-zoom-src" src="" alt="Hình minh họa" class="max-h-[72vh] w-auto object-contain rounded-xl" />
+      <p id="image-zoom-caption" class="text-base sm:text-xl font-black text-emerald-700 text-center"></p>
+    </div>
+  </div>
+
+  <script>
+    function openImageZoom(src, caption) {
+      const modal = document.getElementById('image-zoom-modal');
+      const img = document.getElementById('image-zoom-src');
+      const cap = document.getElementById('image-zoom-caption');
+      if (modal && img) {
+        img.src = src;
+        if (cap) cap.textContent = caption || '';
+        modal.classList.remove('hidden');
+      }
+    }
+    function closeImageZoom() {
+      const modal = document.getElementById('image-zoom-modal');
+      if (modal) modal.classList.add('hidden');
+    }
   </script>
 </body>
 </html>
