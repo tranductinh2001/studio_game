@@ -313,8 +313,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
   const [warmupReveal1, setWarmupReveal1] = useState(false);
   const [warmupReveal2, setWarmupReveal2] = useState(false);
 
-  // Per-activity countdown durations matching lesson plan (HĐ2 = 20m split evenly: 10m + 10m)
-  const ACTIVITY_DURATIONS = { 0: 240, 1: 600, 2: 600, 3: 600, 4: 360 };
+  // Per-activity countdown durations matching lesson plan (HĐ2A: 10m, HĐ2B: 5m)
+  const ACTIVITY_DURATIONS = { 0: 240, 1: 600, 2: 300, 3: 600, 4: 360 };
   const [activityTimer, setActivityTimer] = useState(240);
   const [activityTimerRunning, setActivityTimerRunning] = useState(false);
   const activityTimerRef = useRef(null);
@@ -550,9 +550,9 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
     {
       id: 2,
       tag: 'HĐ 2B',
-      durationLabel: '10p',
+      durationLabel: '5p',
       title: 'Biểu Đồ Quạt',
-      desc: 'HĐ 2B (10 phút): Từ bảng vừa gõ tạo Biểu đồ quạt tròn & hiện % (chia đều 20p HĐ 2)'
+      desc: 'HĐ 2B (5 phút thực hành): Từ bảng vừa gõ tạo Biểu đồ quạt tròn & hiện %'
     },
     {
       id: 3,
@@ -1007,7 +1007,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-500/30 pb-2">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 text-xs sm:text-sm font-black uppercase tracking-wider">
-                  HOẠT ĐỘNG 2B • 10 PHÚT (1/2 CỦA 20 PHÚT HĐ 2)
+                  HOẠT ĐỘNG 2B • 5 PHÚT THỰC HÀNH
                 </span>
               </div>
               <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-pink-300 uppercase tracking-tight">
@@ -1022,7 +1022,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 <span>Từ <strong>bảng số liệu vừa gõ ở HĐ 2A (B2:C8)</strong> ➔ Tạo <strong>Biểu đồ hình quạt tròn (2-D Pie)</strong> ➔ Bấm <strong>(+) ➔ Data Labels ➔ More Options ➔ Percentage (%)</strong>.</span>
               </div>
               <div className="lg:col-span-5">
-                {renderSlideCountdown('ĐẾM NGƯỢC HĐ 2B (10 PHÚT)')}
+                {renderSlideCountdown('ĐẾM NGƯỢC HĐ 2B (5 PHÚT)')}
               </div>
             </div>
 
