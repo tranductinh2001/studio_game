@@ -215,7 +215,7 @@ function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
 
                 {card ? (
                   <div className="bg-white rounded-xl p-1.5 text-center space-y-1 border border-slate-300">
-                    <img src={card.img} alt={card.title} className="h-16 mx-auto object-contain" />
+                    <img src={card.img} alt={card.title} className="h-24 sm:h-28 mx-auto object-contain" />
                     <div className="text-[11px] font-black text-slate-900 leading-tight">{card.title}</div>
                     <div className="text-[9px] text-slate-500">(Bấm vào ô để gỡ ra)</div>
                   </div>
@@ -254,7 +254,7 @@ function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
                         : 'border-slate-300 hover:border-cyan-400'
                     }`}
                   >
-                    <img src={card.img} alt={card.title} className="h-16 object-contain" />
+                    <img src={card.img} alt={card.title} className="h-24 sm:h-28 object-contain" />
                     <div className="text-xs font-black text-slate-900 leading-tight">{card.title}</div>
                     <div className="text-[10px] font-semibold text-cyan-700">{card.hint}</div>
                   </div>
@@ -871,7 +871,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png', title: 'Hình 7.1. Bảng tổng hợp kết quả khảo sát lớp 8A (SGK tr.32)' })}
                     className="cursor-pointer bg-white rounded-xl p-2 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-center overflow-hidden group transition-all"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1 SGK" className="max-h-48 object-contain group-hover:scale-[1.03] transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1 SGK" className="h-52 sm:h-64 w-full object-contain group-hover:scale-[1.03] transition-transform" />
                     <span className="text-[11px] font-bold text-slate-700 mt-1 text-center">Hình 7.1. Bảng số liệu khảo sát</span>
                   </div>
 
@@ -879,7 +879,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_4_quat_tron.png', title: 'Hình 7.4. Biểu đồ hình quạt tròn (SGK tr.33)' })}
                     className="cursor-pointer bg-white rounded-xl p-2 border-2 border-indigo-500/40 hover:border-indigo-400 flex flex-col items-center justify-center overflow-hidden group transition-all"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4 SGK" className="max-h-48 object-contain group-hover:scale-[1.03] transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4 SGK" className="h-52 sm:h-64 w-full object-contain group-hover:scale-[1.03] transition-transform" />
                     <span className="text-[11px] font-bold text-slate-700 mt-1 text-center">Hình 7.4. Biểu đồ quạt tròn (%)</span>
                   </div>
                 </div>
@@ -931,7 +931,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png', title: 'Hình 7.1. Bảng số liệu khảo sát lớp 8A (Vùng chọn B2:C8)' })}
                   className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-sky-400/60 hover:border-sky-300 flex items-center gap-3 shadow-lg group"
                 >
-                  <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1" className="h-32 sm:h-36 object-contain group-hover:scale-105 transition-transform" />
+                  <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1" className="h-40 sm:h-48 object-contain group-hover:scale-105 transition-transform" />
                   <div className="text-left space-y-1">
                     <div className="text-xs sm:text-sm font-black text-sky-700">📋 Hình 7.1 SGK tr.32</div>
                     <div className="text-xs sm:text-sm text-slate-700 font-semibold">Vùng dữ liệu cần chọn: <span className="font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black">B2:C8</span></div>
@@ -975,8 +975,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Nhóm lệnh Charts (Insert -> 2-D Column)' })}
                       className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-cyan-400/60 hover:border-cyan-300 flex items-center justify-between gap-4 group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-28 sm:h-36 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
-                      <div className="w-44 text-left shrink-0">
+                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-36 sm:h-44 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
+                      <div className="w-36 text-left shrink-0">
                         <div className="text-sm font-black text-slate-900">Hình 7.5. Nhóm Charts</div>
                         <div className="text-xs text-slate-600 mt-0.5">Chọn biểu tượng cột vàng (2-D Column)</div>
                       </div>
@@ -985,8 +985,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_6_chart_elements_cot.png', title: 'Hình 7.6. Bổ sung thông tin bằng Chart Elements (+)' })}
                       className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-between gap-4 group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-36 sm:h-44 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
-                      <div className="w-44 text-left shrink-0">
+                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-48 sm:h-56 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
+                      <div className="w-36 text-left shrink-0">
                         <div className="text-sm font-black text-emerald-800">Hình 7.6. Nút dấu (+)</div>
                         <div className="text-xs text-slate-600 mt-0.5">Tích chọn Chart Title, Data Labels, Axis Titles</div>
                       </div>
@@ -1190,14 +1190,14 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_4_quat_tron.png', title: 'Hình 7.4. Mẫu biểu đồ hình quạt tròn (SGK tr.33)' })}
                     className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-indigo-400/60 hover:border-indigo-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4" className="h-44 sm:h-52 w-full object-contain group-hover:scale-105 transition-transform" />
                     <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.4. Biểu đồ quạt tròn</span>
                   </div>
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_7_chart_elements_quat.png', title: 'Hình 7.7. Chọn More Options -> Percentage (%) (SGK tr.34)' })}
                     className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-pink-400/60 hover:border-pink-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_7_chart_elements_quat.png" alt="Hình 7.7" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_7_chart_elements_quat.png" alt="Hình 7.7" className="h-44 sm:h-52 w-full object-contain group-hover:scale-105 transition-transform" />
                     <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.7. Hiện tỉ lệ %</span>
                   </div>
                 </div>
@@ -1293,7 +1293,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png', title: 'Hình 7.8. Tổng số HS sử dụng thiết bị số (SGK tr.35)' })}
                     className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-center gap-4 group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-32 sm:h-40 object-contain group-hover:scale-105 transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-44 sm:h-52 object-contain group-hover:scale-105 transition-transform" />
                     <div className="text-left text-xs sm:text-sm text-slate-800 font-semibold space-y-1">
                       <div className="font-black text-emerald-700 text-sm sm:text-base">📸 Hình 7.8 SGK tr.35</div>
                       <div>Tổng cộng: <strong className="text-emerald-700">429 học sinh</strong></div>
@@ -1427,7 +1427,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Doanh thu công nghiệp phần mềm giai đoạn 2016–2020 (SGK tr.35)' })}
                     className="cursor-pointer bg-white rounded-2xl p-3 border-2 border-amber-400/60 hover:border-amber-300 flex flex-col items-center justify-center flex-1 min-h-[240px] my-2 group shadow-lg"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9 SGK tr.35" className="max-h-72 sm:max-h-80 w-full object-contain group-hover:scale-[1.02] transition-transform" />
+                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9 SGK tr.35" className="h-72 sm:h-96 max-h-[46vh] w-full object-contain group-hover:scale-[1.02] transition-transform" />
                     <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5">Hình 7.9 SGK tr.35 (Bấm để phóng to)</span>
                   </div>
 
@@ -1645,7 +1645,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       {/* Custom SVG Line Chart Output */}
                       <div className="col-span-7 bg-white rounded-xl p-2.5 border-2 border-cyan-400 flex flex-col items-center">
                         <div className="text-xs font-black text-slate-800 mb-1">Xu hướng giờ tự học trong tuần</div>
-                        <svg viewBox="0 0 260 115" className="w-full h-32">
+                        <svg viewBox="0 0 260 115" className="w-full h-44 sm:h-52">
                           <line x1="25" y1="20" x2="245" y2="20" stroke="#e2e8f0" />
                           <line x1="25" y1="50" x2="245" y2="50" stroke="#e2e8f0" />
                           <line x1="25" y1="80" x2="245" y2="80" stroke="#94a3b8" />
@@ -1699,7 +1699,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       {/* Custom SVG Line Chart Output */}
                       <div className="col-span-7 bg-white rounded-xl p-2.5 border-2 border-emerald-400 flex flex-col items-center">
                         <div className="text-xs font-black text-slate-800 mb-1">Sản lượng Cà phê Đắk Trôi (Tấn)</div>
-                        <svg viewBox="0 0 260 115" className="w-full h-32">
+                        <svg viewBox="0 0 260 115" className="w-full h-44 sm:h-52">
                           <line x1="25" y1="20" x2="245" y2="20" stroke="#e2e8f0" />
                           <line x1="25" y1="50" x2="245" y2="50" stroke="#e2e8f0" />
                           <line x1="25" y1="80" x2="245" y2="80" stroke="#94a3b8" />
