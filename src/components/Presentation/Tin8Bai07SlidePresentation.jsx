@@ -8,11 +8,306 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+const PUZZLE_BY_ACTIVITY = {
+  0: {
+    title: 'GHÉP HÌNH KHỞI ĐỘNG: CHỌN ĐÚNG LOẠI BIỂU ĐỒ',
+    subtitle: 'Ghép 3 hình ảnh biểu đồ SGK với mục đích sử dụng tương ứng (HĐ 1)',
+    slots: [
+      { id: 's1', label: 'So sánh độ lớn giữa các đối tượng', expectedId: 'c_col' },
+      { id: 's2', label: 'So sánh tỉ lệ phần trăm (%) trên tổng thể', expectedId: 'c_pie' },
+      { id: 's3', label: 'Theo dõi xu hướng tăng/giảm theo thời gian', expectedId: 'c_line' }
+    ],
+    cards: [
+      { id: 'c_line', title: 'Biểu đồ đoạn thẳng', hint: 'Hình 7.3 SGK', img: '/images/tin8_bai7/hinh_7_3_duong_thang.png' },
+      { id: 'c_col', title: 'Biểu đồ cột', hint: 'Hình 7.9 SGK', img: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png' },
+      { id: 'c_pie', title: 'Biểu đồ hình quạt tròn', hint: 'Hình 7.4 SGK', img: '/images/tin8_bai7/hinh_7_4_quat_tron.png' }
+    ]
+  },
+  1: {
+    title: 'GHÉP BƯỚC THỰC HÀNH: TẠO BIỂU ĐỒ CỘT (HĐ 2A)',
+    subtitle: 'Sắp xếp 4 mảnh ghép hình ảnh & thao tác theo đúng quy trình tạo biểu đồ cột SGK tr.33–34',
+    slots: [
+      { id: 's1', label: 'Bước 1: Chuẩn bị & chọn vùng dữ liệu', expectedId: 'c1' },
+      { id: 's2', label: 'Bước 2: Mở dải lệnh Insert -> Nhóm Charts', expectedId: 'c2' },
+      { id: 's3', label: 'Bước 3: Chọn 2-D Column -> Clustered Column', expectedId: 'c3' },
+      { id: 's4', label: 'Bước 4: Thêm tiêu đề & nhãn bằng nút (+)', expectedId: 'c4' }
+    ],
+    cards: [
+      { id: 'c3', title: '2-D Column (Clustered Column)', hint: 'Chèn biểu đồ cột', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' },
+      { id: 'c1', title: 'Quét chọn vùng B2:C8', hint: 'Hình 7.1 SGK tr.32', img: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png' },
+      { id: 'c4', title: 'Nút Chart Elements (+)', hint: 'Hình 7.6 SGK tr.34', img: '/images/tin8_bai7/hinh_7_6_chart_elements_cot.png' },
+      { id: 'c2', title: 'Thẻ Insert -> Nhóm Charts', hint: 'Hình 7.5 SGK tr.33', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
+    ]
+  },
+  2: {
+    title: 'GHÉP BƯỚC THỰC HÀNH: BIỂU ĐỒ QUẠT TRÒN & TỈ LỆ % (HĐ 2B)',
+    subtitle: 'Ghép đúng thứ tự 4 thao tác tạo biểu đồ hình quạt tròn hiển thị phần trăm % (SGK tr.34)',
+    slots: [
+      { id: 's1', label: 'Bước 1: Chọn miền dữ liệu khảo sát (B2:C8)', expectedId: 'p1' },
+      { id: 's2', label: 'Bước 2: Insert -> Insert Pie or Doughnut Chart -> 2-D Pie', expectedId: 'p2' },
+      { id: 's3', label: 'Bước 3: Bấm (+) -> Data Labels -> More Options...', expectedId: 'p3' },
+      { id: 's4', label: 'Bước 4: Tích chọn Percentage (%) để hiện tỉ lệ', expectedId: 'p4' }
+    ],
+    cards: [
+      { id: 'p3', title: 'More Options... (Format Data Labels)', hint: 'Hình 7.7 SGK tr.34', img: '/images/tin8_bai7/hinh_7_7_chart_elements_quat.png' },
+      { id: 'p1', title: 'Chọn vùng B2:C8', hint: 'Hình 7.1 SGK tr.32', img: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png' },
+      { id: 'p4', title: 'Kết quả hiển thị % hoàn chỉnh', hint: 'Hình 7.4 SGK tr.33', img: '/images/tin8_bai7/hinh_7_4_quat_tron.png' },
+      { id: 'p2', title: 'Nhóm lệnh Charts -> 2-D Pie', hint: 'Hình 7.5 SGK tr.33', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
+    ]
+  },
+  3: {
+    title: 'GHÉP THAO TÁC LUYỆN TẬP: BÀI 1 & BÀI 2 SGK TR.35 (HĐ 3)',
+    subtitle: 'Ghép đúng công cụ xử lý số liệu & biểu đồ tương ứng với 2 bài tập luyện tập',
+    slots: [
+      { id: 's1', label: 'Tính tổng thời gian Nam/Nữ (TGSDThietbiso.xlsx)', expectedId: 'l1' },
+      { id: 's2', label: 'So sánh thời gian Nam và Nữ theo mục đích', expectedId: 'l2' },
+      { id: 's3', label: 'Thể hiện cơ cấu tỉ lệ % từng khoảng thời gian', expectedId: 'l3' },
+      { id: 's4', label: 'Quan sát doanh thu phần mềm 2016–2020 (Bài 2)', expectedId: 'l4' }
+    ],
+    cards: [
+      { id: 'l4', title: 'Biểu đồ cột Hình 7.9 (Tăng đều 2016–2020)', hint: 'Bài 2 SGK tr.35', img: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png' },
+      { id: 'l1', title: 'Hàm =SUM(...) tổng hợp bảng', hint: 'Hình 7.8 SGK tr.35', img: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png' },
+      { id: 'l3', title: 'Biểu đồ hình quạt tròn (2-D Pie)', hint: 'Tỉ lệ phần trăm %', img: '/images/tin8_bai7/hinh_7_4_quat_tron.png' },
+      { id: 'l2', title: 'Biểu đồ cột kép (Clustered Column)', hint: 'Nhóm lệnh Charts', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
+    ]
+  },
+  4: {
+    title: 'GHÉP HÌNH VẬN DỤNG: BIỂU ĐỒ ĐOẠN THẲNG & TỔNG KẾT (HĐ 4)',
+    subtitle: 'Ghép đúng quy trình chuyển dữ liệu Hình 7.9 sang Biểu đồ đoạn thẳng (SGK tr.35)',
+    slots: [
+      { id: 's1', label: 'Bước 1: Nhập/chọn bảng số liệu Doanh thu 2016–2020', expectedId: 'v1' },
+      { id: 's2', label: 'Bước 2: Insert -> Insert Line or Area Chart -> 2-D Line with Markers', expectedId: 'v2' },
+      { id: 's3', label: 'Bước 3: Nhận diện xu hướng tăng trưởng qua đường dốc', expectedId: 'v3' }
+    ],
+    cards: [
+      { id: 'v3', title: 'Biểu đồ đoạn thẳng hoàn chỉnh', hint: 'Hình 7.3 SGK tr.33', img: '/images/tin8_bai7/hinh_7_3_duong_thang.png' },
+      { id: 'v1', title: 'Dữ liệu Doanh thu phần mềm', hint: 'Hình 7.9 SGK tr.35', img: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png' },
+      { id: 'v2', title: 'Nhóm lệnh Charts (Line Chart)', hint: 'Hình 7.5 SGK tr.33', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
+    ]
+  }
+};
+
+function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
+  const [placed, setPlaced] = useState({}); // slotId -> cardId
+  const [selectedCardId, setSelectedCardId] = useState(null);
+  const [checked, setChecked] = useState(false);
+
+  if (!puzzle) return null;
+
+  const usedCardIds = new Set(Object.values(placed));
+  const availableCards = puzzle.cards.filter((c) => !usedCardIds.has(c.id));
+  const allFilled = puzzle.slots.every((s) => Boolean(placed[s.id]));
+  const allCorrect = allFilled && puzzle.slots.every((s) => placed[s.id] === s.expectedId);
+
+  const handlePlaceInSlot = (slotId, cardIdToPlace) => {
+    if (!cardIdToPlace) return;
+    setChecked(false);
+    setPlaced((prev) => {
+      const next = { ...prev };
+      // Remove card from any other slot if already placed
+      Object.keys(next).forEach((k) => {
+        if (next[k] === cardIdToPlace) delete next[k];
+      });
+      next[slotId] = cardIdToPlace;
+      return next;
+    });
+    setSelectedCardId(null);
+    playSound('click');
+  };
+
+  const handleSlotClick = (slotId) => {
+    if (selectedCardId) {
+      handlePlaceInSlot(slotId, selectedCardId);
+    } else if (placed[slotId]) {
+      setChecked(false);
+      setPlaced((prev) => {
+        const next = { ...prev };
+        delete next[slotId];
+        return next;
+      });
+      playSound('click');
+    }
+  };
+
+  const handleCheck = () => {
+    setChecked(true);
+    if (allCorrect) {
+      playSound('celebrate');
+      try {
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+      } catch (e) {}
+    } else {
+      playSound('click');
+    }
+  };
+
+  const handleReset = () => {
+    setPlaced({});
+    setSelectedCardId(null);
+    setChecked(false);
+    playSound('click');
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-slate-900 border-2 border-cyan-400/60 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+          <div>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+              HOẠT ĐỘNG THỰC HÀNH TƯƠNG TÁC • KÉO THẢ HOẶC BẤM GHÉP HÌNH
+            </span>
+            <h3 className="text-base sm:text-xl font-black text-white mt-1">{puzzle.title}</h3>
+            <p className="text-xs text-slate-300">{puzzle.subtitle}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white transition-colors"
+            title="Đóng bảng ghép hình"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Target Slots */}
+        <div className={`grid grid-cols-1 ${puzzle.slots.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'} gap-3`}>
+          {puzzle.slots.map((slot, idx) => {
+            const cardId = placed[slot.id];
+            const card = puzzle.cards.find((c) => c.id === cardId);
+            const isCorrect = checked && cardId === slot.expectedId;
+            const isWrong = checked && cardId && cardId !== slot.expectedId;
+
+            return (
+              <div
+                key={slot.id}
+                onClick={() => handleSlotClick(slot.id)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const droppedId = e.dataTransfer.getData('text/plain');
+                  handlePlaceInSlot(slot.id, droppedId);
+                }}
+                className={`cursor-pointer rounded-2xl p-3 border-2 min-h-[175px] flex flex-col justify-between transition-all ${
+                  isCorrect
+                    ? 'bg-emerald-950/60 border-emerald-400 shadow-lg shadow-emerald-500/20'
+                    : isWrong
+                    ? 'bg-rose-950/60 border-rose-500'
+                    : selectedCardId
+                    ? 'bg-slate-950/90 border-cyan-400/70 hover:bg-cyan-950/30'
+                    : 'bg-slate-950/80 border-dashed border-slate-700 hover:border-slate-500'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1.5">
+                  <span className="text-[11px] font-black text-cyan-300 uppercase">Ô #{idx + 1}</span>
+                  {checked && cardId && (
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isCorrect ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'}`}>
+                      {isCorrect ? '✓ Đúng' : '✕ Sai'}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs font-bold text-slate-200 my-1 leading-snug">{slot.label}</div>
+
+                {card ? (
+                  <div className="bg-white rounded-xl p-1.5 text-center space-y-1 border border-slate-300">
+                    <img src={card.img} alt={card.title} className="h-16 mx-auto object-contain" />
+                    <div className="text-[11px] font-black text-slate-900 leading-tight">{card.title}</div>
+                    <div className="text-[9px] text-slate-500">(Bấm vào ô để gỡ ra)</div>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center rounded-xl border border-dashed border-slate-700/80 text-[11px] text-slate-400 p-2 text-center">
+                    {selectedCardId ? '👉 Bấm vào đây để ghép mảnh đã chọn!' : 'Kéo hoặc bấm chọn mảnh bên dưới đặt vào đây'}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Available Cards Pool */}
+        <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-amber-300 uppercase tracking-wider">
+              🧩 KHO MẢNH GHÉP HÌNH ẢNH SGK ({availableCards.length} mảnh chưa ghép)
+            </span>
+            <span className="text-slate-400 text-[11px]">Bấm chọn mảnh → Bấm vào Ô muốn ghép (hoặc kéo thả)</span>
+          </div>
+
+          {availableCards.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {availableCards.map((card) => {
+                const isSel = selectedCardId === card.id;
+                return (
+                  <div
+                    key={card.id}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData('text/plain', card.id)}
+                    onClick={() => { setSelectedCardId(isSel ? null : card.id); playSound('click'); }}
+                    className={`cursor-pointer rounded-xl p-2 bg-white border-2 transition-all flex flex-col items-center text-center gap-1 ${
+                      isSel
+                        ? 'border-amber-400 ring-4 ring-amber-400/40 scale-[1.03]'
+                        : 'border-slate-300 hover:border-cyan-400'
+                    }`}
+                  >
+                    <img src={card.img} alt={card.title} className="h-16 object-contain" />
+                    <div className="text-xs font-black text-slate-900 leading-tight">{card.title}</div>
+                    <div className="text-[10px] font-semibold text-cyan-700">{card.hint}</div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-3 text-xs font-bold text-emerald-300">
+              ✓ Đã ghép hết tất cả các mảnh! Hãy bấm nút "Kiểm tra kết quả" bên dưới.
+            </div>
+          )}
+        </div>
+
+        {/* Footer Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="text-xs font-bold">
+            {checked && allCorrect && (
+              <span className="text-emerald-300 text-sm">🎉 CHÍNH XÁC 100%! Cả lớp vỗ tay chúc mừng!</span>
+            )}
+            {checked && !allCorrect && (
+              <span className="text-amber-300">⚠️ Vẫn còn mảnh chưa đúng vị trí, hãy bấm vào ô sai để thử lại nhé!</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleReset}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Làm lại</span>
+            </button>
+            <button
+              onClick={handleCheck}
+              disabled={!allFilled}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-40 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Kiểm tra kết quả</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrary }) {
   // Slide Index: 0 (HĐ 1: 4p), 1 (HĐ 2A: 10p), 2 (HĐ 2B: 10p), 3 (HĐ 3: 12p), 4 (HĐ 4: 6p)
   const [slideIndex, setSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoomedImage, setZoomedImage] = useState(null); // { src, title }
+  const [isPuzzleOpen, setIsPuzzleOpen] = useState(false);
 
   // Warmup Q&A reveal states (HĐ 1)
   const [warmupReveal1, setWarmupReveal1] = useState(false);
@@ -346,6 +641,16 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
         {/* Right: Activity Timer + Quick Classroom Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Interactive Puzzle Button for Current Activity */}
+          <button
+            onClick={() => { setIsPuzzleOpen(true); playSound('click'); }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+            title="Mở hoạt động Cắt ghép hình SGK tương ứng với hoạt động đang chiếu"
+          >
+            <span>🧩</span>
+            <span className="hidden sm:inline">Ghép Hình Thực Hành</span>
+          </button>
+
           {/* Per-Activity Countdown Timer Pill */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-cyan-500/40 shadow-inner">
             <Clock className={`w-3.5 h-3.5 ${activityTimer <= 60 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`} />
@@ -1774,6 +2079,15 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
             </div>
           </div>
         </div>
+      )}
+
+      {/* INTERACTIVE IMAGE PUZZLE MODAL FOR CURRENT ACTIVITY */}
+      {isPuzzleOpen && (
+        <InteractivePuzzleModal
+          puzzle={PUZZLE_BY_ACTIVITY[slideIndex]}
+          onClose={() => setIsPuzzleOpen(false)}
+          playSound={playSound}
+        />
       )}
 
       {/* ZOOM MODAL FOR SGK FIGURES */}
