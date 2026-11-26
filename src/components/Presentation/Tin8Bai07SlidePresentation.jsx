@@ -313,10 +313,9 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
   const [warmupReveal1, setWarmupReveal1] = useState(false);
   const [warmupReveal2, setWarmupReveal2] = useState(false);
 
-  // Per-activity pure practice countdown durations (seconds)
-  // Minus teacher demo & student presentation time from KHBD total (45 mins)
-  const ACTIVITY_DURATIONS = { 0: 180, 1: 420, 2: 420, 3: 480, 4: 240 };
-  const [activityTimer, setActivityTimer] = useState(180);
+  // Per-activity countdown durations matching lesson plan (HĐ2 = 20m split evenly: 10m + 10m)
+  const ACTIVITY_DURATIONS = { 0: 240, 1: 600, 2: 600, 3: 600, 4: 360 };
+  const [activityTimer, setActivityTimer] = useState(240);
   const [activityTimerRunning, setActivityTimerRunning] = useState(false);
   const activityTimerRef = useRef(null);
 
@@ -531,44 +530,89 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
     }
   };
 
-  // 5 Core Activities Metadata matching Lesson Plan (Practice timer + KHBD total)
+  // 5 Core Activities Metadata matching Lesson Plan (HĐ 2 = 20p chia đều 10p + 10p)
   const ACTIVITIES = [
     {
       id: 0,
       tag: 'HĐ 1',
-      durationLabel: 'TH 3p • KHBD 3-5p',
+      durationLabel: '4p',
       title: 'Mở Đầu',
-      desc: 'HĐ 1: Thực hiện trò chơi 3 phút (Tổng KHBD 3–5 phút)'
+      desc: 'HĐ 1 (3–5 phút): Khởi động Đấu trường Webby & Kết nối tri thức'
     },
     {
       id: 1,
       tag: 'HĐ 2A',
-      durationLabel: 'TH 7p • KHBD 9-10p',
-      title: 'Biểu Đồ Cột',
-      desc: 'HĐ 2A: HS thực hành 7 phút + GV hướng dẫn/trình bày 2–3 phút'
+      durationLabel: '10p',
+      title: 'Gõ Bảng & Cột',
+      desc: 'HĐ 2A (10 phút): Gõ bảng Hình 7.1 vào Excel & tạo Biểu đồ cột (chia đều 20p HĐ 2)'
     },
     {
       id: 2,
       tag: 'HĐ 2B',
-      durationLabel: 'TH 7p • KHBD 9-10p',
+      durationLabel: '10p',
       title: 'Biểu Đồ Quạt',
-      desc: 'HĐ 2B: HS thực hành 7 phút + GV hướng dẫn/trình bày 2–3 phút'
+      desc: 'HĐ 2B (10 phút): Từ bảng vừa gõ tạo Biểu đồ quạt tròn & hiện % (chia đều 20p HĐ 2)'
     },
     {
       id: 3,
       tag: 'HĐ 3',
-      durationLabel: 'TH 8p • KHBD 10-12p',
+      durationLabel: '10p',
       title: 'Luyện Tập',
-      desc: 'HĐ 3: HS làm Bài 1 & 2 trong 8 phút + Báo cáo nhận xét 3–4 phút'
+      desc: 'HĐ 3 (10–12 phút): Luyện tập Bài 1 & Bài 2 SGK trang 35'
     },
     {
       id: 4,
       tag: 'HĐ 4',
-      durationLabel: 'TH 4p • KHBD 5-7p',
+      durationLabel: '6p',
       title: 'Vận Dụng',
-      desc: 'HĐ 4: HS thực hành 4 phút + Chia sẻ & dặn dò 2–3 phút'
+      desc: 'HĐ 4 (5–7 phút): Biểu đồ đoạn thẳng, Văn hóa phòng máy & Tổng kết'
     }
   ];
+
+  // Shared Prominent Countdown Widget (giống Slide Bài 6)
+  const renderSlideCountdown = (label) => {
+    const total = ACTIVITY_DURATIONS[slideIndex] || 600;
+    const pct = Math.max(0, Math.min(100, (activityTimer / total) * 100));
+    return (
+      <div className="bg-slate-950/90 border-2 border-cyan-500/40 rounded-2xl px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-2.5">
+          <Clock className={`w-5 h-5 ${activityTimer <= 60 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`} />
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</div>
+            <div className={`font-mono text-2xl sm:text-3xl font-black leading-none ${activityTimer <= 60 ? 'text-rose-400' : 'text-emerald-300'}`}>
+              {formatTime(activityTimer)}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-[100px] h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+          <div
+            style={{ width: `${pct}%` }}
+            className={`h-full transition-all duration-1000 ${pct > 50 ? 'bg-emerald-500' : pct > 20 ? 'bg-amber-400' : 'bg-rose-500 animate-pulse'}`}
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => { setActivityTimerRunning((r) => !r); playSound('click'); }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow transition-all active:scale-95 ${
+              activityTimerRunning ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+            }`}
+          >
+            {activityTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            <span>{activityTimerRunning ? 'Tạm dừng' : 'Bắt đầu'}</span>
+          </button>
+          <button
+            onClick={() => { setActivityTimerRunning(false); setActivityTimer(total); playSound('click'); }}
+            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+            title="Đặt lại thời gian"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   // Data for Slide 1 & 2 (Hình 7.3 SGK Tin 8 tr.33)
   const SURVEY_DATA = [
@@ -850,20 +894,22 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-500/30 pb-2">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-400/40 text-xs sm:text-sm font-black uppercase tracking-wider">
-                  HOẠT ĐỘNG 2A • THỰC HÀNH: 7 PHÚT
+                  HOẠT ĐỘNG 2A • 10 PHÚT (1/2 CỦA 20 PHÚT HĐ 2)
                 </span>
-                <span className="text-xs sm:text-sm font-bold text-slate-300">(KHBD 9–10p gồm 2–3p trình bày)</span>
               </div>
               <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-white to-cyan-300 uppercase tracking-tight">
-                TẠO BIỂU ĐỒ CỘT & SỬ DỤNG NÚT CHART ELEMENTS (+)
+                GÕ BẢNG HÌNH 7.1 & TẠO BIỂU ĐỒ CỘT + CHART ELEMENTS (+)
               </h1>
             </div>
 
-            {/* Clear Student Task Banner */}
-            <div className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500/20 via-cyan-500/15 to-emerald-500/20 border-2 border-cyan-400/50 text-sm sm:text-base text-slate-100 flex flex-wrap items-center justify-between gap-2 shadow-md">
-              <div>
-                <span className="font-black text-yellow-300 uppercase mr-2">🎯 YÊU CẦU BÀI LÀM:</span>
-                <span>Mở Excel, nhập/chọn bảng <strong>Hình 7.1 (B2:C8)</strong> ➔ Tạo <strong>Biểu đồ cột (2-D Column)</strong> ➔ Dùng nút <strong>(+)</strong> thêm Tiêu đề & Nhãn dữ liệu như <strong>Hình 7.6</strong>.</span>
+            {/* Clear Student Task Banner + Prominent Countdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+              <div className="lg:col-span-7 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500/20 via-cyan-500/15 to-emerald-500/20 border-2 border-cyan-400/50 text-sm sm:text-base text-slate-100 shadow-md">
+                <span className="font-black text-yellow-300 uppercase mr-2">🎯 YÊU CẦU HĐ 2A:</span>
+                <span><strong>(1) Gõ lại bảng Hình 7.1</strong> vào Excel (ô B2:C8) ➔ <strong>(2) Tạo Biểu đồ cột</strong> (2-D Column) ➔ <strong>(3) Bấm (+)</strong> thêm Tiêu đề & Nhãn dữ liệu.</span>
+              </div>
+              <div className="lg:col-span-5">
+                {renderSlideCountdown('ĐẾM NGƯỢC HĐ 2A (10 PHÚT)')}
               </div>
             </div>
 
@@ -951,16 +997,26 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {slideIndex === 2 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip */}
-            <div className="flex items-center justify-between border-b border-indigo-500/30 pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-500/30 pb-2">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 text-xs font-black uppercase tracking-wider">
-                  HOẠT ĐỘNG 2 – TIẾN TRÌNH 2B
+                <span className="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 text-xs sm:text-sm font-black uppercase tracking-wider">
+                  HOẠT ĐỘNG 2B • 10 PHÚT (1/2 CỦA 20 PHÚT HĐ 2)
                 </span>
-                <span className="text-xs font-bold text-slate-400">Mục 2 SGK Trang 34 - 35</span>
               </div>
               <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-pink-300 uppercase tracking-tight">
-                TẠO BIỂU ĐỒ HÌNH QUẠT TRÒN & ĐỊNH DẠNG TỈ LỆ PHẦN TRĂM (%)
+                TỪ BẢNG ĐÃ GÕ ➔ TẠO BIỂU ĐỒ QUẠT TRÒN & HIỆN TỈ LỆ %
               </h1>
+            </div>
+
+            {/* Clear Student Task Banner + Prominent Countdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+              <div className="lg:col-span-7 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-pink-500/20 border-2 border-indigo-400/50 text-sm sm:text-base text-slate-100 shadow-md">
+                <span className="font-black text-yellow-300 uppercase mr-2">🎯 YÊU CẦU HĐ 2B:</span>
+                <span>Từ <strong>bảng số liệu vừa gõ ở HĐ 2A (B2:C8)</strong> ➔ Tạo <strong>Biểu đồ hình quạt tròn (2-D Pie)</strong> ➔ Bấm <strong>(+) ➔ Data Labels ➔ More Options ➔ Percentage (%)</strong>.</span>
+              </div>
+              <div className="lg:col-span-5">
+                {renderSlideCountdown('ĐẾM NGƯỢC HĐ 2B (10 PHÚT)')}
+              </div>
             </div>
 
             {/* Two Symmetrical Columns (6 cols / 6 cols) */}
@@ -1184,30 +1240,34 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 <span className="text-xs font-bold text-slate-400">Bám sát Bài tập SGK Trang 35</span>
               </div>
 
-              {/* Sub-Tabs: Bài tập 1 vs Bài tập 2 */}
-              <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                <button
-                  onClick={() => { setLuyenTapTab('bai1'); playSound('click'); }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    luyenTapTab === 'bai1'
-                      ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  BÀI TẬP 1 (Tệp TGSDThietbiso.xlsx)
-                </button>
-                <button
-                  onClick={() => { setLuyenTapTab('bai2'); playSound('click'); }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    luyenTapTab === 'bai2'
-                      ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  BÀI TẬP 2 (Hình 7.9 Doanh thu phần mềm)
-                </button>
+              {/* Sub-Tabs + Countdown */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                  <button
+                    onClick={() => { setLuyenTapTab('bai1'); playSound('click'); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+                      luyenTapTab === 'bai1'
+                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    BÀI TẬP 1 (TGSDThietbiso.xlsx)
+                  </button>
+                  <button
+                    onClick={() => { setLuyenTapTab('bai2'); playSound('click'); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+                      luyenTapTab === 'bai2'
+                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    BÀI TẬP 2 (Hình 7.9)
+                  </button>
+                </div>
               </div>
             </div>
+
+            {renderSlideCountdown('ĐẾM NGƯỢC HĐ 3: LUYỆN TẬP (10 PHÚT)')}
 
             {/* TAB 1: BÀI TẬP 1 (TGSDThietbiso.xlsx) */}
             {luyenTapTab === 'bai1' && (
@@ -1513,10 +1573,12 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </span>
                 <span className="text-xs font-bold text-slate-400">SGK Trang 35</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 uppercase tracking-tight">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 uppercase tracking-tight">
                 MỞ RỘNG BIỂU ĐỒ ĐOẠN THẲNG & VĂN HÓA PHÒNG MÁY
               </h1>
             </div>
+
+            {renderSlideCountdown('ĐẾM NGƯỢC HĐ 4: VẬN DỤNG & TỔNG KẾT (6 PHÚT)')}
 
             {/* Symmetrical Two Columns (6 cols / 6 cols) */}
             <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
