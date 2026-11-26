@@ -313,9 +313,10 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
   const [warmupReveal1, setWarmupReveal1] = useState(false);
   const [warmupReveal2, setWarmupReveal2] = useState(false);
 
-  // Per-activity countdown durations matching lesson plan (seconds)
-  const ACTIVITY_DURATIONS = { 0: 240, 1: 600, 2: 600, 3: 720, 4: 360 };
-  const [activityTimer, setActivityTimer] = useState(240);
+  // Per-activity pure practice countdown durations (seconds)
+  // Minus teacher demo & student presentation time from KHBD total (45 mins)
+  const ACTIVITY_DURATIONS = { 0: 180, 1: 420, 2: 420, 3: 480, 4: 240 };
+  const [activityTimer, setActivityTimer] = useState(180);
   const [activityTimerRunning, setActivityTimerRunning] = useState(false);
   const activityTimerRef = useRef(null);
 
@@ -530,42 +531,42 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
     }
   };
 
-  // 5 Core Activities Metadata matching Lesson Plan (Tiết 12: 42 phút)
+  // 5 Core Activities Metadata matching Lesson Plan (Practice timer + KHBD total)
   const ACTIVITIES = [
     {
       id: 0,
       tag: 'HĐ 1',
-      durationLabel: '3-5p',
+      durationLabel: 'TH 3p • KHBD 3-5p',
       title: 'Mở Đầu',
-      desc: 'HĐ 1 (3-5 phút): Khởi động Đấu trường Webby & Kết nối tri thức'
+      desc: 'HĐ 1: Thực hiện trò chơi 3 phút (Tổng KHBD 3–5 phút)'
     },
     {
       id: 1,
       tag: 'HĐ 2A',
-      durationLabel: '10p',
+      durationLabel: 'TH 7p • KHBD 9-10p',
       title: 'Biểu Đồ Cột',
-      desc: 'HĐ 2A (10 phút): Tạo biểu đồ cột & nút Chart Elements (+) (SGK tr.33-34)'
+      desc: 'HĐ 2A: HS thực hành 7 phút + GV hướng dẫn/trình bày 2–3 phút'
     },
     {
       id: 2,
       tag: 'HĐ 2B',
-      durationLabel: '10p',
+      durationLabel: 'TH 7p • KHBD 9-10p',
       title: 'Biểu Đồ Quạt',
-      desc: 'HĐ 2B (10 phút): Tạo biểu đồ quạt tròn & Tỉ lệ % (SGK tr.34)'
+      desc: 'HĐ 2B: HS thực hành 7 phút + GV hướng dẫn/trình bày 2–3 phút'
     },
     {
       id: 3,
       tag: 'HĐ 3',
-      durationLabel: '12p',
+      durationLabel: 'TH 8p • KHBD 10-12p',
       title: 'Luyện Tập',
-      desc: 'HĐ 3 (10-12 phút): Luyện tập Bài 1 & Bài 2 SGK trang 35'
+      desc: 'HĐ 3: HS làm Bài 1 & 2 trong 8 phút + Báo cáo nhận xét 3–4 phút'
     },
     {
       id: 4,
       tag: 'HĐ 4',
-      durationLabel: '6p',
+      durationLabel: 'TH 4p • KHBD 5-7p',
       title: 'Vận Dụng',
-      desc: 'HĐ 4 (5-7 phút): Biểu đồ đoạn thẳng, Văn hóa phòng máy & Tổng kết'
+      desc: 'HĐ 4: HS thực hành 4 phút + Chia sẻ & dặn dò 2–3 phút'
     }
   ];
 
@@ -846,278 +847,98 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {slideIndex === 1 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip */}
-            <div className="flex items-center justify-between border-b border-sky-500/30 pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-500/30 pb-2">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-400/40 text-xs font-black uppercase tracking-wider">
-                  HOẠT ĐỘNG 2 – TIẾN TRÌNH 2A
+                <span className="px-3 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-400/40 text-xs sm:text-sm font-black uppercase tracking-wider">
+                  HOẠT ĐỘNG 2A • THỰC HÀNH: 7 PHÚT
                 </span>
-                <span className="text-xs font-bold text-slate-400">Mục 2 SGK Trang 33 - 34</span>
+                <span className="text-xs sm:text-sm font-bold text-slate-300">(KHBD 9–10p gồm 2–3p trình bày)</span>
               </div>
               <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-white to-cyan-300 uppercase tracking-tight">
-                QUY TRÌNH TẠO BIỂU ĐỒ CỘT & SỬ DỤNG NÚT CHART ELEMENTS (+)
+                TẠO BIỂU ĐỒ CỘT & SỬ DỤNG NÚT CHART ELEMENTS (+)
               </h1>
             </div>
 
-            {/* Split Screen Grid (Left 6 cols, Right 6 cols for BIGGER visual guides) */}
+            {/* Clear Student Task Banner */}
+            <div className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500/20 via-cyan-500/15 to-emerald-500/20 border-2 border-cyan-400/50 text-sm sm:text-base text-slate-100 flex flex-wrap items-center justify-between gap-2 shadow-md">
+              <div>
+                <span className="font-black text-yellow-300 uppercase mr-2">🎯 YÊU CẦU BÀI LÀM:</span>
+                <span>Mở Excel, nhập/chọn bảng <strong>Hình 7.1 (B2:C8)</strong> ➔ Tạo <strong>Biểu đồ cột (2-D Column)</strong> ➔ Dùng nút <strong>(+)</strong> thêm Tiêu đề & Nhãn dữ liệu như <strong>Hình 7.6</strong>.</span>
+              </div>
+            </div>
+
+            {/* Split Screen Grid (Left 5 cols: Data & Steps | Right 7 cols: LARGE SGK Figures) */}
             <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               
-              {/* Left Column (6 cols): Excel Data Table + Steps + Interactive Chart */}
-              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 min-h-0 overflow-y-auto pr-1">
+              {/* Left Column (5 cols): Figure 7.1 + Clear 4 Steps */}
+              <div className="col-span-12 lg:col-span-5 flex flex-col gap-3 min-h-0 justify-between">
                 
-                {/* 3 Steps Banner - LARGER & MORE COLORFUL */}
-                <div className="grid grid-cols-3 gap-2.5">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-sky-950/80 to-slate-900 border border-sky-400/50 shadow-md">
-                    <span className="font-mono font-black text-sky-300 block text-xs sm:text-sm">BƯỚC 1</span>
-                    <p className="text-xs sm:text-sm text-slate-100 mt-1 leading-snug font-medium">
-                      Quét chọn vùng dữ liệu <strong className="text-yellow-300">B2:C8</strong>
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-950/80 to-slate-900 border border-indigo-400/50 shadow-md">
-                    <span className="font-mono font-black text-indigo-300 block text-xs sm:text-sm">BƯỚC 2</span>
-                    <p className="text-xs sm:text-sm text-slate-100 mt-1 leading-snug font-medium">
-                      <strong className="text-yellow-300">Insert</strong> ➔ <strong className="text-cyan-300">2-D Column</strong>
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-950/80 to-slate-900 border border-emerald-400/60 shadow-md">
-                    <span className="font-mono font-black text-emerald-300 block text-xs sm:text-sm">BƯỚC 3</span>
-                    <p className="text-xs sm:text-sm text-emerald-100 mt-1 leading-snug font-medium">
-                      Bấm dấu <strong className="text-yellow-300">(+)</strong> thêm Tiêu đề & Nhãn
-                    </p>
+                {/* Hình 7.1 SGK (Click to Zoom) */}
+                <div
+                  onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png', title: 'Hình 7.1. Bảng số liệu khảo sát lớp 8A (Vùng chọn B2:C8)' })}
+                  className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-sky-400/60 hover:border-sky-300 flex items-center gap-3 shadow-lg group"
+                >
+                  <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1" className="h-32 sm:h-36 object-contain group-hover:scale-105 transition-transform" />
+                  <div className="text-left space-y-1">
+                    <div className="text-xs sm:text-sm font-black text-sky-700">📋 Hình 7.1 SGK tr.32</div>
+                    <div className="text-xs sm:text-sm text-slate-700 font-semibold">Vùng dữ liệu cần chọn: <span className="font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black">B2:C8</span></div>
+                    <div className="text-[11px] text-cyan-700 font-bold">(Bấm ảnh để phóng to)</div>
                   </div>
                 </div>
 
-                {/* Simulated Excel Sheet & Interactive Live Chart */}
-                <div className="flex-1 min-h-[220px] bg-slate-900/90 rounded-2xl border border-slate-800 p-3 flex flex-col justify-between shadow-xl relative">
-                  
-                  {/* Top Bar: Excel Table Preview vs Chart Controls */}
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                      <span className="font-bold text-xs text-slate-200">
-                        Bảng số liệu Hình 7.3 SGK (Vùng chọn <span className="font-mono text-cyan-300 font-black">A2:B6</span>)
-                      </span>
+                {/* 4 Clear Steps */}
+                <div className="flex-1 bg-slate-900/90 rounded-2xl border border-sky-500/40 p-3.5 flex flex-col justify-between gap-2 shadow-xl">
+                  <span className="text-xs sm:text-sm font-black text-sky-300 uppercase tracking-wider">
+                    📌 CÁC BƯỚC THỰC HÀNH TRÊN EXCEL:
+                  </span>
+                  <div className="space-y-2 text-xs sm:text-sm">
+                    <div className="p-2.5 rounded-xl bg-slate-950/90 border border-slate-700 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-sky-500 text-slate-950 font-black flex items-center justify-center shrink-0 text-xs">1</span>
+                      <span className="text-slate-100">Quét chọn vùng dữ liệu <strong className="text-yellow-300 font-mono">B2:C8</strong> (Hình 7.1).</span>
                     </div>
-
-                    {/* Chart Elements (+) Simulator Toggle Button */}
-                    <div className="relative">
-                      <button
-                        onClick={() => {
-                          setChartMenuOpen(!chartMenuOpen);
-                          playSound('click');
-                        }}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
-                          chartMenuOpen
-                            ? 'bg-emerald-500 text-slate-950 ring-2 ring-emerald-300'
-                            : 'bg-slate-800 text-emerald-300 border border-emerald-500/40 hover:bg-slate-700'
-                        }`}
-                        title="Bấm để bật/tắt bảng chọn Chart Elements"
-                      >
-                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                        <span>Nút Chart Elements (+)</span>
-                      </button>
-
-                      {/* Dropdown Menu simulating Excel's Chart Elements Flyout */}
-                      {chartMenuOpen && (
-                        <div className="absolute right-0 top-8 z-30 w-52 p-2.5 bg-slate-950/95 border-2 border-emerald-400 rounded-xl shadow-2xl space-y-2 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
-                          <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider block border-b border-slate-800 pb-1">
-                            CHART ELEMENTS (THÀNH PHẦN)
-                          </span>
-                          
-                          <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer hover:text-white">
-                            <input
-                              type="checkbox"
-                              checked={showChartTitle}
-                              onChange={(e) => {
-                                setShowChartTitle(e.target.checked);
-                                playSound('click');
-                              }}
-                              className="rounded border-slate-700 text-emerald-500 focus:ring-emerald-400"
-                            />
-                            <span className="font-semibold">Chart Title (Tiêu đề)</span>
-                          </label>
-
-                          <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer hover:text-white">
-                            <input
-                              type="checkbox"
-                              checked={showDataLabels}
-                              onChange={(e) => {
-                                setShowDataLabels(e.target.checked);
-                                playSound('click');
-                              }}
-                              className="rounded border-slate-700 text-emerald-500 focus:ring-emerald-400"
-                            />
-                            <span className="font-semibold">Data Labels (Nhãn dữ liệu)</span>
-                          </label>
-
-                          <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer hover:text-white">
-                            <input
-                              type="checkbox"
-                              checked={showAxisTitles}
-                              onChange={(e) => {
-                                setShowAxisTitles(e.target.checked);
-                                playSound('click');
-                              }}
-                              className="rounded border-slate-700 text-emerald-500 focus:ring-emerald-400"
-                            />
-                            <span className="font-semibold">Axis Titles (Tên trục)</span>
-                          </label>
-
-                          <div className="pt-1 text-[10px] text-slate-400 border-t border-slate-800">
-                            💡 Tích chọn để hiển thị các thành phần trên biểu đồ
-                          </div>
-                        </div>
-                      )}
+                    <div className="p-2.5 rounded-xl bg-slate-950/90 border border-slate-700 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-indigo-400 text-slate-950 font-black flex items-center justify-center shrink-0 text-xs">2</span>
+                      <span className="text-slate-100">Thẻ <strong className="text-yellow-300">Insert</strong> ➔ nhóm <strong className="text-yellow-300">Charts</strong> ➔ <strong className="text-cyan-300">Insert Column or Bar Chart</strong> ➔ <strong className="text-cyan-300">2-D Column</strong>.</span>
                     </div>
-                  </div>
-
-                  {/* Excel mini table snippet */}
-                  <div className="overflow-x-auto py-1">
-                    <table className="w-full text-[11px] font-mono border-collapse">
-                      <thead>
-                        <tr className="bg-slate-950 text-slate-400 border-b border-slate-800">
-                          <th className="p-1 text-center w-8 bg-slate-900 border-r border-slate-800">Ô</th>
-                          <th className="p-1 text-left px-2 border-r border-slate-800">Cột A: Nội dung Tin học</th>
-                          <th className="p-1 text-right px-2">Cột B: Số HS chọn</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {SURVEY_DATA.map((row) => (
-                          <tr
-                            key={row.row}
-                            onMouseEnter={() => setHighlightedRow(row.row)}
-                            onMouseLeave={() => setHighlightedRow(null)}
-                            className={`border-b border-slate-800/60 transition-colors ${
-                              highlightedRow === row.row ? 'bg-cyan-950/60 text-cyan-200' : 'hover:bg-slate-800/40 text-slate-300'
-                            }`}
-                          >
-                            <td className="p-1 text-center font-bold text-slate-500 bg-slate-950/50 border-r border-slate-800">
-                              {row.row}
-                            </td>
-                            <td className="p-1 px-2 border-r border-slate-800">{row.name}</td>
-                            <td className="p-1 px-2 text-right font-black text-cyan-300">{row.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Simulated SVG 2-D Column Chart */}
-                  <div className="mt-2 p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex flex-col items-center justify-between">
-                    
-                    {/* Chart Title */}
-                    {showChartTitle ? (
-                      <h4 className="font-black text-xs sm:text-sm text-yellow-300 tracking-wide uppercase text-center pb-2 animate-in fade-in duration-200">
-                        KẾT QUẢ KHẢO SÁT NỘI DUNG TIN HỌC LỚP 8A
-                      </h4>
-                    ) : (
-                      <div className="h-5 text-[10px] text-slate-600 italic">
-                        [Đã ẩn Tiêu đề biểu đồ - Bấm nút (+) để hiện lại]
-                      </div>
-                    )}
-
-                    {/* Chart Plot Area */}
-                    <div className="w-full h-36 flex items-end justify-around gap-2 px-6 pt-4 pb-2 border-b-2 border-slate-600 relative">
-                      
-                      {/* Vertical Axis Title */}
-                      {showAxisTitles && (
-                        <div className="absolute -left-2 top-1/2 -rotate-90 -translate-y-1/2 text-[10px] font-bold text-slate-400 animate-in fade-in">
-                          Số học sinh
-                        </div>
-                      )}
-
-                      {/* Columns */}
-                      {SURVEY_DATA.map((item) => {
-                        const heightPct = Math.round((item.value / 20) * 100);
-                        const isHovered = highlightedRow === item.row;
-                        return (
-                          <div
-                            key={item.row}
-                            onMouseEnter={() => setHighlightedRow(item.row)}
-                            onMouseLeave={() => setHighlightedRow(null)}
-                            className="flex-1 max-w-[64px] flex flex-col items-center justify-end h-full group cursor-pointer"
-                          >
-                            {/* Data Label on top of bar */}
-                            {showDataLabels && (
-                              <span className="font-mono text-xs font-black text-white mb-1 transition-transform group-hover:scale-125 animate-in fade-in">
-                                {item.value}
-                              </span>
-                            )}
-                            {/* Bar Body */}
-                            <div
-                              style={{ height: `${heightPct}%`, backgroundColor: item.color }}
-                              className={`w-full rounded-t-lg transition-all duration-300 shadow-lg ${
-                                isHovered ? 'brightness-125 ring-2 ring-white scale-105' : 'opacity-90'
-                              }`}
-                            ></div>
-                            {/* Bar Base Label */}
-                            <span className="text-[10px] text-slate-400 mt-1 truncate max-w-[56px] text-center" title={item.name}>
-                              {item.name.split(' ')[0]}
-                            </span>
-                          </div>
-                        );
-                      })}
+                    <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-400/60 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-emerald-400 text-slate-950 font-black flex items-center justify-center shrink-0 text-xs">3</span>
+                      <span className="text-emerald-100">Nhấp nút dấu cộng <strong className="text-yellow-300">(+) Chart Elements</strong> tích chọn <strong>Chart Title</strong>, <strong>Data Labels</strong>, <strong>Axis Titles</strong>.</span>
                     </div>
-
-                    {/* Horizontal Axis Title */}
-                    {showAxisTitles && (
-                      <div className="text-[10px] font-bold text-slate-400 pt-1 animate-in fade-in">
-                        Nội dung Tin học lựa chọn
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Right Column (6 cols): LARGE SGK Visual Reference Figures & Student Task */}
-              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 min-h-0">
-                
-                {/* Real SGK Visual Reference Figures (LARGE & Click to Zoom) */}
-                <div className="flex-1 bg-gradient-to-br from-slate-900/95 via-slate-900 to-sky-950/50 rounded-2xl border-2 border-cyan-500/50 p-3.5 space-y-2.5 shadow-xl flex flex-col justify-between">
+              {/* Right Column (7 cols): ENLARGED SGK Visual Reference Figures (7.5 & 7.6) */}
+              <div className="col-span-12 lg:col-span-7 flex flex-col gap-3 min-h-0">
+                <div className="flex-1 bg-gradient-to-br from-slate-900/95 via-slate-900 to-sky-950/50 rounded-2xl border-2 border-cyan-500/50 p-4 space-y-3 shadow-xl flex flex-col justify-between">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <span>📸 HÌNH MẪU SGK ĐỂ HS NHÌN THEO (BẤM PHÓNG TO)</span>
+                    <span className="text-sm sm:text-base font-black text-cyan-300 uppercase tracking-wider">
+                      📸 HÌNH MINH HỌA SGK ĐỂ HS NHÌN LÀM THEO (BẤM PHÓNG TO)
                     </span>
-                    <span className="text-xs font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-lg">SGK tr.33–34</span>
+                    <span className="text-xs font-bold text-slate-200 bg-slate-800 px-2.5 py-1 rounded-lg">SGK tr.33–34</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-h-0">
+                  <div className="grid grid-cols-1 gap-3 flex-1 min-h-0">
                     <div
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Nhóm lệnh Charts (Insert -> 2-D Column)' })}
-                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center justify-center group shadow-md"
+                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-cyan-400/60 hover:border-cyan-300 flex items-center justify-between gap-4 group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
-                      <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5 text-center">Hình 7.5. Nhóm lệnh Charts</span>
+                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-28 sm:h-36 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
+                      <div className="w-44 text-left shrink-0">
+                        <div className="text-sm font-black text-slate-900">Hình 7.5. Nhóm Charts</div>
+                        <div className="text-xs text-slate-600 mt-0.5">Chọn biểu tượng cột vàng (2-D Column)</div>
+                      </div>
                     </div>
                     <div
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_6_chart_elements_cot.png', title: 'Hình 7.6. Bổ sung thông tin bằng Chart Elements (+)' })}
-                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex flex-col items-center justify-center group shadow-md"
+                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-between gap-4 group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
-                      <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5 text-center">Hình 7.6. Nút Chart Elements (+)</span>
+                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-36 sm:h-44 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
+                      <div className="w-44 text-left shrink-0">
+                        <div className="text-sm font-black text-emerald-800">Hình 7.6. Nút dấu (+)</div>
+                        <div className="text-xs text-slate-600 mt-0.5">Tích chọn Chart Title, Data Labels, Axis Titles</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Practical Checklist & Student Guidance Card */}
-                <div className="bg-slate-900/90 rounded-2xl border border-amber-500/40 p-3.5 space-y-2 shadow-lg">
-                  <span className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    YÊU CẦU THỰC HÀNH TẠI PHÒNG MÁY
-                  </span>
-
-                  <ul className="space-y-1.5 text-xs sm:text-sm text-slate-100">
-                    <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-xs">1</span>
-                      <span>Nhập/mở bảng số liệu khảo sát lớp 8A (Hình 7.1 SGK) và quét chọn vùng <strong className="text-yellow-300 font-mono">B2:C8</strong>.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-xs">2</span>
-                      <span>Vào <strong>Insert ➔ Charts ➔ 2-D Column</strong> tạo biểu đồ cột như <strong>Hình 7.5</strong>.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-xs">3</span>
-                      <span>Nhấp nút <strong className="text-emerald-400">(+) Chart Elements</strong> thêm Tiêu đề, Nhãn dữ liệu như <strong>Hình 7.6</strong>.</span>
-                    </li>
-                  </ul>
                 </div>
               </div>
             </div>
