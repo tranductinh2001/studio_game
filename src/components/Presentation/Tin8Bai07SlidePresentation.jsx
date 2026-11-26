@@ -736,28 +736,28 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </span>
                 <span className="text-xs font-bold text-slate-400">Kết nối kiến thức Tiết 11</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-white to-cyan-300 uppercase tracking-tight">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-white to-cyan-300 uppercase tracking-tight">
                 ĐẤU TRƯỜNG WEBBY: KHỞI ĐỘNG & KẾT NỐI TRI THỨC
               </h1>
             </div>
 
-            <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+            <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               {/* Left 6 cols: Game Launcher + 2 Warmup Questions */}
-              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-cyan-500/15 border border-amber-400/40 flex items-center justify-between gap-3">
+              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 justify-between bg-gradient-to-br from-slate-900/95 via-slate-900 to-indigo-950/60 border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-xl">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-cyan-500/20 border border-amber-400/50 flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
+                    <div className="text-sm sm:text-base font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
                       <span>VÒNG QUAY MAY MẮN • HỘP QUÀ BÍ ẨN</span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1">
+                    <p className="text-xs sm:text-sm text-slate-200 mt-1">
                       Chọn ngẫu nhiên 1–2 học sinh trả lời nhanh thử thách kết nối trước khi thực hành trên Excel.
                     </p>
                   </div>
                   {onSwitchTab && (
                     <button
                       onClick={() => onSwitchTab('game-center')}
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shrink-0 shadow-lg active:scale-95 transition-all"
+                      className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm shrink-0 shadow-lg active:scale-95 transition-all"
                     >
                       🎮 Mở Đấu Trường
                     </button>
@@ -765,40 +765,40 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </div>
 
                 {/* 2 Interactive Warmup Questions */}
-                <div className="space-y-2.5 flex-1 flex flex-col justify-center">
-                  <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-sky-500/40 space-y-2">
+                <div className="space-y-3 flex-1 flex flex-col justify-center">
+                  <div className="p-4 rounded-2xl bg-slate-950/90 border border-sky-500/40 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-sky-200">
+                      <span className="text-sm sm:text-base font-bold text-sky-100">
                         Câu 1: Khi nào nên sử dụng <span className="text-yellow-300">biểu đồ cột</span>?
                       </span>
                       <button
                         onClick={() => { setWarmupReveal1(!warmupReveal1); playSound('click'); }}
-                        className="px-3 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400/40 text-xs font-bold shrink-0"
+                        className="px-3.5 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400/40 text-xs sm:text-sm font-bold shrink-0"
                       >
                         {warmupReveal1 ? 'Ẩn gợi ý' : 'Xem đáp án'}
                       </button>
                     </div>
                     {warmupReveal1 && (
-                      <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-200">
+                      <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-sm text-emerald-200">
                         ✅ Dùng khi cần <strong>so sánh trực quan độ lớn</strong> của các đối tượng dữ liệu với nhau (VD: số học sinh quan tâm từng nội dung Tin học).
                       </div>
                     )}
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-indigo-500/40 space-y-2">
+                  <div className="p-4 rounded-2xl bg-slate-950/90 border border-indigo-500/40 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-indigo-200">
+                      <span className="text-sm sm:text-base font-bold text-indigo-100">
                         Câu 2: Khi nào nên dùng <span className="text-pink-300">biểu đồ hình quạt tròn</span> hoặc <span className="text-cyan-300">đoạn thẳng</span>?
                       </span>
                       <button
                         onClick={() => { setWarmupReveal2(!warmupReveal2); playSound('click'); }}
-                        className="px-3 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 text-xs font-bold shrink-0"
+                        className="px-3.5 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 text-xs sm:text-sm font-bold shrink-0"
                       >
                         {warmupReveal2 ? 'Ẩn gợi ý' : 'Xem đáp án'}
                       </button>
                     </div>
                     {warmupReveal2 && (
-                      <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-200 space-y-1">
+                      <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-sm text-emerald-200 space-y-1.5">
                         <div>🥧 <strong>Quạt tròn:</strong> So sánh <strong>tỉ lệ phần trăm (%)</strong> của từng phần trên tổng thể.</div>
                         <div>📈 <strong>Đoạn thẳng:</strong> Quan sát <strong>xu hướng tăng/giảm</strong> của dữ liệu theo thời gian.</div>
                       </div>
@@ -853,35 +853,35 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </span>
                 <span className="text-xs font-bold text-slate-400">Mục 2 SGK Trang 33 - 34</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-white to-cyan-300 uppercase tracking-tight">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-white to-cyan-300 uppercase tracking-tight">
                 QUY TRÌNH TẠO BIỂU ĐỒ CỘT & SỬ DỤNG NÚT CHART ELEMENTS (+)
               </h1>
             </div>
 
-            {/* Split Screen Grid (Left 7 cols, Right 5 cols) */}
-            <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
+            {/* Split Screen Grid (Left 6 cols, Right 6 cols for BIGGER visual guides) */}
+            <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               
-              {/* Left Column (7 cols): Excel Data Table + Steps + Interactive Chart */}
-              <div className="col-span-12 lg:col-span-7 flex flex-col gap-2.5 min-h-0 overflow-y-auto pr-1">
+              {/* Left Column (6 cols): Excel Data Table + Steps + Interactive Chart */}
+              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 min-h-0 overflow-y-auto pr-1">
                 
-                {/* 3 Steps Banner */}
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="p-2 rounded-xl bg-slate-900/90 border border-sky-500/30 shadow-sm">
-                    <span className="font-mono font-bold text-sky-400 block text-[11px]">BƯỚC 1</span>
-                    <p className="text-[11px] text-slate-200 mt-0.5 leading-snug">
-                      Quét chọn vùng dữ liệu <strong className="text-yellow-300">A2:B6</strong>
+                {/* 3 Steps Banner - LARGER & MORE COLORFUL */}
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-sky-950/80 to-slate-900 border border-sky-400/50 shadow-md">
+                    <span className="font-mono font-black text-sky-300 block text-xs sm:text-sm">BƯỚC 1</span>
+                    <p className="text-xs sm:text-sm text-slate-100 mt-1 leading-snug font-medium">
+                      Quét chọn vùng dữ liệu <strong className="text-yellow-300">B2:C8</strong>
                     </p>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900/90 border border-sky-500/30 shadow-sm">
-                    <span className="font-mono font-bold text-sky-400 block text-[11px]">BƯỚC 2</span>
-                    <p className="text-[11px] text-slate-200 mt-0.5 leading-snug">
-                      <strong className="text-yellow-300">Insert</strong> ➔ Nhóm <strong className="text-yellow-300">Charts</strong> ➔ Chọn <strong className="text-cyan-300">2-D Column</strong>
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-950/80 to-slate-900 border border-indigo-400/50 shadow-md">
+                    <span className="font-mono font-black text-indigo-300 block text-xs sm:text-sm">BƯỚC 2</span>
+                    <p className="text-xs sm:text-sm text-slate-100 mt-1 leading-snug font-medium">
+                      <strong className="text-yellow-300">Insert</strong> ➔ <strong className="text-cyan-300">2-D Column</strong>
                     </p>
                   </div>
-                  <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/40 shadow-sm">
-                    <span className="font-mono font-bold text-emerald-400 block text-[11px]">BƯỚC 3 (TRỌNG TÂM)</span>
-                    <p className="text-[11px] text-emerald-200 mt-0.5 leading-snug">
-                      Bấm nút dấu cộng <strong className="text-yellow-300">(+)</strong> để tùy biến thành phần
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-950/80 to-slate-900 border border-emerald-400/60 shadow-md">
+                    <span className="font-mono font-black text-emerald-300 block text-xs sm:text-sm">BƯỚC 3</span>
+                    <p className="text-xs sm:text-sm text-emerald-100 mt-1 leading-snug font-medium">
+                      Bấm dấu <strong className="text-yellow-300">(+)</strong> thêm Tiêu đề & Nhãn
                     </p>
                   </div>
                 </div>
@@ -1068,144 +1068,56 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </div>
               </div>
 
-              {/* Right Column (5 cols): Practice Countdown Timer & Group Work Prompt */}
-              <div className="col-span-12 lg:col-span-5 flex flex-col gap-3 min-h-0">
+              {/* Right Column (6 cols): LARGE SGK Visual Reference Figures & Student Task */}
+              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 min-h-0">
                 
-                {/* Digital Countdown Timer */}
-                <div className="bg-slate-900/90 rounded-2xl border-2 border-sky-500/40 p-4 flex flex-col items-center justify-center space-y-3 shadow-xl backdrop-blur-md">
-                  <div className="flex items-center justify-between w-full border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-cyan-400" />
-                      ĐỒNG HỒ ĐẾM NGƯỢC THỰC HÀNH
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold">
-                      HĐ 2A: 8 - 10 Phút
-                    </span>
-                  </div>
-
-                  {/* Big Digital Display */}
-                  <div className="font-mono text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-300 to-sky-400 tracking-wider filter drop-shadow">
-                    {formatTime(timerP1)}
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
-                    <div
-                      style={{ width: `${(timerP1 / 480) * 100}%` }}
-                      className={`h-full transition-all duration-1000 ${
-                        timerP1 > 240
-                          ? 'bg-emerald-500'
-                          : timerP1 > 90
-                          ? 'bg-amber-400'
-                          : 'bg-rose-500 animate-pulse'
-                      }`}
-                    ></div>
-                  </div>
-
-                  {/* Timer Control Buttons */}
-                  <div className="flex items-center gap-2 pt-1 w-full justify-center">
-                    <button
-                      onClick={() => {
-                        setTimerRunningP1(!timerRunningP1);
-                        playSound('click');
-                      }}
-                      className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg transition-all active:scale-95 ${
-                        timerRunningP1
-                          ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
-                      }`}
-                    >
-                      {timerRunningP1 ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                      <span>{timerRunningP1 ? 'TẠM DỪNG' : 'BẮT ĐẦU TÍNH GIỜ'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setTimerRunningP1(false);
-                        setTimerP1(480);
-                        playSound('click');
-                      }}
-                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
-                      title="Đặt lại 8 phút"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </button>
-
-                    {/* Quick Presets */}
-                    <div className="flex items-center gap-1 pl-1">
-                      <button
-                        onClick={() => { setTimerP1(300); playSound('click'); }}
-                        className="px-2 py-1 rounded bg-slate-800 text-[10px] font-bold text-slate-300 hover:bg-slate-700"
-                      >
-                        5p
-                      </button>
-                      <button
-                        onClick={() => { setTimerP1(480); playSound('click'); }}
-                        className="px-2 py-1 rounded bg-slate-800 text-[10px] font-bold text-slate-300 hover:bg-slate-700"
-                      >
-                        8p
-                      </button>
-                      <button
-                        onClick={() => { setTimerP1(600); playSound('click'); }}
-                        className="px-2 py-1 rounded bg-slate-800 text-[10px] font-bold text-slate-300 hover:bg-slate-700"
-                      >
-                        10p
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Real SGK Visual Reference Figures (Click to Zoom) */}
-                <div className="bg-slate-900/90 rounded-2xl border border-cyan-500/40 p-3 space-y-2 shadow-lg">
+                {/* Real SGK Visual Reference Figures (LARGE & Click to Zoom) */}
+                <div className="flex-1 bg-gradient-to-br from-slate-900/95 via-slate-900 to-sky-950/50 rounded-2xl border-2 border-cyan-500/50 p-3.5 space-y-2.5 shadow-xl flex flex-col justify-between">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-cyan-300 uppercase tracking-wider">
-                      📸 HÌNH SGK TRỰC QUAN (BẤM ĐỂ PHÓNG TO)
+                    <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>📸 HÌNH MẪU SGK ĐỂ HS NHÌN THEO (BẤM PHÓNG TO)</span>
                     </span>
-                    <span className="text-[10px] text-slate-400">SGK tr.33–34</span>
+                    <span className="text-xs font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-lg">SGK tr.33–34</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-h-0">
                     <div
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Nhóm lệnh Charts (Insert -> 2-D Column)' })}
-                      className="cursor-pointer bg-white rounded-xl p-1.5 border border-cyan-400/50 hover:border-cyan-300 flex flex-col items-center group"
+                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center justify-center group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-20 object-contain group-hover:scale-105 transition-transform" />
-                      <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.5. Nhóm Charts</span>
+                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5 text-center">Hình 7.5. Nhóm lệnh Charts</span>
                     </div>
                     <div
                       onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_6_chart_elements_cot.png', title: 'Hình 7.6. Bổ sung thông tin bằng Chart Elements (+)' })}
-                      className="cursor-pointer bg-white rounded-xl p-1.5 border border-emerald-400/50 hover:border-emerald-300 flex flex-col items-center group"
+                      className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex flex-col items-center justify-center group shadow-md"
                     >
-                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-20 object-contain group-hover:scale-105 transition-transform" />
-                      <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.6. Nút (+)</span>
+                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5 text-center">Hình 7.6. Nút Chart Elements (+)</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Practical Checklist & Student Guidance Card */}
-                <div className="flex-1 bg-slate-900/80 rounded-2xl border border-slate-800 p-3 space-y-1.5 flex flex-col justify-between shadow-lg">
-                  <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    NHIỆM VỤ HỌC SINH TẠI PHÒNG MÁY
+                <div className="bg-slate-900/90 rounded-2xl border border-amber-500/40 p-3.5 space-y-2 shadow-lg">
+                  <span className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    YÊU CẦU THỰC HÀNH TẠI PHÒNG MÁY
                   </span>
 
-                  <ul className="space-y-2 text-xs text-slate-200">
+                  <ul className="space-y-1.5 text-xs sm:text-sm text-slate-100">
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
-                      <span>Mở tệp bảng tính thực hành trên màn hình Desktop máy tính học sinh.</span>
+                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-xs">1</span>
+                      <span>Nhập/mở bảng số liệu khảo sát lớp 8A (Hình 7.1 SGK) và quét chọn vùng <strong className="text-yellow-300 font-mono">B2:C8</strong>.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
-                      <span>Thực hiện quét chọn vùng <strong className="text-yellow-300 font-mono">A2:B6</strong> và tạo biểu đồ cột 2-D Column.</span>
+                      <span className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0 text-xs">2</span>
+                      <span>Vào <strong>Insert ➔ Charts ➔ 2-D Column</strong> tạo biểu đồ cột như <strong>Hình 7.5</strong>.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
-                      <span>Nhấp vào nút <strong className="text-emerald-400">(+) Chart Elements</strong> để thêm Tiêu đề biểu đồ và Nhãn dữ liệu.</span>
+                      <span className="w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-xs">3</span>
+                      <span>Nhấp nút <strong className="text-emerald-400">(+) Chart Elements</strong> thêm Tiêu đề, Nhãn dữ liệu như <strong>Hình 7.6</strong>.</span>
                     </li>
                   </ul>
-
-                  <div className="p-2 rounded-xl bg-amber-950/40 border border-amber-500/40 text-[11px] text-amber-200 font-medium">
-                    ⭐ <em>Thầy Tình lưu ý:</em> Học sinh giơ tay xin trợ giúp nếu gặp sự cố vùng chọn hoặc mất nút (+).
-                  </div>
                 </div>
               </div>
             </div>
@@ -1225,35 +1137,35 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 </span>
                 <span className="text-xs font-bold text-slate-400">Mục 2 SGK Trang 34 - 35</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-pink-300 uppercase tracking-tight">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-pink-300 uppercase tracking-tight">
                 TẠO BIỂU ĐỒ HÌNH QUẠT TRÒN & ĐỊNH DẠNG TỈ LỆ PHẦN TRĂM (%)
               </h1>
             </div>
 
             {/* Two Symmetrical Columns (6 cols / 6 cols) */}
-            <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+            <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               
               {/* Left Column (6 cols): 3 Steps + Interactive SVG Pie Chart */}
-              <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl">
+              <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-indigo-950/50 rounded-2xl border border-indigo-500/30 p-4 flex flex-col justify-between shadow-xl">
                 
                 {/* 3 Steps */}
                 <div className="space-y-2">
-                  <span className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
                     <PieChart className="w-4 h-4 text-indigo-400" />
                     QUY TRÌNH TẠO BIỂU ĐỒ QUẠT TRÒN VÀ GẮN NHÃN %
                   </span>
-                  <div className="grid grid-cols-1 gap-1.5 text-xs">
-                    <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
-                      <span className="text-slate-200">Quét chọn khối dữ liệu nội dung và số liệu khảo sát (<strong className="text-cyan-300">A2:B6</strong>).</span>
+                  <div className="grid grid-cols-1 gap-2 text-xs sm:text-sm">
+                    <div className="p-2.5 rounded-xl bg-slate-950/85 border border-slate-700 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-indigo-500/25 text-indigo-300 font-black flex items-center justify-center shrink-0 text-xs">1</span>
+                      <span className="text-slate-100">Quét chọn khối dữ liệu khảo sát (<strong className="text-cyan-300">B2:C8</strong>).</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
-                      <span className="text-slate-200">Vào thẻ <strong className="text-yellow-300">Insert</strong> ➔ nhóm <strong className="text-yellow-300">Charts</strong> ➔ chọn <strong className="text-indigo-300">Insert Pie or Doughnut Chart</strong> ➔ <strong className="text-indigo-300">2-D Pie</strong>.</span>
+                    <div className="p-2.5 rounded-xl bg-slate-950/85 border border-slate-700 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-indigo-500/25 text-indigo-300 font-black flex items-center justify-center shrink-0 text-xs">2</span>
+                      <span className="text-slate-100">Vào thẻ <strong className="text-yellow-300">Insert</strong> ➔ <strong className="text-indigo-300">Insert Pie or Doughnut Chart</strong> ➔ <strong className="text-indigo-300">2-D Pie</strong>.</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-indigo-950/60 border border-indigo-500/40 flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-md bg-pink-500/20 text-pink-300 font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
-                      <span className="text-slate-100">Bấm nút <strong className="text-yellow-300">(+)</strong> ➔ tích chọn <strong className="text-yellow-300">Data Labels</strong> ➔ nháy <strong className="text-cyan-300">More Options</strong> ➔ tích chọn <strong className="text-pink-300">Percentage (%)</strong>.</span>
+                    <div className="p-2.5 rounded-xl bg-indigo-950/70 border border-indigo-400/50 flex items-start gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-pink-500/25 text-pink-300 font-black flex items-center justify-center shrink-0 text-xs">3</span>
+                      <span className="text-slate-100">Bấm nút <strong className="text-yellow-300">(+)</strong> ➔ <strong className="text-yellow-300">Data Labels</strong> ➔ <strong className="text-cyan-300">More Options</strong> ➔ chọn <strong className="text-pink-300">Percentage (%)</strong>.</span>
                     </div>
                   </div>
                 </div>
@@ -1388,21 +1300,21 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   </div>
                 </div>
 
-                {/* Real SGK Figures 7.4 & 7.7 for Pie Chart */}
-                <div className="grid grid-cols-2 gap-2 my-1">
+                {/* Real SGK Figures 7.4 & 7.7 for Pie Chart (ENLARGED FOR CLASSROOM VIEW) */}
+                <div className="grid grid-cols-2 gap-3 my-1.5">
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_4_quat_tron.png', title: 'Hình 7.4. Mẫu biểu đồ hình quạt tròn (SGK tr.33)' })}
-                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-indigo-400/50 hover:border-indigo-300 flex flex-col items-center group"
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-indigo-400/60 hover:border-indigo-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4" className="h-24 object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.4. Biểu đồ quạt tròn</span>
+                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.4. Biểu đồ quạt tròn</span>
                   </div>
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_7_chart_elements_quat.png', title: 'Hình 7.7. Chọn More Options -> Percentage (%) (SGK tr.34)' })}
-                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-pink-400/50 hover:border-pink-300 flex flex-col items-center group"
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-pink-400/60 hover:border-pink-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_7_chart_elements_quat.png" alt="Hình 7.7" className="h-24 object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.7. Hiện tỉ lệ %</span>
+                    <img src="/images/tin8_bai7/hinh_7_7_chart_elements_quat.png" alt="Hình 7.7" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.7. Hiện tỉ lệ %</span>
                   </div>
                 </div>
 
@@ -1534,15 +1446,16 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     </table>
                   </div>
 
-                  {/* SGK Figure 7.8 preview */}
+                  {/* SGK Figure 7.8 preview (ENLARGED) */}
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png', title: 'Hình 7.8. Tổng số HS sử dụng thiết bị số (SGK tr.35)' })}
-                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-emerald-400/50 hover:border-emerald-300 flex items-center justify-center gap-3 my-1 group"
+                    className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-center gap-4 my-1.5 group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-20 object-contain group-hover:scale-105 transition-transform" />
-                    <div className="text-left text-[11px] text-slate-700 font-semibold">
-                      <div className="font-black text-emerald-700">Hình 7.8 SGK tr.35</div>
-                      <div>Bấm để phóng to bảng đối chiếu kết quả hàm =SUM(...)</div>
+                    <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-32 sm:h-40 object-contain group-hover:scale-105 transition-transform" />
+                    <div className="text-left text-xs sm:text-sm text-slate-800 font-semibold space-y-1">
+                      <div className="font-black text-emerald-700 text-sm sm:text-base">📸 Hình 7.8 SGK tr.35</div>
+                      <div>Mở <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-emerald-800">TGSDThietbiso.xlsx</code>, dùng hàm <strong>=SUM(...)</strong> tính tổng và tạo biểu đồ cột + quạt tròn.</div>
+                      <div className="text-[11px] text-cyan-700 font-bold">👉 Bấm vào ảnh để phóng to!</div>
                     </div>
                   </div>
 
@@ -1694,13 +1607,13 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     </span>
                   </div>
 
-                  {/* Real SGK Figure 7.9 (Click to Zoom) */}
+                  {/* Real SGK Figure 7.9 (ENLARGED & Click to Zoom) */}
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Doanh thu công nghiệp phần mềm giai đoạn 2016–2020 (SGK tr.35)' })}
-                    className="cursor-pointer bg-white rounded-xl p-2 border border-amber-400/50 hover:border-amber-300 flex flex-col items-center justify-center flex-1 min-h-[180px] my-2 group"
+                    className="cursor-pointer bg-white rounded-2xl p-3 border-2 border-amber-400/60 hover:border-amber-300 flex flex-col items-center justify-center flex-1 min-h-[240px] my-2 group shadow-lg"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9 SGK tr.35" className="max-h-56 object-contain group-hover:scale-[1.02] transition-transform" />
-                    <span className="text-[11px] font-bold text-slate-700 mt-1">Hình 7.9 SGK tr.35 (Bấm để phóng to)</span>
+                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9 SGK tr.35" className="max-h-72 sm:max-h-80 w-full object-contain group-hover:scale-[1.02] transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1.5">Hình 7.9 SGK tr.35 (Bấm để phóng to)</span>
                   </div>
 
                   <div className="text-[11px] text-slate-400 text-center italic">
@@ -1843,21 +1756,21 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   </div>
                 </div>
 
-                {/* Real SGK Figures 7.3 & 7.9 for Line Chart Practice */}
-                <div className="grid grid-cols-2 gap-2 my-1">
+                {/* Real SGK Figures 7.3 & 7.9 for Line Chart Practice (ENLARGED) */}
+                <div className="grid grid-cols-2 gap-3 my-1.5">
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Mẫu biểu đồ đoạn thẳng (SGK tr.33)' })}
-                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-cyan-400/50 hover:border-cyan-300 flex flex-col items-center group"
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-24 object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.3. Biểu đồ đoạn thẳng</span>
+                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.3. Biểu đồ đoạn thẳng</span>
                   </div>
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm 2016–2020 (SGK tr.35)' })}
-                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-amber-400/50 hover:border-amber-300 flex flex-col items-center group"
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-amber-400/60 hover:border-amber-300 flex flex-col items-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-24 object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.9. Dữ liệu thực hành</span>
+                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.9. Dữ liệu thực hành</span>
                   </div>
                 </div>
 
