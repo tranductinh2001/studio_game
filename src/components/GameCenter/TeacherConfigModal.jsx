@@ -36,6 +36,36 @@ export default function TeacherConfigModal({
   // Student Form editing state
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentTeamId, setNewStudentTeamId] = useState(teams[0]?.id || 'TEAM_1');
+  const [bulkListText, setBulkListText] = useState('');
+  const [showBulkImport, setShowBulkImport] = useState(false);
+
+  const handleBulkImportStudents = (replaceExisting = true) => {
+    const names = bulkListText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (names.length === 0) return;
+
+    const avatars = ['👦', '👧', '🧒', '👩', '🧑', '👱‍♀️'];
+    const baseStudents = replaceExisting ? [] : [...students];
+    const teamIds = teams.length > 0 ? teams.map((t) => t.id) : ['TEAM_1'];
+
+    const added = names.map((name, i) => {
+      const idx = baseStudents.length + i + 1;
+      const codeNum = String(idx).padStart(2, '0');
+      return {
+        id: `STU_${Date.now()}_${idx}`,
+        code: `HS${codeNum}`,
+        name,
+        teamId: teamIds[(idx - 1) % teamIds.length],
+        avatar: avatars[(idx - 1) % avatars.length]
+      };
+    });
+
+    setStudents([...baseStudents, ...added]);
+    setBulkListText('');
+    setShowBulkImport(false);
+  };
   const [filterTeam, setFilterTeam] = useState('ALL');
 
   // Sync modal state whenever config or isOpen changes
@@ -425,11 +455,18 @@ export default function TeacherConfigModal({
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black text-cyan-400 uppercase tracking-wider">
-                    Danh Sách Học Sinh Lớp 6A
+                    Danh Sách Học Sinh Thi Đấu
                   </span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                     {students.length} em
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkImport(!showBulkImport)}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition-all"
+                  >
+                    {showBulkImport ? 'Ẩn nhập theo list' : '📋 Nhập nhanh theo list'}
+                  </button>
                 </div>
 
                 {/* Filter by team */}
@@ -445,6 +482,41 @@ export default function TeacherConfigModal({
                   </select>
                 </div>
               </div>
+
+              {/* Bulk List Paste Box */}
+              {showBulkImport && (
+                <div className="p-3 bg-slate-950 rounded-2xl border border-cyan-500/40 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-cyan-300">Dán danh sách tên học sinh (mỗi dòng 1 em):</span>
+                    <span className="text-[11px] text-slate-400">
+                      Đã nhập {bulkListText.split(/\r?\n/).filter((l) => l.trim()).length} tên
+                    </span>
+                  </div>
+                  <textarea
+                    rows={5}
+                    value={bulkListText}
+                    onChange={(e) => setBulkListText(e.target.value)}
+                    placeholder={'BÙI THỊ HẢI ANH\nBÊN\nDOAN\n...'}
+                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 font-mono text-xs"
+                  />
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleBulkImportStudents(false)}
+                      className="px-3 py-1.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700"
+                    >
+                      + Thêm nối vào DS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBulkImportStudents(true)}
+                      className="px-3.5 py-1.5 rounded-xl font-black bg-cyan-500 hover:bg-cyan-400 text-slate-950"
+                    >
+                      ✓ Thay thế toàn bộ DS bằng list này
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Add Student Bar */}
               <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center gap-2 text-xs">

@@ -6,46 +6,33 @@
 
 import { CHARACTER_PRESETS } from './characterAvatars';
 
-const STORAGE_KEY = 'webby_game_center_config_v2';
+const STORAGE_KEY = 'webby_game_center_config_v3';
 
-// 32 Default Students of Class 6A - THCS Đắk Trôi (Mang Yang, Gia Lai)
-export const DEFAULT_STUDENTS_6A = [
-  { id: 'STU_01', code: 'HS01', name: 'Nguyễn Hoàng An', teamId: 'TEAM_1', avatar: '👦' },
-  { id: 'STU_02', code: 'HS02', name: 'Trần Thị Mai Anh', teamId: 'TEAM_1', avatar: '👧' },
-  { id: 'STU_03', code: 'HS03', name: 'Lê Văn Bình', teamId: 'TEAM_1', avatar: '🧒' },
-  { id: 'STU_04', code: 'HS04', name: 'Phạm Ngọc Châu', teamId: 'TEAM_1', avatar: '👩' },
-  { id: 'STU_05', code: 'HS05', name: 'Hoàng Đức Dũng', teamId: 'TEAM_1', avatar: '🧑' },
-  { id: 'STU_06', code: 'HS06', name: 'Vũ Thùy Dương', teamId: 'TEAM_1', avatar: '👱‍♀️' },
-  { id: 'STU_07', code: 'HS07', name: 'Đặng Quốc Đạt', teamId: 'TEAM_1', avatar: '👦' },
-  { id: 'STU_08', code: 'HS08', name: 'Bùi Thị Hà', teamId: 'TEAM_1', avatar: '👧' },
-
-  { id: 'STU_09', code: 'HS09', name: 'Đỗ Minh Hải', teamId: 'TEAM_2', avatar: '🧑' },
-  { id: 'STU_10', code: 'HS10', name: 'Ngô Thanh Hằng', teamId: 'TEAM_2', avatar: '👩' },
-  { id: 'STU_11', code: 'HS11', name: 'Dương Văn Hậu', teamId: 'TEAM_2', avatar: '🧒' },
-  { id: 'STU_12', code: 'HS12', name: 'Lý Mỹ Hoa', teamId: 'TEAM_2', avatar: '👱‍♀️' },
-  { id: 'STU_13', code: 'HS13', name: 'Đinh Tuấn Kiệt', teamId: 'TEAM_2', avatar: '👦' },
-  { id: 'STU_14', code: 'HS14', name: 'Mai Khánh Linh', teamId: 'TEAM_2', avatar: '👧' },
-  { id: 'STU_15', code: 'HS15', name: 'Trịnh Hoàng Long', teamId: 'TEAM_2', avatar: '🧑' },
-  { id: 'STU_16', code: 'HS16', name: 'Lương Bảo Nam', teamId: 'TEAM_2', avatar: '🧒' },
-
-  { id: 'STU_17', code: 'HS17', name: 'Phan Thị Nga', teamId: 'TEAM_3', avatar: '👩' },
-  { id: 'STU_18', code: 'HS18', name: 'Võ Minh Nhật', teamId: 'TEAM_3', avatar: '👦' },
-  { id: 'STU_19', code: 'HS19', name: 'Tạ Hồng Nhung', teamId: 'TEAM_3', avatar: '👱‍♀️' },
-  { id: 'STU_20', code: 'HS20', name: 'Đoàn Hữu Phước', teamId: 'TEAM_3', avatar: '🧑' },
-  { id: 'STU_21', code: 'HS21', name: 'Cao Như Quỳnh', teamId: 'TEAM_3', avatar: '👧' },
-  { id: 'STU_22', code: 'HS22', name: 'Hồ Văn Sang', teamId: 'TEAM_3', avatar: '🧒' },
-  { id: 'STU_23', code: 'HS23', name: 'Trương Thu Thảo', teamId: 'TEAM_3', avatar: '👩' },
-  { id: 'STU_24', code: 'HS24', name: 'Lâm Thanh Tùng', teamId: 'TEAM_3', avatar: '👦' },
-
-  { id: 'STU_25', code: 'HS25', name: 'Đinh Văn Vinh', teamId: 'TEAM_4', avatar: '🧑' },
-  { id: 'STU_26', code: 'HS26', name: 'Bạch Thúy Vy', teamId: 'TEAM_4', avatar: '👱‍♀️' },
-  { id: 'STU_27', code: 'HS27', name: 'Nguyễn Thành Ý', teamId: 'TEAM_4', avatar: '🧒' },
-  { id: 'STU_28', code: 'HS28', name: 'Trần Gia Bảo', teamId: 'TEAM_4', avatar: '👦' },
-  { id: 'STU_29', code: 'HS29', name: 'Lê Thảo My', teamId: 'TEAM_4', avatar: '👧' },
-  { id: 'STU_30', code: 'HS30', name: 'Phạm Đức Phong', teamId: 'TEAM_4', avatar: '🧑' },
-  { id: 'STU_31', code: 'HS31', name: 'Hoàng Kim Yến', teamId: 'TEAM_4', avatar: '👩' },
-  { id: 'STU_32', code: 'HS32', name: 'Vũ Hải Đăng', teamId: 'TEAM_4', avatar: '🧒' },
+const ROSTER_NAMES_61 = [
+  'BÙI THỊ HẢI ANH', 'BÊN', 'DOAN', 'DOAN', 'DOAT', 'ĐINH GAM', 'HIÊP', 'HOĂ', 'HOĂI', 'HUNG',
+  'HYĂNH', 'PHAN ANH KIỆT', 'KLONH', 'LICH', 'NÊ', 'NGUYỄN NHƯ NGỌC', 'NHĂI', 'NHEI', 'NHI', 'ĐINH PHƯ',
+  'THOANH', 'THUÊ', 'THUYÊN', 'THUYÊT', 'THUYN', 'TI', 'LIÊU THỊ VIỆT TRINH', 'ĐINH TŬIN', 'YANG', 'YÊU',
+  'YOEN', 'ANGĂNH', 'BIM', 'DOAN', 'DUIN', 'DUƠN', 'ĐOANH', 'HAY', 'HLANH', 'HMÔN',
+  'HNGAT', 'HNGEN', 'HUY', 'HUYN', 'HUYN', 'HYE', 'KHEN', 'KHUYN', 'LĂNH', 'LÊN',
+  'LOĂCH', 'LUÂN', 'LUYÊN', 'MÂY', 'MLEI', 'NAM', 'NẪK', 'NHIN', 'ĐINH PHÂN', 'THAM',
+  'ĐINH THỊ THƠI'
 ];
+
+const AVATAR_POOL = ['👦', '👧', '🧒', '👩', '🧑', '👱‍♀️'];
+
+// 61 Students configured for THCS Đắk Trôi Game Center
+export const DEFAULT_STUDENTS_6A = ROSTER_NAMES_61.map((name, idx) => {
+  const num = idx + 1;
+  const numStr = String(num).padStart(2, '0');
+  const teamNum = (idx % 6) + 1;
+  return {
+    id: `STU_${numStr}`,
+    code: `HS${numStr}`,
+    name,
+    teamId: `TEAM_${teamNum}`,
+    avatar: AVATAR_POOL[idx % AVATAR_POOL.length]
+  };
+});
 
 // Default Teams
 export const DEFAULT_TEAMS = [
