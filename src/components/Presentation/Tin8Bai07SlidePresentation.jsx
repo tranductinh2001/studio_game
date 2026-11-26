@@ -57,18 +57,18 @@ const PUZZLE_BY_ACTIVITY = {
   },
   3: {
     title: 'GHÉP THAO TÁC LUYỆN TẬP: BÀI 1 & BÀI 2 SGK TR.35 (HĐ 3)',
-    subtitle: 'Ghép đúng công cụ xử lý số liệu & biểu đồ tương ứng với 2 bài tập luyện tập',
+    subtitle: 'Ghép đúng công cụ xử lý số liệu & biểu đồ tương ứng với Bài 1 & Bài 2 SGK tr.35',
     slots: [
-      { id: 's1', label: 'Tính tổng thời gian Nam/Nữ (TGSDThietbiso.xlsx)', expectedId: 'l1' },
-      { id: 's2', label: 'So sánh thời gian Nam và Nữ theo mục đích', expectedId: 'l2' },
-      { id: 's3', label: 'Thể hiện cơ cấu tỉ lệ % từng khoảng thời gian', expectedId: 'l3' },
-      { id: 's4', label: 'Quan sát doanh thu phần mềm 2016–2020 (Bài 2)', expectedId: 'l4' }
+      { id: 's1', label: 'Bài 1: Tính tổng số HS mỗi khoảng thời gian (TGSDThietbiso.xlsx)', expectedId: 'l1' },
+      { id: 's2', label: 'Bài 1a: So sánh số HS sử dụng theo từng khoảng thời gian', expectedId: 'l2' },
+      { id: 's3', label: 'Bài 1b: Thể hiện tỉ lệ % số HS theo mỗi khoảng thời gian', expectedId: 'l3' },
+      { id: 's4', label: 'Bài 2: Lập bảng & nhận xét doanh thu phần mềm 2016–2020', expectedId: 'l4' }
     ],
     cards: [
-      { id: 'l4', title: 'Biểu đồ cột Hình 7.9 (Tăng đều 2016–2020)', hint: 'Bài 2 SGK tr.35', img: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png' },
+      { id: 'l4', title: 'Biểu đồ cột Hình 7.9 (3.038 → 5.439 triệu USD)', hint: 'Bài 2 SGK tr.35', img: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png' },
       { id: 'l1', title: 'Hàm =SUM(...) tổng hợp bảng', hint: 'Hình 7.8 SGK tr.35', img: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png' },
       { id: 'l3', title: 'Biểu đồ hình quạt tròn (2-D Pie)', hint: 'Tỉ lệ phần trăm %', img: '/images/tin8_bai7/hinh_7_4_quat_tron.png' },
-      { id: 'l2', title: 'Biểu đồ cột kép (Clustered Column)', hint: 'Nhóm lệnh Charts', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
+      { id: 'l2', title: 'Biểu đồ cột (2-D Column)', hint: 'Nhóm lệnh Charts', img: '/images/tin8_bai7/hinh_7_5_nhom_charts.png' }
     ]
   },
   4: {
@@ -1269,201 +1269,128 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
             {renderSlideCountdown('ĐẾM NGƯỢC HĐ 3: LUYỆN TẬP (10 PHÚT)')}
 
-            {/* TAB 1: BÀI TẬP 1 (TGSDThietbiso.xlsx) */}
+            {/* TAB 1: BÀI TẬP 1 (TGSDThietbiso.xlsx - CHUẨN SGK TR.35) */}
             {luyenTapTab === 'bai1' && (
-              <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
-                {/* Left (6 cols): Table Data + SUM Formula */}
-                <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-3.5 flex flex-col justify-between shadow-xl overflow-y-auto">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                      <span className="font-black text-xs text-emerald-300 uppercase tracking-wider">
-                        BẢNG DỮ LIỆU THỜI GIAN SỬ DỤNG THIẾT BỊ SỐ (GIỜ/TUẦN)
-                      </span>
-                      <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">
-                        Hình 7.8 SGK tr.35
-                      </span>
-                    </div>
-
-                    {/* Table View */}
-                    <table className="w-full text-xs font-mono border-collapse bg-slate-950 rounded-xl overflow-hidden">
-                      <thead>
-                        <tr className="bg-slate-900 text-slate-300 border-b border-slate-800 text-[11px]">
-                          <th className="p-2 text-left">Mục đích sử dụng</th>
-                          <th className="p-2 text-center text-sky-300">Nam (giờ)</th>
-                          <th className="p-2 text-center text-pink-300">Nữ (giờ)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/60 text-[11px]">
-                        <tr>
-                          <td className="p-2 font-sans font-medium text-slate-200">Học tập</td>
-                          <td className="p-2 text-center font-bold text-sky-400">7.5</td>
-                          <td className="p-2 text-center font-bold text-pink-400">9.0</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 font-sans font-medium text-slate-200">Giải trí (game, phim)</td>
-                          <td className="p-2 text-center font-bold text-sky-400">12.0</td>
-                          <td className="p-2 text-center font-bold text-pink-400">8.5</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 font-sans font-medium text-slate-200">Mạng xã hội</td>
-                          <td className="p-2 text-center font-bold text-sky-400">8.0</td>
-                          <td className="p-2 text-center font-bold text-pink-400">9.5</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 font-sans font-medium text-slate-200">Tra cứu thông tin</td>
-                          <td className="p-2 text-center font-bold text-sky-400">4.5</td>
-                          <td className="p-2 text-center font-bold text-pink-400">5.0</td>
-                        </tr>
-                        <tr className="bg-emerald-950/40 font-bold border-t-2 border-emerald-500/50">
-                          <td className="p-2 font-sans font-black text-emerald-300">Tổng cộng (giờ)</td>
-                          <td className="p-2 text-center font-mono text-cyan-300">
-                            {showSumFormula ? '=SUM(B4:B7) ➜ 32.0' : '32.0'}
-                          </td>
-                          <td className="p-2 text-center font-mono text-pink-300">
-                            {showSumFormula ? '=SUM(C4:C7) ➜ 32.0' : '32.0'}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+              <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+                {/* Left (6 cols): Đề bài SGK + Hình 7.8 + Bảng số liệu chuẩn */}
+                <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-emerald-500/40 p-3.5 flex flex-col justify-between shadow-xl overflow-y-auto gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-400/40 text-xs sm:text-sm text-slate-100 space-y-1">
+                    <div className="font-black text-emerald-300 uppercase">📌 BÀI 1 (SGK TR.35): MỞ TỆP <code className="text-yellow-300 font-mono">TGSDThietbiso.xlsx</code></div>
+                    <p>• Dùng hàm <strong className="text-cyan-300 font-mono">=SUM(...)</strong> tính tổng số HS mỗi khoảng thời gian (như <strong>Hình 7.8</strong>):</p>
+                    <p><strong>a)</strong> Vẽ <strong>biểu đồ cột</strong> thể hiện số HS sử dụng thiết bị số mỗi khoảng thời gian & nhận xét.</p>
+                    <p><strong>b)</strong> Vẽ <strong>biểu đồ hình quạt tròn</strong> thể hiện <strong>tỉ lệ phần trăm (%)</strong> theo mỗi khoảng thời gian.</p>
                   </div>
 
                   {/* SGK Figure 7.8 preview (ENLARGED) */}
                   <div
                     onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png', title: 'Hình 7.8. Tổng số HS sử dụng thiết bị số (SGK tr.35)' })}
-                    className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-center gap-4 my-1.5 group shadow-md"
+                    className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex items-center justify-center gap-4 group shadow-md"
                   >
                     <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-32 sm:h-40 object-contain group-hover:scale-105 transition-transform" />
                     <div className="text-left text-xs sm:text-sm text-slate-800 font-semibold space-y-1">
                       <div className="font-black text-emerald-700 text-sm sm:text-base">📸 Hình 7.8 SGK tr.35</div>
-                      <div>Mở <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-emerald-800">TGSDThietbiso.xlsx</code>, dùng hàm <strong>=SUM(...)</strong> tính tổng và tạo biểu đồ cột + quạt tròn.</div>
+                      <div>Tổng cộng: <strong className="text-emerald-700">429 học sinh</strong></div>
                       <div className="text-[11px] text-cyan-700 font-bold">👉 Bấm vào ảnh để phóng to!</div>
                     </div>
                   </div>
 
                   {/* Actions to Switch Sample Charts */}
-                  <div className="pt-2 border-t border-slate-800 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-400 block">
-                      CHỌN BIỂU ĐỒ MẪU ĐỂ ĐỐI CHIẾU KẾT QUẢ THỰC HÀNH:
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => { setViewExerciseChart('column'); playSound('click'); }}
-                        className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                          viewExerciseChart === 'column'
-                            ? 'bg-sky-500 text-slate-950 font-black shadow-lg shadow-sky-500/30'
-                            : 'bg-slate-800 hover:bg-slate-700 text-sky-300'
-                        }`}
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        <span>Biểu đồ cột (Nam vs Nữ)</span>
-                      </button>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => { setViewExerciseChart('column'); playSound('click'); }}
+                      className={`p-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        viewExerciseChart === 'column'
+                          ? 'bg-sky-500 text-slate-950 font-black shadow-lg shadow-sky-500/30'
+                          : 'bg-slate-800 hover:bg-slate-700 text-sky-300'
+                      }`}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      <span>Câu a: Biểu đồ cột</span>
+                    </button>
 
-                      <button
-                        onClick={() => { setViewExerciseChart('pie'); playSound('click'); }}
-                        className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                          viewExerciseChart === 'pie'
-                            ? 'bg-pink-500 text-slate-950 font-black shadow-lg shadow-pink-500/30'
-                            : 'bg-slate-800 hover:bg-slate-700 text-pink-300'
-                        }`}
-                      >
-                        <PieChart className="w-4 h-4" />
-                        <span>Biểu đồ quạt tròn (Nữ)</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => { setViewExerciseChart('pie'); playSound('click'); }}
+                      className={`p-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        viewExerciseChart === 'pie'
+                          ? 'bg-pink-500 text-slate-950 font-black shadow-lg shadow-pink-500/30'
+                          : 'bg-slate-800 hover:bg-slate-700 text-pink-300'
+                      }`}
+                    >
+                      <PieChart className="w-4 h-4" />
+                      <span>Câu b: Quạt tròn (%)</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Right (6 cols): Sample Chart Visualizer */}
+                {/* Right (6 cols): Accurate SGK Sample Chart Visualizer (68, 131, 146, 72, 12) */}
                 <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl">
                   {viewExerciseChart === 'column' ? (
                     <div className="w-full h-full flex flex-col justify-between space-y-2 animate-in fade-in duration-200">
                       <div className="border-b border-slate-800 pb-1.5 flex items-center justify-between">
-                        <h4 className="font-black text-xs text-sky-300 uppercase">
-                          MẪU 1: SO SÁNH THỜI GIAN NAM VS NỮ THEO MỤC ĐÍCH
+                        <h4 className="font-black text-xs sm:text-sm text-sky-300 uppercase">
+                          CÂU a: SỐ HỌC SINH SỬ DỤNG THIẾT BỊ SỐ THEO THỜI GIAN
                         </h4>
-                        <div className="flex items-center gap-2 text-[10px] font-bold font-mono">
-                          <span className="flex items-center gap-1 text-sky-400">
-                            <span className="w-2.5 h-2.5 rounded bg-sky-400 inline-block"></span> Nam
-                          </span>
-                          <span className="flex items-center gap-1 text-pink-400">
-                            <span className="w-2.5 h-2.5 rounded bg-pink-400 inline-block"></span> Nữ
-                          </span>
-                        </div>
+                        <span className="text-[11px] font-mono text-sky-300 bg-sky-950 px-2 py-0.5 rounded">2-D Column</span>
                       </div>
 
-                      {/* Clustered Columns Simulation */}
-                      <div className="flex-1 min-h-[160px] bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-end justify-around gap-4 pb-2">
+                      {/* Exact Columns for Hình 7.8 */}
+                      <div className="flex-1 min-h-[180px] bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-end justify-around gap-3 pt-6 pb-2">
                         {[
-                          { name: 'Học tập', male: 7.5, female: 9.0 },
-                          { name: 'Giải trí', male: 12.0, female: 8.5 },
-                          { name: 'Mạng XH', male: 8.0, female: 9.5 },
-                          { name: 'Tra cứu', male: 4.5, female: 5.0 }
+                          { name: 'Không dùng', val: 68, color: '#64748b' },
+                          { name: 'Dưới 1 giờ', val: 131, color: '#38bdf8' },
+                          { name: '1-2 giờ', val: 146, color: '#10b981' },
+                          { name: '3-4 giờ', val: 72, color: '#f59e0b' },
+                          { name: '≥ 5 giờ', val: 12, color: '#f43f5e' }
                         ].map((cat, idx) => (
                           <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
-                            <div className="flex items-end gap-1 w-full justify-center h-28">
-                              {/* Male Bar */}
-                              <div
-                                style={{ height: `${(cat.male / 12) * 100}%` }}
-                                className="w-4 sm:w-5 bg-sky-400 rounded-t shadow flex flex-col justify-start items-center text-[9px] font-mono font-bold text-slate-950 pt-0.5"
-                                title={`Nam: ${cat.male}h`}
-                              >
-                                {cat.male}
-                              </div>
-                              {/* Female Bar */}
-                              <div
-                                style={{ height: `${(cat.female / 12) * 100}%` }}
-                                className="w-4 sm:w-5 bg-pink-400 rounded-t shadow flex flex-col justify-start items-center text-[9px] font-mono font-bold text-slate-950 pt-0.5"
-                                title={`Nữ: ${cat.female}h`}
-                              >
-                                {cat.female}
-                              </div>
-                            </div>
-                            <span className="text-[10px] text-slate-300 font-medium mt-1 truncate">
+                            <span className="font-mono font-black text-xs sm:text-sm text-yellow-300 mb-1">{cat.val}</span>
+                            <div
+                              style={{ height: `${Math.round((cat.val / 150) * 100)}%`, backgroundColor: cat.color }}
+                              className="w-9 sm:w-12 rounded-t-lg shadow-lg transition-all"
+                            />
+                            <span className="text-[11px] text-slate-200 font-semibold mt-1.5 text-center leading-tight">
                               {cat.name}
                             </span>
                           </div>
                         ))}
                       </div>
 
-                      {/* Insight Takeaway */}
-                      <div className="p-2.5 rounded-xl bg-sky-950/60 border border-sky-500/40 text-xs text-sky-200 font-medium">
-                        💡 <strong>Nhận xét nhanh:</strong> Học sinh nam dành nhiều thời gian nhất cho <em>Giải trí (12h)</em>, trong khi học sinh nữ dành thời gian cao nhất cho <em>Mạng xã hội (9.5h)</em> và <em>Học tập (9.0h)</em>.
+                      <div className="p-3 rounded-xl bg-sky-950/60 border border-sky-500/40 text-xs sm:text-sm text-sky-100 font-medium">
+                        💡 <strong>Nhận xét (Câu a):</strong> Học sinh khối 8 sử dụng thiết bị số nhiều nhất ở mức <strong>1–2 giờ (146 HS)</strong> và <strong>Dưới 1 giờ (131 HS)</strong>; rất ít em dùng từ 5 giờ trở lên (12 HS).
                       </div>
                     </div>
                   ) : (
                     <div className="w-full h-full flex flex-col justify-between space-y-2 animate-in fade-in duration-200">
                       <div className="border-b border-slate-800 pb-1.5 flex items-center justify-between">
-                        <h4 className="font-black text-xs text-pink-300 uppercase">
-                          MẪU 2: CƠ CẤU THỜI GIAN SỬ DỤNG CỦA HỌC SINH NỮ (32 GIỜ = 100%)
+                        <h4 className="font-black text-xs sm:text-sm text-pink-300 uppercase">
+                          CÂU b: TỈ LỆ % SỐ HS SỬ DỤNG THIẾT BỊ SỐ (429 HS = 100%)
                         </h4>
-                        <span className="text-[10px] font-mono text-pink-300 bg-pink-950 px-2 py-0.5 rounded">
-                          2-D Pie Chart
-                        </span>
+                        <span className="text-[11px] font-mono text-pink-300 bg-pink-950 px-2 py-0.5 rounded">2-D Pie (%)</span>
                       </div>
 
-                      <div className="flex-1 min-h-[160px] bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-around gap-3">
-                        {/* Circular graphic */}
-                        <div className="relative w-32 h-32 flex items-center justify-center">
+                      <div className="flex-1 min-h-[180px] bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-around gap-4">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
                           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#f472b6" strokeWidth="50" strokeDasharray="28 100" strokeDashoffset="0" />
-                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#fb7185" strokeWidth="50" strokeDasharray="27 100" strokeDashoffset="-28" />
-                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#c084fc" strokeWidth="50" strokeDasharray="30 100" strokeDashoffset="-55" />
-                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#38bdf8" strokeWidth="50" strokeDasharray="15 100" strokeDashoffset="-85" />
+                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#64748b" strokeWidth="50" strokeDasharray="16 100" strokeDashoffset="0" />
+                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#38bdf8" strokeWidth="50" strokeDasharray="31 100" strokeDashoffset="-16" />
+                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#10b981" strokeWidth="50" strokeDasharray="34 100" strokeDashoffset="-47" />
+                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#f59e0b" strokeWidth="50" strokeDasharray="17 100" strokeDashoffset="-81" />
+                            <circle r="25" cx="50" cy="50" fill="transparent" stroke="#f43f5e" strokeWidth="50" strokeDasharray="2 100" strokeDashoffset="-98" />
                           </svg>
-                          <div className="absolute font-black text-xs text-white">Nữ</div>
+                          <div className="absolute w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center font-black text-xs text-white">100%</div>
                         </div>
 
-                        {/* Percent breakdown */}
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-pink-400"></span><span>Học tập: <strong>28%</strong> (9.0h)</span></div>
-                          <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-rose-400"></span><span>Giải trí: <strong>27%</strong> (8.5h)</span></div>
-                          <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-purple-400"></span><span>Mạng XH: <strong>30%</strong> (9.5h)</span></div>
-                          <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-sky-400"></span><span>Tra cứu: <strong>15%</strong> (5.0h)</span></div>
+                        <div className="space-y-1.5 text-xs sm:text-sm">
+                          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-slate-500"></span><span>Không dùng: <strong>16%</strong> (68 HS)</span></div>
+                          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-sky-400"></span><span>Dưới 1 giờ: <strong>31%</strong> (131 HS)</span></div>
+                          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-400"></span><span>1–2 giờ: <strong>34%</strong> (146 HS)</span></div>
+                          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-400"></span><span>3–4 giờ: <strong>17%</strong> (72 HS)</span></div>
+                          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-rose-500"></span><span>Từ 5 giờ trở lên: <strong>3%</strong> (12 HS)</span></div>
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-pink-950/60 border border-pink-500/40 text-xs text-pink-200 font-medium">
-                        💡 <strong>Đặc điểm nổi bật:</strong> Biểu đồ quạt tròn giúp thấy rõ <em>Mạng xã hội (30%)</em> chiếm tỉ trọng lớn nhất trong quỹ thời gian thiết bị số của nữ sinh.
+                      <div className="p-3 rounded-xl bg-pink-950/60 border border-pink-500/40 text-xs sm:text-sm text-pink-100 font-medium">
+                        💡 <strong>Nhắc thao tác:</strong> Bấm nút <strong>(+) ➔ Data Labels ➔ More Options ➔ Percentage (%)</strong> để hiện tỉ lệ phần trăm!
                       </div>
                     </div>
                   )}
@@ -1504,49 +1431,50 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
                 {/* Right (6 cols): 2 Interactive Click-to-Reveal Questions */}
                 <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl space-y-3">
-                  <span className="text-xs font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
                     <HelpCircle className="w-4 h-4 text-cyan-400" />
-                    CÂU HỎI THẢO LUẬN & ĐÁP ÁN CHUẨN HOÁ
+                    YÊU CẦU BÀI 2 (SGK TR.35) & ĐÁP ÁN CHUẨN
                   </span>
 
-                  {/* Question 1 */}
+                  {/* Question a */}
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-bold text-xs text-slate-100">
-                        1. Tại sao trong trường hợp này lại sử dụng biểu đồ cột?
+                      <p className="font-bold text-xs sm:text-sm text-slate-100">
+                        a) Từ Hình 7.9, em có nhận xét gì về doanh thu công nghiệp phần mềm giai đoạn 2016–2020?
                       </p>
                       <button
                         onClick={() => { setRevealedQ1(!revealedQ1); playSound('click'); }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 shrink-0"
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 shrink-0"
                       >
-                        {revealedQ1 ? 'Ẩn đáp án' : 'Xem đáp án'}
+                        {revealedQ1 ? 'Ẩn' : 'Đáp án'}
                       </button>
                     </div>
 
                     {revealedQ1 && (
-                      <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/50 text-xs text-emerald-200 animate-in fade-in duration-200">
-                        ✓ <strong>Đáp án chuẩn:</strong> Dùng biểu đồ cột để <strong>so sánh rõ ràng quy mô doanh thu giữa các năm liên tiếp</strong> (chiều cao cột tăng dần thể hiện trực quan giá trị tuyệt đối).
+                      <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/50 text-xs sm:text-sm text-emerald-200 animate-in fade-in duration-200">
+                        ✓ Doanh thu <strong>tăng trưởng liên tục qua từng năm</strong>: từ <strong>3.038 triệu USD</strong> (2016) lên <strong>5.439 triệu USD</strong> (2020).
                       </div>
                     )}
                   </div>
 
-                  {/* Question 2 */}
+                  {/* Question b & c */}
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-bold text-xs text-slate-100">
-                        2. Nhận xét xu hướng phát triển của ngành công nghiệp phần mềm Việt Nam?
-                      </p>
+                      <div className="font-bold text-xs sm:text-sm text-slate-100 space-y-1">
+                        <p>b) Tạo bảng dữ liệu trong phần mềm bảng tính từ biểu đồ Hình 7.9.</p>
+                        <p>c) Tạo biểu đồ cột từ bảng dữ liệu có được ở câu b.</p>
+                      </div>
                       <button
                         onClick={() => { setRevealedQ2(!revealedQ2); playSound('click'); }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 shrink-0"
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 shrink-0"
                       >
-                        {revealedQ2 ? 'Ẩn đáp án' : 'Xem đáp án'}
+                        {revealedQ2 ? 'Ẩn' : 'Xem bảng'}
                       </button>
                     </div>
 
                     {revealedQ2 && (
-                      <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/50 text-xs text-emerald-200 animate-in fade-in duration-200">
-                        ✓ <strong>Đáp án chuẩn:</strong> Doanh thu <strong>tăng trưởng liên tục, đều đặn và vững chắc qua từng năm</strong> (từ 3,8 tỷ USD năm 2016 lên 5,4 tỷ USD năm 2020), khẳng định tiềm năng phát triển mạnh mẽ của công nghệ số nước ta.
+                      <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/50 text-xs sm:text-sm text-emerald-200 animate-in fade-in duration-200 font-mono">
+                        2016: 3038 | 2017: 3779 | 2018: 4447 | 2019: 4932 | 2020: 5439 (Triệu USD) ➔ Insert ➔ 2-D Column.
                       </div>
                     )}
                   </div>
@@ -1586,48 +1514,45 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
               {/* Left Column (6 cols): Line Chart Discovery */}
               <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl">
                 <div className="space-y-1.5">
-                  <span className="text-xs font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingUp className="w-4 h-4 text-cyan-400" />
-                    PHẦN 1: KHÁM PHÁ BIỂU ĐỒ ĐOẠN THẲNG (LINE CHART)
+                    VẬN DỤNG (SGK TR.35): TẠO BIỂU ĐỒ ĐƯỜNG THẲNG (LINE CHART)
                   </span>
-                  <p className="text-xs text-slate-300">
-                    Khi muốn nhận diện <strong>xu hướng tăng trưởng theo chuỗi thời gian</strong>, biểu đồ đoạn thẳng là lựa chọn số 1!
+                  <p className="text-xs sm:text-sm text-slate-200">
+                    Từ <strong>bảng dữ liệu doanh thu 2016–2020</strong> ở Câu 2 Luyện tập, hãy tạo <strong>biểu đồ đường thẳng</strong> và nhận xét xu hướng tăng trưởng (<strong>3.038 → 5.439 triệu USD</strong>).
                   </p>
                 </div>
 
-                {/* Simulated SVG Line Chart */}
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center my-2">
-                  <div className="text-[11px] font-bold text-cyan-300 mb-1">
-                    Đường dốc đi lên liên tục thể hiện xu hướng tăng trưởng (2016 – 2020)
+                {/* Simulated SVG Line Chart (EXACT SGK Hình 7.9 figures) */}
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center my-1">
+                  <div className="text-xs font-bold text-cyan-300 mb-1">
+                    Đường thẳng dốc đi lên liên tục thể hiện xu hướng tăng trưởng (Triệu USD)
                   </div>
 
-                  <div className="w-full h-32 px-4 py-2 relative flex items-center justify-between">
+                  <div className="w-full h-28 px-4 py-1 relative flex items-center justify-between">
                     <svg viewBox="0 0 400 100" className="w-full h-full overflow-visible">
-                      {/* Grid Lines */}
                       <line x1="0" y1="20" x2="400" y2="20" stroke="#334155" strokeDasharray="3 3" />
                       <line x1="0" y1="50" x2="400" y2="50" stroke="#334155" strokeDasharray="3 3" />
                       <line x1="0" y1="80" x2="400" y2="80" stroke="#334155" strokeDasharray="3 3" />
 
-                      {/* Glowing Line */}
                       <polyline
                         fill="none"
                         stroke="#06b6d4"
                         strokeWidth="4"
-                        points="40,80 120,68 200,54 280,36 360,20"
+                        points="40,80 120,62 200,46 280,32 360,20"
                         className="filter drop-shadow-[0_0_8px_#06b6d4]"
                       />
 
-                      {/* Markers & Labels */}
                       {[
-                        { x: 40, y: 80, rev: '3.8', year: '2016' },
-                        { x: 120, y: 68, rev: '4.1', year: '2017' },
-                        { x: 200, y: 54, rev: '4.5', year: '2018' },
-                        { x: 280, y: 36, rev: '5.0', year: '2019' },
-                        { x: 360, y: 20, rev: '5.4', year: '2020' }
+                        { x: 40, y: 80, rev: '3.038', year: '2016' },
+                        { x: 120, y: 62, rev: '3.779', year: '2017' },
+                        { x: 200, y: 46, rev: '4.447', year: '2018' },
+                        { x: 280, y: 32, rev: '4.932', year: '2019' },
+                        { x: 360, y: 20, rev: '5.439', year: '2020' }
                       ].map((pt, i) => (
                         <g key={i}>
                           <circle cx={pt.x} cy={pt.y} r="6" fill="#38bdf8" stroke="#ffffff" strokeWidth="2" />
-                          <text x={pt.x} y={pt.y - 10} textAnchor="middle" fill="#facc15" fontSize="11" fontWeight="bold font-mono">
+                          <text x={pt.x} y={pt.y - 10} textAnchor="middle" fill="#facc15" fontSize="11" fontWeight="bold">
                             {pt.rev}
                           </text>
                           <text x={pt.x} y="98" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="bold">
