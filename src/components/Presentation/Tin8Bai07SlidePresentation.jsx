@@ -1508,87 +1508,93 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
             {renderSlideCountdown('ĐẾM NGƯỢC HĐ 4: VẬN DỤNG & TỔNG KẾT (6 PHÚT)')}
 
-            {/* Symmetrical Two Columns (6 cols / 6 cols) */}
+            {/* Symmetrical Two Columns (6 cols / 6 cols) - 100% KHBD TABLE 4 */}
             <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               
-              {/* Left Column (6 cols): KHBD Questions (BIG & CLEAR) + Line Chart Steps */}
-              <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-cyan-950/40 rounded-2xl border border-cyan-500/40 p-4 flex flex-col justify-between shadow-xl gap-2.5 overflow-y-auto">
-                {/* 1. Nhiệm vụ Vận dụng chuẩn KHBD (Chữ to rõ) */}
-                <div className="p-3.5 rounded-2xl bg-amber-950/40 border-2 border-amber-400/50 space-y-1.5">
+              {/* Left Column (6 cols): Thử thách "Nhà phân tích dữ liệu tương lai" (Chủ đề A & B) + 3 Tiêu chí */}
+              <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-amber-950/30 rounded-2xl border border-amber-500/40 p-4 flex flex-col justify-between shadow-xl gap-2.5 overflow-y-auto">
+                {/* Bước 1: Phát động Thử thách */}
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/15 border-2 border-amber-400/50 space-y-1">
                   <div className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingUp className="w-4 h-4 text-amber-400" />
-                    <span>🎯 NHIỆM VỤ VẬN DỤNG (KHBD & SGK TR.35):</span>
+                    <span>🚀 THỬ THÁCH VỀ NHÀ: "NHÀ PHÂN TÍCH DỮ LIỆU TƯƠNG LAI"</span>
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug">
-                    Ngoài biểu đồ cột, để biểu diễn <span className="text-cyan-300">xu hướng tăng giảm theo thời gian</span>, ta dùng loại biểu đồ nào? Hãy thực hành vẽ <span className="text-yellow-300">biểu đồ đoạn thẳng (Line Chart)</span> cho dữ liệu <strong>Doanh thu phần mềm (Hình 7.9)</strong>.
+                  <p className="text-xs sm:text-sm text-slate-100 leading-snug">
+                    Chọn <strong>1 trong 2 chủ đề</strong> sau để thực hành tại nhà (lưu tệp <code className="bg-slate-950 px-1.5 py-0.5 rounded text-cyan-300 font-mono">.xlsx</code> nộp trước <strong>20h00 Thứ Bảy</strong>):
                   </p>
                 </div>
 
-                {/* 2. Câu hỏi gợi mở KHBD (To rõ + Nút xem đáp án) */}
-                <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-cyan-500/40 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm sm:text-base font-bold text-cyan-200 leading-snug">
-                      ❓ <strong>Câu hỏi gợi mở:</strong> Để vẽ biểu đồ đoạn thẳng, ta vào dải lệnh <span className="text-yellow-300">Insert</span> và chọn biểu tượng nào trong nhóm <span className="text-yellow-300">Charts</span>?
+                {/* 2 Chủ đề tự chọn theo đúng KHBD */}
+                <div className="grid grid-cols-1 gap-2.5">
+                  <div className="p-3 rounded-2xl bg-slate-950/90 border border-sky-500/40 space-y-1">
+                    <div className="text-xs sm:text-sm font-black text-sky-300">📘 CHỦ ĐỀ A (Cá nhân & Học tập):</div>
+                    <p className="text-xs sm:text-sm text-slate-200 leading-snug">
+                      Lập bảng theo dõi <strong>điểm các môn học kỳ</strong> hoặc <strong>số giờ tự học/đọc sách trong tuần</strong>; vẽ <strong>1 biểu đồ cột</strong> so sánh & <strong>1 biểu đồ đoạn thẳng</strong> thể hiện xu hướng tiến bộ.
                     </p>
-                    <button
-                      onClick={() => { setShowLineTrendDetails(!showLineTrendDetails); playSound('click'); }}
-                      className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/50 text-xs sm:text-sm font-bold shrink-0"
-                    >
-                      {showLineTrendDetails ? 'Ẩn gợi ý' : 'Xem đáp án'}
-                    </button>
                   </div>
-                  {showLineTrendDetails && (
-                    <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-400/50 text-xs sm:text-sm text-emerald-100 space-y-1 animate-in fade-in duration-150">
-                      <div>✅ Chọn biểu tượng <strong>Insert Line or Area Chart</strong> (đường gấp khúc, hàng 2 cột 1 trong <strong>Hình 7.5</strong>) ➔ kiểu <strong>2-D Line (Line with Markers)</strong>.</div>
-                      <div>📈 <strong>So sánh:</strong> Đường dốc đi lên thể hiện ngay <strong>xu hướng tăng trưởng liên tục (2016–2020)</strong> mà không cần so từng cột!</div>
-                    </div>
-                  )}
+
+                  <div className="p-3 rounded-2xl bg-slate-950/90 border border-emerald-500/40 space-y-1">
+                    <div className="text-xs sm:text-sm font-black text-emerald-300">🌱 CHỦ ĐỀ B (Địa phương Đắk Trôi / Kinh tế số):</div>
+                    <p className="text-xs sm:text-sm text-slate-200 leading-snug">
+                      Thu thập số liệu sản lượng nông sản địa phương (<strong>Cà phê, Hồ tiêu</strong> qua các năm) hoặc số liệu <strong>Hình 7.9</strong>; vẽ <strong>biểu đồ đoạn thẳng</strong> & viết nhận xét xu hướng.
+                    </p>
+                  </div>
                 </div>
 
-                {/* 3. Hình minh họa SGK phóng to (Hình 7.5 + Hình 7.3) */}
-                <div className="grid grid-cols-2 gap-3 flex-1 min-h-[140px]">
-                  <div
-                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Chọn biểu tượng Insert Line or Area Chart (hàng 2 cột 1)' })}
-                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center justify-center group shadow-md"
-                  >
-                    <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-28 sm:h-36 w-full object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1 text-center">Hình 7.5. Nút Line Chart</span>
-                  </div>
-                  <div
-                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Kết quả mẫu Biểu đồ đoạn thẳng (SGK tr.33)' })}
-                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-emerald-400/60 hover:border-emerald-300 flex flex-col items-center justify-center group shadow-md"
-                  >
-                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-28 sm:h-36 w-full object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1 text-center">Hình 7.3. Mẫu đường thẳng</span>
+                {/* Bước 2: 3 Tiêu chí đánh giá tự động */}
+                <div className="p-3 rounded-2xl bg-indigo-950/50 border border-indigo-400/40 space-y-1.5">
+                  <div className="text-xs sm:text-sm font-black text-indigo-300 uppercase">⭐ 3 TIÊU CHÍ ĐÁNH GIÁ SẢN PHẨM:</div>
+                  <div className="grid grid-cols-3 gap-2 text-xs text-slate-100 font-semibold">
+                    <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center">1. Chọn đúng khối dữ liệu</div>
+                    <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center">2. Đúng loại biểu đồ trực quan</div>
+                    <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center">3. Đủ Tiêu đề & Nhãn số liệu</div>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column (6 cols): Hình 7.9 Dữ liệu thực hành + Dặn dò & Kết thúc */}
+              {/* Right Column (6 cols): Hướng dẫn Line Chart (Hình 7.5, 7.3, 7.9) + Dặn dò tắt máy */}
               <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl gap-2.5 overflow-y-auto">
-                {/* Hình 7.9 Dữ liệu Doanh thu phần mềm (TO RÕ) */}
-                <div
-                  onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm 2016–2020 (3.038 → 5.439 triệu USD)' })}
-                  className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-amber-400/60 hover:border-amber-300 flex items-center justify-between gap-3 group shadow-md"
-                >
-                  <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-32 sm:h-40 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
-                  <div className="w-40 text-left shrink-0 space-y-1">
-                    <div className="text-xs sm:text-sm font-black text-amber-700">📊 Hình 7.9 SGK tr.35</div>
-                    <div className="text-xs text-slate-700 font-semibold">Dữ liệu thực hành vẽ biểu đồ đoạn thẳng (2016–2020).</div>
-                    <div className="text-[11px] text-cyan-700 font-bold">(Bấm phóng to)</div>
+                {/* Bước 3: Hướng dẫn lệnh tạo Biểu đồ đoạn thẳng + Hình minh họa SGK */}
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-cyan-950/60 border border-cyan-500/40 text-xs sm:text-sm text-cyan-100">
+                    <strong className="text-cyan-300">📌 Hướng dẫn nhanh Line Chart:</strong> Chọn vùng dữ liệu ➔ <strong className="text-yellow-300">Insert</strong> ➔ nhóm <strong className="text-yellow-300">Charts</strong> ➔ <strong className="text-white">Insert Line or Area Chart</strong> ➔ <strong className="text-yellow-300">2-D Line with Markers</strong>.
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div
+                      onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm (SGK tr.35)' })}
+                      className="cursor-pointer bg-white rounded-xl p-1.5 border-2 border-amber-400/60 hover:border-amber-300 flex flex-col items-center group"
+                    >
+                      <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-24 sm:h-28 w-full object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-[11px] font-black text-slate-800 mt-1 text-center">Hình 7.9. Dữ liệu</span>
+                    </div>
+                    <div
+                      onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Biểu tượng Insert Line or Area Chart' })}
+                      className="cursor-pointer bg-white rounded-xl p-1.5 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center group"
+                    >
+                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-24 sm:h-28 w-full object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-[11px] font-black text-slate-800 mt-1 text-center">Hình 7.5. Nút Line</span>
+                    </div>
+                    <div
+                      onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Biểu đồ đoạn thẳng hoàn chỉnh' })}
+                      className="cursor-pointer bg-white rounded-xl p-1.5 border-2 border-emerald-400/60 hover:border-emerald-300 flex flex-col items-center group"
+                    >
+                      <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-24 sm:h-28 w-full object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-[11px] font-black text-slate-800 mt-1 text-center">Hình 7.3. Kết quả</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Văn hóa phòng máy & Dặn dò cuối tiết (To rõ) */}
+                {/* Bước 4: Văn hóa phòng máy & Dặn dò cuối tiết */}
                 <div className="space-y-1.5">
                   <span className="text-xs sm:text-sm font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    DẶN DÒ & QUY TẮC PHÒNG MÁY CUỐI TIẾT:
+                    DẶN DÒ & AN TOÀN PHÒNG MÁY CUỐI TIẾT:
                   </span>
                   <div className="grid grid-cols-1 gap-1.5">
                     <div
                       onClick={() => { setSafetyStep1(!safetyStep1); playSound('click'); }}
-                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
+                      className={`p-2 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
                         safetyStep1 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-700'
                       }`}
                     >
@@ -1597,12 +1603,12 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       }`}>
                         {safetyStep1 ? <Check className="w-4 h-4 stroke-[3]" /> : '1'}
                       </div>
-                      <span><strong>Lưu bài thực hành (Ctrl + S)</strong> vào thư mục cá nhân trên máy tính.</span>
+                      <span><strong>Lưu tệp thực hành (Ctrl + S)</strong> & nộp bài về nhà trước <strong>20h00 Thứ Bảy</strong>.</span>
                     </div>
 
                     <div
                       onClick={() => { setSafetyStep2(!safetyStep2); playSound('click'); }}
-                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
+                      className={`p-2 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
                         safetyStep2 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-700'
                       }`}
                     >
@@ -1611,7 +1617,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                       }`}>
                         {safetyStep2 ? <Check className="w-4 h-4 stroke-[3]" /> : '2'}
                       </div>
-                      <span><strong>Tắt máy đúng quy trình</strong> (Start ➔ Power ➔ Shut down) & xếp ghế gọn gàng.</span>
+                      <span><strong>Tắt máy an toàn (Start ➔ Shut down)</strong>, thu dọn bàn ghế trước khi ra về.</span>
                     </div>
                   </div>
                 </div>
