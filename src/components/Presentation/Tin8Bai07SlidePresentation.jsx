@@ -1509,147 +1509,109 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
             {renderSlideCountdown('ĐẾM NGƯỢC HĐ 4: VẬN DỤNG & TỔNG KẾT (6 PHÚT)')}
 
             {/* Symmetrical Two Columns (6 cols / 6 cols) */}
-            <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+            <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
               
-              {/* Left Column (6 cols): Line Chart Discovery */}
-              <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl">
-                <div className="space-y-1.5">
-                  <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingUp className="w-4 h-4 text-cyan-400" />
-                    VẬN DỤNG (SGK TR.35): TẠO BIỂU ĐỒ ĐƯỜNG THẲNG (LINE CHART)
-                  </span>
-                  <p className="text-xs sm:text-sm text-slate-200">
-                    Từ <strong>bảng dữ liệu doanh thu 2016–2020</strong> ở Câu 2 Luyện tập, hãy tạo <strong>biểu đồ đường thẳng</strong> và nhận xét xu hướng tăng trưởng (<strong>3.038 → 5.439 triệu USD</strong>).
+              {/* Left Column (6 cols): KHBD Questions (BIG & CLEAR) + Line Chart Steps */}
+              <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-cyan-950/40 rounded-2xl border border-cyan-500/40 p-4 flex flex-col justify-between shadow-xl gap-2.5 overflow-y-auto">
+                {/* 1. Nhiệm vụ Vận dụng chuẩn KHBD (Chữ to rõ) */}
+                <div className="p-3.5 rounded-2xl bg-amber-950/40 border-2 border-amber-400/50 space-y-1.5">
+                  <div className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp className="w-4 h-4 text-amber-400" />
+                    <span>🎯 NHIỆM VỤ VẬN DỤNG (KHBD & SGK TR.35):</span>
+                  </div>
+                  <p className="text-sm sm:text-base font-bold text-slate-100 leading-snug">
+                    Ngoài biểu đồ cột, để biểu diễn <span className="text-cyan-300">xu hướng tăng giảm theo thời gian</span>, ta dùng loại biểu đồ nào? Hãy thực hành vẽ <span className="text-yellow-300">biểu đồ đoạn thẳng (Line Chart)</span> cho dữ liệu <strong>Doanh thu phần mềm (Hình 7.9)</strong>.
                   </p>
                 </div>
 
-                {/* Simulated SVG Line Chart (EXACT SGK Hình 7.9 figures) */}
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center my-1">
-                  <div className="text-xs font-bold text-cyan-300 mb-1">
-                    Đường thẳng dốc đi lên liên tục thể hiện xu hướng tăng trưởng (Triệu USD)
+                {/* 2. Câu hỏi gợi mở KHBD (To rõ + Nút xem đáp án) */}
+                <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-cyan-500/40 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm sm:text-base font-bold text-cyan-200 leading-snug">
+                      ❓ <strong>Câu hỏi gợi mở:</strong> Để vẽ biểu đồ đoạn thẳng, ta vào dải lệnh <span className="text-yellow-300">Insert</span> và chọn biểu tượng nào trong nhóm <span className="text-yellow-300">Charts</span>?
+                    </p>
+                    <button
+                      onClick={() => { setShowLineTrendDetails(!showLineTrendDetails); playSound('click'); }}
+                      className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/50 text-xs sm:text-sm font-bold shrink-0"
+                    >
+                      {showLineTrendDetails ? 'Ẩn gợi ý' : 'Xem đáp án'}
+                    </button>
                   </div>
-
-                  <div className="w-full h-28 px-4 py-1 relative flex items-center justify-between">
-                    <svg viewBox="0 0 400 100" className="w-full h-full overflow-visible">
-                      <line x1="0" y1="20" x2="400" y2="20" stroke="#334155" strokeDasharray="3 3" />
-                      <line x1="0" y1="50" x2="400" y2="50" stroke="#334155" strokeDasharray="3 3" />
-                      <line x1="0" y1="80" x2="400" y2="80" stroke="#334155" strokeDasharray="3 3" />
-
-                      <polyline
-                        fill="none"
-                        stroke="#06b6d4"
-                        strokeWidth="4"
-                        points="40,80 120,62 200,46 280,32 360,20"
-                        className="filter drop-shadow-[0_0_8px_#06b6d4]"
-                      />
-
-                      {[
-                        { x: 40, y: 80, rev: '3.038', year: '2016' },
-                        { x: 120, y: 62, rev: '3.779', year: '2017' },
-                        { x: 200, y: 46, rev: '4.447', year: '2018' },
-                        { x: 280, y: 32, rev: '4.932', year: '2019' },
-                        { x: 360, y: 20, rev: '5.439', year: '2020' }
-                      ].map((pt, i) => (
-                        <g key={i}>
-                          <circle cx={pt.x} cy={pt.y} r="6" fill="#38bdf8" stroke="#ffffff" strokeWidth="2" />
-                          <text x={pt.x} y={pt.y - 10} textAnchor="middle" fill="#facc15" fontSize="11" fontWeight="bold">
-                            {pt.rev}
-                          </text>
-                          <text x={pt.x} y="98" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="bold">
-                            {pt.year}
-                          </text>
-                        </g>
-                      ))}
-                    </svg>
-                  </div>
+                  {showLineTrendDetails && (
+                    <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-400/50 text-xs sm:text-sm text-emerald-100 space-y-1 animate-in fade-in duration-150">
+                      <div>✅ Chọn biểu tượng <strong>Insert Line or Area Chart</strong> (đường gấp khúc, hàng 2 cột 1 trong <strong>Hình 7.5</strong>) ➔ kiểu <strong>2-D Line (Line with Markers)</strong>.</div>
+                      <div>📈 <strong>So sánh:</strong> Đường dốc đi lên thể hiện ngay <strong>xu hướng tăng trưởng liên tục (2016–2020)</strong> mà không cần so từng cột!</div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Real SGK Figures 7.3 & 7.9 for Line Chart Practice (ENLARGED) */}
-                <div className="grid grid-cols-2 gap-3 my-1.5">
+                {/* 3. Hình minh họa SGK phóng to (Hình 7.5 + Hình 7.3) */}
+                <div className="grid grid-cols-2 gap-3 flex-1 min-h-[140px]">
                   <div
-                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Mẫu biểu đồ đoạn thẳng (SGK tr.33)' })}
-                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center group shadow-md"
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Chọn biểu tượng Insert Line or Area Chart (hàng 2 cột 1)' })}
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-cyan-400/60 hover:border-cyan-300 flex flex-col items-center justify-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.3. Biểu đồ đoạn thẳng</span>
+                    <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-28 sm:h-36 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1 text-center">Hình 7.5. Nút Line Chart</span>
                   </div>
                   <div
-                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm 2016–2020 (SGK tr.35)' })}
-                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-amber-400/60 hover:border-amber-300 flex flex-col items-center group shadow-md"
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Kết quả mẫu Biểu đồ đoạn thẳng (SGK tr.33)' })}
+                    className="cursor-pointer bg-white rounded-2xl p-2 border-2 border-emerald-400/60 hover:border-emerald-300 flex flex-col items-center justify-center group shadow-md"
                   >
-                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-32 sm:h-40 w-full object-contain group-hover:scale-105 transition-transform" />
-                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1">Hình 7.9. Dữ liệu thực hành</span>
+                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-28 sm:h-36 w-full object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-xs sm:text-sm font-black text-slate-800 mt-1 text-center">Hình 7.3. Mẫu đường thẳng</span>
                   </div>
-                </div>
-
-                {/* Line Chart Guide Steps */}
-                <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-xs text-cyan-200">
-                  <strong>Thao tác tạo:</strong> Quét vùng dữ liệu ➔ <strong className="text-white">Insert</strong> ➔ nhóm Charts chọn <strong className="text-white">Insert Line or Area Chart</strong> ➔ kiểu <strong className="text-yellow-300">2-D Line with Markers</strong>.
                 </div>
               </div>
 
-              {/* Right Column (6 cols): Safe Exit Checklist & Finish Lesson */}
-              <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl">
-                <div className="space-y-1.5">
-                  <span className="text-xs font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    PHẦN 2: VĂN HÓA PHÒNG MÁY & KẾT THÚC AN TOÀN
-                  </span>
-                  <p className="text-xs text-slate-300">
-                    Học sinh thực hiện đầy đủ 3 bước an toàn trước khi rời khỏi vị trí thực hành:
-                  </p>
+              {/* Right Column (6 cols): Hình 7.9 Dữ liệu thực hành + Dặn dò & Kết thúc */}
+              <div className="col-span-12 lg:col-span-6 bg-slate-900/90 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl gap-2.5 overflow-y-auto">
+                {/* Hình 7.9 Dữ liệu Doanh thu phần mềm (TO RÕ) */}
+                <div
+                  onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm 2016–2020 (3.038 → 5.439 triệu USD)' })}
+                  className="cursor-pointer bg-white rounded-2xl p-2.5 border-2 border-amber-400/60 hover:border-amber-300 flex items-center justify-between gap-3 group shadow-md"
+                >
+                  <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-32 sm:h-40 flex-1 object-contain group-hover:scale-[1.03] transition-transform" />
+                  <div className="w-40 text-left shrink-0 space-y-1">
+                    <div className="text-xs sm:text-sm font-black text-amber-700">📊 Hình 7.9 SGK tr.35</div>
+                    <div className="text-xs text-slate-700 font-semibold">Dữ liệu thực hành vẽ biểu đồ đoạn thẳng (2016–2020).</div>
+                    <div className="text-[11px] text-cyan-700 font-bold">(Bấm phóng to)</div>
+                  </div>
                 </div>
 
-                {/* 3 Interactive Safety Checkboxes */}
-                <div className="space-y-2 my-2">
-                  <div
-                    onClick={() => { setSafetyStep1(!safetyStep1); playSound('click'); }}
-                    className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
-                      safetyStep1 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
-                      safetyStep1 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'
-                    }`}>
-                      {safetyStep1 ? <Check className="w-4 h-4 stroke-[3]" /> : '1'}
+                {/* Văn hóa phòng máy & Dặn dò cuối tiết (To rõ) */}
+                <div className="space-y-1.5">
+                  <span className="text-xs sm:text-sm font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    DẶN DÒ & QUY TẮC PHÒNG MÁY CUỐI TIẾT:
+                  </span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    <div
+                      onClick={() => { setSafetyStep1(!safetyStep1); playSound('click'); }}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
+                        safetyStep1 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                        safetyStep1 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+                      }`}>
+                        {safetyStep1 ? <Check className="w-4 h-4 stroke-[3]" /> : '1'}
+                      </div>
+                      <span><strong>Lưu bài thực hành (Ctrl + S)</strong> vào thư mục cá nhân trên máy tính.</span>
                     </div>
-                    <div>
-                      <strong className="block text-xs">Lưu tệp bảng tính thực hành (Ctrl + S)</strong>
-                      <span className="text-[10px] text-slate-400">Lưu vào thư mục cá nhân trên ổ đĩa D:\ để nộp bài</span>
-                    </div>
-                  </div>
 
-                  <div
-                    onClick={() => { setSafetyStep2(!safetyStep2); playSound('click'); }}
-                    className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
-                      safetyStep2 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
-                      safetyStep2 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'
-                    }`}>
-                      {safetyStep2 ? <Check className="w-4 h-4 stroke-[3]" /> : '2'}
-                    </div>
-                    <div>
-                      <strong className="block text-xs">Tắt máy tính an toàn theo quy trình chuẩn</strong>
-                      <span className="text-[10px] text-slate-400">Nhấn nút Start ➔ Power ➔ Shut down (Không tắt nguồn đột ngột)</span>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => { setSafetyStep3(!safetyStep3); playSound('click'); }}
-                    className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
-                      safetyStep3 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
-                      safetyStep3 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'
-                    }`}>
-                      {safetyStep3 ? <Check className="w-4 h-4 stroke-[3]" /> : '3'}
-                    </div>
-                    <div>
-                      <strong className="block text-xs">Vệ sinh và sắp xếp ngay ngắn vị trí thực hành</strong>
-                      <span className="text-[10px] text-slate-400">Đẩy bàn phím vào gầm bàn, xếp ghế ngay ngắn và không để lại rác</span>
+                    <div
+                      onClick={() => { setSafetyStep2(!safetyStep2); playSound('click'); }}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all text-xs sm:text-sm ${
+                        safetyStep2 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                        safetyStep2 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+                      }`}>
+                        {safetyStep2 ? <Check className="w-4 h-4 stroke-[3]" /> : '2'}
+                      </div>
+                      <span><strong>Tắt máy đúng quy trình</strong> (Start ➔ Power ➔ Shut down) & xếp ghế gọn gàng.</span>
                     </div>
                   </div>
                 </div>
@@ -1660,10 +1622,10 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     setIsLessonFinished(true);
                     triggerGloriousConfetti();
                   }}
-                  className="w-full py-3 px-4 rounded-xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 text-slate-950 flex items-center justify-center gap-2 shadow-xl shadow-yellow-500/30 active:scale-95 transition-all animate-pulse"
+                  className="w-full py-2.5 px-4 rounded-xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 text-slate-950 flex items-center justify-center gap-2 shadow-xl shadow-yellow-500/30 active:scale-95 transition-all animate-pulse"
                 >
                   <Trophy className="w-5 h-5 text-slate-950" />
-                  <span>🎉 HOÀN THÀNH TIẾT THAO GIẢNG (FINISH LESSON)</span>
+                  <span>🎉 HOÀN THÀNH TIẾT HỌC</span>
                 </button>
               </div>
             </div>
