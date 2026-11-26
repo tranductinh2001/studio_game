@@ -9,9 +9,20 @@ import {
 import confetti from 'canvas-confetti';
 
 export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrary }) {
-  // Slide Index: 0 (HĐ 2A), 1 (HĐ 2B), 2 (HĐ 3), 3 (HĐ 4)
+  // Slide Index: 0 (HĐ 1: 4p), 1 (HĐ 2A: 10p), 2 (HĐ 2B: 10p), 3 (HĐ 3: 12p), 4 (HĐ 4: 6p)
   const [slideIndex, setSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState(null); // { src, title }
+
+  // Warmup Q&A reveal states (HĐ 1)
+  const [warmupReveal1, setWarmupReveal1] = useState(false);
+  const [warmupReveal2, setWarmupReveal2] = useState(false);
+
+  // Per-activity countdown durations matching lesson plan (seconds)
+  const ACTIVITY_DURATIONS = { 0: 240, 1: 600, 2: 600, 3: 720, 4: 360 };
+  const [activityTimer, setActivityTimer] = useState(240);
+  const [activityTimerRunning, setActivityTimerRunning] = useState(false);
+  const activityTimerRef = useRef(null);
 
   // ==========================================
   // SLIDE 1 STATE (HĐ 2A: Biểu đồ cột & Chart Elements +)
@@ -158,14 +169,47 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  // Sync per-activity countdown when switching slide
+  useEffect(() => {
+    setActivityTimerRunning(false);
+    setActivityTimer(ACTIVITY_DURATIONS[slideIndex] || 300);
+  }, [slideIndex]);
+
+  useEffect(() => {
+    if (activityTimerRunning) {
+      activityTimerRef.current = setInterval(() => {
+        setActivityTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(activityTimerRef.current);
+            setActivityTimerRunning(false);
+            playSound('alarm');
+            return 0;
+          }
+          if (prev <= 10) playSound('timer_tick');
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (activityTimerRef.current) {
+      clearInterval(activityTimerRef.current);
+    }
+    return () => {
+      if (activityTimerRef.current) clearInterval(activityTimerRef.current);
+    };
+  }, [activityTimerRunning]);
+
   // Keyboard navigation: ArrowRight / Space / ArrowLeft / F
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+      if (e.key === 'Escape' && zoomedImage) {
+        setZoomedImage(null);
+        return;
+      }
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
-        setSlideIndex((prev) => Math.min(3, prev + 1));
+        setSlideIndex((prev) => Math.min(4, prev + 1));
         playSound('click');
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
@@ -179,7 +223,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [zoomedImage]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -191,31 +235,42 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
     }
   };
 
-  // 4 Core Activities Metadata
+  // 5 Core Activities Metadata matching Lesson Plan (Tiết 12: 42 phút)
   const ACTIVITIES = [
     {
       id: 0,
-      tag: 'HĐ 2A',
-      title: 'Biểu Đồ Cột',
-      desc: 'HĐ 2 - Tiến trình 2A: Tạo biểu đồ cột & nút Chart Elements (+)'
+      tag: 'HĐ 1',
+      durationLabel: '3-5p',
+      title: 'Mở Đầu',
+      desc: 'HĐ 1 (3-5 phút): Khởi động Đấu trường Webby & Kết nối tri thức'
     },
     {
       id: 1,
-      tag: 'HĐ 2B',
-      title: 'Biểu Đồ Quạt Tròn',
-      desc: 'HĐ 2 - Tiến trình 2B: Tạo biểu đồ quạt tròn & Tỉ lệ %'
+      tag: 'HĐ 2A',
+      durationLabel: '10p',
+      title: 'Biểu Đồ Cột',
+      desc: 'HĐ 2A (10 phút): Tạo biểu đồ cột & nút Chart Elements (+) (SGK tr.33-34)'
     },
     {
       id: 2,
-      tag: 'HĐ 3',
-      title: 'Luyện Tập SGK',
-      desc: 'HĐ 3: Luyện tập bám sát Bài tập 1 & 2 SGK trang 35'
+      tag: 'HĐ 2B',
+      durationLabel: '10p',
+      title: 'Biểu Đồ Quạt',
+      desc: 'HĐ 2B (10 phút): Tạo biểu đồ quạt tròn & Tỉ lệ % (SGK tr.34)'
     },
     {
       id: 3,
+      tag: 'HĐ 3',
+      durationLabel: '12p',
+      title: 'Luyện Tập',
+      desc: 'HĐ 3 (10-12 phút): Luyện tập Bài 1 & Bài 2 SGK trang 35'
+    },
+    {
+      id: 4,
       tag: 'HĐ 4',
-      title: 'Vận Dụng & Tổng Kết',
-      desc: 'HĐ 4: Biểu đồ đoạn thẳng, Văn hóa phòng máy & Bế mạc tiết học'
+      durationLabel: '6p',
+      title: 'Vận Dụng',
+      desc: 'HĐ 4 (5-7 phút): Biểu đồ đoạn thẳng, Văn hóa phòng máy & Tổng kết'
     }
   ];
 
@@ -281,13 +336,37 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 <span className={`${isActive ? 'inline' : 'hidden lg:inline'} font-semibold text-[11px]`}>
                   {act.title}
                 </span>
+                <span className={`hidden xl:inline text-[9px] font-mono px-1 rounded ${isActive ? 'bg-slate-950/20 text-slate-950' : 'text-slate-400'}`}>
+                  {act.durationLabel}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Right: Quick Classroom Action Controls */}
+        {/* Right: Activity Timer + Quick Classroom Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Per-Activity Countdown Timer Pill */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-cyan-500/40 shadow-inner">
+            <Clock className={`w-3.5 h-3.5 ${activityTimer <= 60 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`} />
+            <span className={`font-mono font-black text-xs sm:text-sm ${activityTimer <= 60 ? 'text-rose-300' : 'text-emerald-300'}`}>
+              {formatTime(activityTimer)}
+            </span>
+            <button
+              onClick={() => { setActivityTimerRunning((r) => !r); playSound('click'); }}
+              className="p-1 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 transition-colors"
+              title={activityTimerRunning ? 'Tạm dừng đồng hồ' : 'Bắt đầu đếm ngược'}
+            >
+              {activityTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            </button>
+            <button
+              onClick={() => { setActivityTimerRunning(false); setActivityTimer(ACTIVITY_DURATIONS[slideIndex] || 300); playSound('click'); }}
+              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              title="Đặt lại thời gian hoạt động"
+            >
+              <RotateCcw className="w-3 h-3" />
+            </button>
+          </div>
           {/* Jump to Webby / Mark AI Voice */}
           {onSwitchTab && (
             <button
@@ -341,9 +420,125 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
       <main className="flex-1 min-h-0 relative p-3 sm:p-5 overflow-hidden flex flex-col justify-between">
 
         {/* -----------------------------------------------------------------------
-            SLIDE 1: HOẠT ĐỘNG 2 – TIẾN TRÌNH 2A: BIỂU ĐỒ CỘT & CHART ELEMENTS (+)
+            SLIDE 0: HOẠT ĐỘNG 1 – MỞ ĐẦU: ĐẤU TRƯỜNG WEBBY & KẾT NỐI TRI THỨC (3 - 5 PHÚT)
            ----------------------------------------------------------------------- */}
         {slideIndex === 0 && (
+          <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between border-b border-amber-500/30 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-black uppercase tracking-wider">
+                  HOẠT ĐỘNG 1: MỞ ĐẦU (3 - 5 PHÚT)
+                </span>
+                <span className="text-xs font-bold text-slate-400">Kết nối kiến thức Tiết 11</span>
+              </div>
+              <h1 className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-white to-cyan-300 uppercase tracking-tight">
+                ĐẤU TRƯỜNG WEBBY: KHỞI ĐỘNG & KẾT NỐI TRI THỨC
+              </h1>
+            </div>
+
+            <div className="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+              {/* Left 6 cols: Game Launcher + 2 Warmup Questions */}
+              <div className="col-span-12 lg:col-span-6 flex flex-col gap-3 justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-cyan-500/15 border border-amber-400/40 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>VÒNG QUAY MAY MẮN • HỘP QUÀ BÍ ẨN</span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1">
+                      Chọn ngẫu nhiên 1–2 học sinh trả lời nhanh thử thách kết nối trước khi thực hành trên Excel.
+                    </p>
+                  </div>
+                  {onSwitchTab && (
+                    <button
+                      onClick={() => onSwitchTab('game-center')}
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shrink-0 shadow-lg active:scale-95 transition-all"
+                    >
+                      🎮 Mở Đấu Trường
+                    </button>
+                  )}
+                </div>
+
+                {/* 2 Interactive Warmup Questions */}
+                <div className="space-y-2.5 flex-1 flex flex-col justify-center">
+                  <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-sky-500/40 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-sky-200">
+                        Câu 1: Khi nào nên sử dụng <span className="text-yellow-300">biểu đồ cột</span>?
+                      </span>
+                      <button
+                        onClick={() => { setWarmupReveal1(!warmupReveal1); playSound('click'); }}
+                        className="px-3 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400/40 text-xs font-bold shrink-0"
+                      >
+                        {warmupReveal1 ? 'Ẩn gợi ý' : 'Xem đáp án'}
+                      </button>
+                    </div>
+                    {warmupReveal1 && (
+                      <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-200">
+                        ✅ Dùng khi cần <strong>so sánh trực quan độ lớn</strong> của các đối tượng dữ liệu với nhau (VD: số học sinh quan tâm từng nội dung Tin học).
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-indigo-500/40 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-indigo-200">
+                        Câu 2: Khi nào nên dùng <span className="text-pink-300">biểu đồ hình quạt tròn</span> hoặc <span className="text-cyan-300">đoạn thẳng</span>?
+                      </span>
+                      <button
+                        onClick={() => { setWarmupReveal2(!warmupReveal2); playSound('click'); }}
+                        className="px-3 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 text-xs font-bold shrink-0"
+                      >
+                        {warmupReveal2 ? 'Ẩn gợi ý' : 'Xem đáp án'}
+                      </button>
+                    </div>
+                    {warmupReveal2 && (
+                      <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-200 space-y-1">
+                        <div>🥧 <strong>Quạt tròn:</strong> So sánh <strong>tỉ lệ phần trăm (%)</strong> của từng phần trên tổng thể.</div>
+                        <div>📈 <strong>Đoạn thẳng:</strong> Quan sát <strong>xu hướng tăng/giảm</strong> của dữ liệu theo thời gian.</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right 6 cols: Real SGK Figures 7.1 & 7.4 for Visual Recall */}
+              <div className="col-span-12 lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xl gap-3">
+                <div className="text-xs font-black text-cyan-300 uppercase tracking-wider flex items-center justify-between">
+                  <span>HÌNH MINH HỌA SGK TIN HỌC 8 (TR.32–33)</span>
+                  <span className="text-[11px] font-medium text-slate-400">(Bấm vào ảnh để phóng to)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-h-0">
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png', title: 'Hình 7.1. Bảng tổng hợp kết quả khảo sát lớp 8A (SGK tr.32)' })}
+                    className="cursor-pointer bg-white rounded-xl p-2 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-center overflow-hidden group transition-all"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_1_bang_khao_sat.png" alt="Hình 7.1 SGK" className="max-h-48 object-contain group-hover:scale-[1.03] transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-700 mt-1 text-center">Hình 7.1. Bảng số liệu khảo sát</span>
+                  </div>
+
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_4_quat_tron.png', title: 'Hình 7.4. Biểu đồ hình quạt tròn (SGK tr.33)' })}
+                    className="cursor-pointer bg-white rounded-xl p-2 border-2 border-indigo-500/40 hover:border-indigo-400 flex flex-col items-center justify-center overflow-hidden group transition-all"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4 SGK" className="max-h-48 object-contain group-hover:scale-[1.03] transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-700 mt-1 text-center">Hình 7.4. Biểu đồ quạt tròn (%)</span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/30 text-xs text-cyan-200 text-center">
+                  🎯 <strong>Nhiệm vụ hôm nay:</strong> Học sinh trực tiếp thực hành tạo biểu đồ cột, biểu đồ quạt tròn & biểu đồ đoạn thẳng trên <strong>Microsoft Excel</strong>!
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* -----------------------------------------------------------------------
+            SLIDE 1: HOẠT ĐỘNG 2 – TIẾN TRÌNH 2A: BIỂU ĐỒ CỘT & CHART ELEMENTS (+)
+           ----------------------------------------------------------------------- */}
+        {slideIndex === 1 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip */}
             <div className="flex items-center justify-between border-b border-sky-500/30 pb-2">
@@ -655,8 +850,34 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   </div>
                 </div>
 
+                {/* Real SGK Visual Reference Figures (Click to Zoom) */}
+                <div className="bg-slate-900/90 rounded-2xl border border-cyan-500/40 p-3 space-y-2 shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-cyan-300 uppercase tracking-wider">
+                      📸 HÌNH SGK TRỰC QUAN (BẤM ĐỂ PHÓNG TO)
+                    </span>
+                    <span className="text-[10px] text-slate-400">SGK tr.33–34</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div
+                      onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_5_nhom_charts.png', title: 'Hình 7.5. Nhóm lệnh Charts (Insert -> 2-D Column)' })}
+                      className="cursor-pointer bg-white rounded-xl p-1.5 border border-cyan-400/50 hover:border-cyan-300 flex flex-col items-center group"
+                    >
+                      <img src="/images/tin8_bai7/hinh_7_5_nhom_charts.png" alt="Hình 7.5" className="h-20 object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.5. Nhóm Charts</span>
+                    </div>
+                    <div
+                      onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_6_chart_elements_cot.png', title: 'Hình 7.6. Bổ sung thông tin bằng Chart Elements (+)' })}
+                      className="cursor-pointer bg-white rounded-xl p-1.5 border border-emerald-400/50 hover:border-emerald-300 flex flex-col items-center group"
+                    >
+                      <img src="/images/tin8_bai7/hinh_7_6_chart_elements_cot.png" alt="Hình 7.6" className="h-20 object-contain group-hover:scale-105 transition-transform" />
+                      <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.6. Nút (+)</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Practical Checklist & Student Guidance Card */}
-                <div className="flex-1 bg-slate-900/80 rounded-2xl border border-slate-800 p-3.5 space-y-2 flex flex-col justify-between shadow-lg">
+                <div className="flex-1 bg-slate-900/80 rounded-2xl border border-slate-800 p-3 space-y-1.5 flex flex-col justify-between shadow-lg">
                   <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     NHIỆM VỤ HỌC SINH TẠI PHÒNG MÁY
@@ -689,7 +910,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {/* -----------------------------------------------------------------------
             SLIDE 2: HOẠT ĐỘNG 2 – TIẾN TRÌNH 2B: BIỂU ĐỒ QUẠT TRÒN & NHÃN %
            ----------------------------------------------------------------------- */}
-        {slideIndex === 1 && (
+        {slideIndex === 2 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip */}
             <div className="flex items-center justify-between border-b border-indigo-500/30 pb-2">
@@ -862,6 +1083,24 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   </div>
                 </div>
 
+                {/* Real SGK Figures 7.4 & 7.7 for Pie Chart */}
+                <div className="grid grid-cols-2 gap-2 my-1">
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_4_quat_tron.png', title: 'Hình 7.4. Mẫu biểu đồ hình quạt tròn (SGK tr.33)' })}
+                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-indigo-400/50 hover:border-indigo-300 flex flex-col items-center group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_4_quat_tron.png" alt="Hình 7.4" className="h-24 object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.4. Biểu đồ quạt tròn</span>
+                  </div>
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_7_chart_elements_quat.png', title: 'Hình 7.7. Chọn More Options -> Percentage (%) (SGK tr.34)' })}
+                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-pink-400/50 hover:border-pink-300 flex flex-col items-center group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_7_chart_elements_quat.png" alt="Hình 7.7" className="h-24 object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.7. Hiện tỉ lệ %</span>
+                  </div>
+                </div>
+
                 {/* Notebook Takeaway Button & Box */}
                 <div className="pt-2 border-t border-slate-800 space-y-2">
                   <button
@@ -896,7 +1135,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {/* -----------------------------------------------------------------------
             SLIDE 3: HOẠT ĐỘNG 3 – LUYỆN TẬP: BÁM SÁT 100% BÀI TẬP SGK TRANG 35
            ----------------------------------------------------------------------- */}
-        {slideIndex === 2 && (
+        {slideIndex === 3 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip with Sub-Tabs */}
             <div className="flex items-center justify-between border-b border-emerald-500/30 pb-2">
@@ -988,6 +1227,18 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* SGK Figure 7.8 preview */}
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png', title: 'Hình 7.8. Tổng số HS sử dụng thiết bị số (SGK tr.35)' })}
+                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-emerald-400/50 hover:border-emerald-300 flex items-center justify-center gap-3 my-1 group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_8_bang_thiet_bi_so.png" alt="Hình 7.8" className="h-20 object-contain group-hover:scale-105 transition-transform" />
+                    <div className="text-left text-[11px] text-slate-700 font-semibold">
+                      <div className="font-black text-emerald-700">Hình 7.8 SGK tr.35</div>
+                      <div>Bấm để phóng to bảng đối chiếu kết quả hàm =SUM(...)</div>
+                    </div>
                   </div>
 
                   {/* Actions to Switch Sample Charts */}
@@ -1138,28 +1389,13 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                     </span>
                   </div>
 
-                  {/* Chart Graphic 2016 - 2020 */}
-                  <div className="flex-1 min-h-[170px] bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-end justify-around gap-3 my-2">
-                    {[
-                      { year: '2016', rev: 3.8, h: 55 },
-                      { year: '2017', rev: 4.1, h: 63 },
-                      { year: '2018', rev: 4.5, h: 72 },
-                      { year: '2019', rev: 5.0, h: 84 },
-                      { year: '2020', rev: 5.4, h: 100 }
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group">
-                        <span className="font-mono text-xs font-black text-yellow-300 mb-1 group-hover:scale-125 transition-transform">
-                          {item.rev}
-                        </span>
-                        <div
-                          style={{ height: `${item.h}%` }}
-                          className="w-8 sm:w-12 rounded-t-lg bg-gradient-to-t from-amber-600 via-yellow-500 to-amber-300 shadow-lg group-hover:brightness-125 transition-all"
-                        ></div>
-                        <span className="font-mono text-xs font-bold text-slate-300 mt-1.5">
-                          {item.year}
-                        </span>
-                      </div>
-                    ))}
+                  {/* Real SGK Figure 7.9 (Click to Zoom) */}
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Doanh thu công nghiệp phần mềm giai đoạn 2016–2020 (SGK tr.35)' })}
+                    className="cursor-pointer bg-white rounded-xl p-2 border border-amber-400/50 hover:border-amber-300 flex flex-col items-center justify-center flex-1 min-h-[180px] my-2 group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9 SGK tr.35" className="max-h-56 object-contain group-hover:scale-[1.02] transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-700 mt-1">Hình 7.9 SGK tr.35 (Bấm để phóng to)</span>
                   </div>
 
                   <div className="text-[11px] text-slate-400 text-center italic">
@@ -1228,7 +1464,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {/* -----------------------------------------------------------------------
             SLIDE 4: HOẠT ĐỘNG 4 – VẬN DỤNG, VĂN HÓA PHÒNG MÁY & TỔNG KẾT
            ----------------------------------------------------------------------- */}
-        {slideIndex === 3 && (
+        {slideIndex === 4 && (
           <div className="w-full h-full flex flex-col gap-3 animate-in fade-in duration-300">
             {/* Slide Header Strip */}
             <div className="flex items-center justify-between border-b border-amber-500/30 pb-2">
@@ -1299,6 +1535,24 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                         </g>
                       ))}
                     </svg>
+                  </div>
+                </div>
+
+                {/* Real SGK Figures 7.3 & 7.9 for Line Chart Practice */}
+                <div className="grid grid-cols-2 gap-2 my-1">
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_3_duong_thang.png', title: 'Hình 7.3. Mẫu biểu đồ đoạn thẳng (SGK tr.33)' })}
+                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-cyan-400/50 hover:border-cyan-300 flex flex-col items-center group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_3_duong_thang.png" alt="Hình 7.3" className="h-24 object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.3. Biểu đồ đoạn thẳng</span>
+                  </div>
+                  <div
+                    onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png', title: 'Hình 7.9. Dữ liệu Doanh thu phần mềm 2016–2020 (SGK tr.35)' })}
+                    className="cursor-pointer bg-white rounded-xl p-1.5 border border-amber-400/50 hover:border-amber-300 flex flex-col items-center group"
+                  >
+                    <img src="/images/tin8_bai7/hinh_7_9_doanh_thu_phan_mem.png" alt="Hình 7.9" className="h-24 object-contain group-hover:scale-105 transition-transform" />
+                    <span className="text-[10px] font-bold text-slate-700 mt-0.5">Hình 7.9. Dữ liệu thực hành</span>
                   </div>
                 </div>
 
@@ -1412,7 +1666,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         {/* Center: Slide Progress Dots & Indicator */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            {[0, 1, 2, 3].map((idx) => (
+            {[0, 1, 2, 3, 4].map((idx) => (
               <button
                 key={idx}
                 onClick={() => {
@@ -1422,13 +1676,13 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 className={`h-2 rounded-full transition-all ${
                   slideIndex === idx ? 'w-8 bg-cyan-400 shadow-md shadow-cyan-400/50' : 'w-2 bg-slate-700 hover:bg-slate-500'
                 }`}
-                title={`Chuyển tới ${ACTIVITIES[idx].tag}`}
+                title={`Chuyển tới ${ACTIVITIES[idx]?.tag} (${ACTIVITIES[idx]?.durationLabel})`}
               ></button>
             ))}
           </div>
 
           <span className="font-mono font-bold text-slate-400 text-xs">
-            SLIDE <span className="text-cyan-300 font-black">{slideIndex + 1}</span> / 4 • {ACTIVITIES[slideIndex]?.tag}
+            SLIDE <span className="text-cyan-300 font-black">{slideIndex + 1}</span> / 5 • {ACTIVITIES[slideIndex]?.tag} ({ACTIVITIES[slideIndex]?.durationLabel})
           </span>
 
           <span className="hidden md:inline text-[11px] text-slate-500">
@@ -1437,10 +1691,10 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         </div>
 
         {/* Right: Next Button */}
-        {slideIndex < 3 ? (
+        {slideIndex < 4 ? (
           <button
             onClick={() => {
-              setSlideIndex((prev) => Math.min(3, prev + 1));
+              setSlideIndex((prev) => Math.min(4, prev + 1));
               playSound('click');
             }}
             className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black flex items-center gap-1 shadow-md shadow-cyan-500/30 active:scale-95 transition-all"
@@ -1522,6 +1776,34 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         </div>
       )}
 
+      {/* ZOOM MODAL FOR SGK FIGURES */}
+      {zoomedImage && (
+        <div
+          onClick={() => setZoomedImage(null)}
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl w-full bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border-4 border-cyan-400 flex flex-col items-center gap-3"
+          >
+            <button
+              onClick={() => setZoomedImage(null)}
+              className="absolute top-3 right-3 p-2 rounded-full bg-slate-900 text-white hover:bg-rose-600 transition-colors"
+              title="Đóng (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-sm sm:text-base font-black text-slate-900 pr-10 text-center">
+              {zoomedImage.title}
+            </h3>
+            <img
+              src={zoomedImage.src}
+              alt={zoomedImage.title}
+              className="max-h-[75vh] w-auto object-contain rounded-xl border border-slate-200"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
