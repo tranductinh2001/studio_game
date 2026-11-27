@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
-import { GAME_STATES, pickRaceWinner, computeRacerProgress, applyStealthEarlyFinish } from '../services/gameEngine2D';
+import { GAME_STATES, pickRaceWinners, computeRacerProgress, applyStealthEarlyFinish } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
 import StealthWinnerControl from '../StealthWinnerControl';
 import { CharacterAvatar } from '../services/characterAvatars';
@@ -18,18 +18,43 @@ export default function BoatRaceGame({
   onUpdateSecretControl,
   settings = {},
   onRecordResult,
-  onOpenTeacherPanel
+  onOpenTeacherPanel,
+  onUpdateSettings
 }) {
   // Game state: 'IDLE' | 'COUNTDOWN' | 'PLAYING' | 'PAUSED' | 'FINISHED'
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [countdown, setCountdown] = useState(3);
   const [winner, setWinner] = useState(null);
+  const [winners, setWinners] = useState([]);
   const [rankings, setRankings] = useState([]);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Racer progress array (0 to 100 for each team)
+  const isIndividual = (settings?.mode || settings?.gameMode) === 'individual';
+  const racers = useMemo(() => {
+    if (isIndividual && students && students.length > 0) {
+      return students.map((stu, idx) => {
+        const teamObj = teams.find((t) => t.id === stu.teamId) || teams[idx % Math.max(1, teams.length)];
+        return {
+          ...stu,
+          number: idx + 1,
+          shortName: stu.name,
+          color: stu.color || teamObj?.color || '#0ea5e9',
+          characterImage: stu.characterImage || teamObj?.characterImage,
+          avatar: stu.avatar || teamObj?.avatar || '⛵'
+        };
+      });
+    }
+    return teams;
+  }, [isIndividual, students, teams]);
+
+  const winnerCount = useMemo(() => {
+    const raw = Number(settings?.winnerCount) || 1;
+    return Math.min(Math.max(1, raw), Math.max(1, racers.length));
+  }, [settings?.winnerCount, racers.length]);
+
+  // Racer progress array (0 to 100 for each racer)
   const [boatProgress, setBoatProgress] = useState([]);
   const trackRef = useRef(null);
   const boatRefs = useRef([]);
@@ -44,6 +69,7 @@ export default function BoatRaceGame({
     duration: 8500, // 8.5s exciting sprint
     targetWinner: null,
     determinedWinner: null,
+    determinedWinners: [],
     isFinished: false,
     seed: Math.random() * 10
   });
@@ -55,13 +81,14 @@ export default function BoatRaceGame({
     return (durSec * 1000) / speed;
   }, [settings]);
 
-  // Initialize boats when teams change
+  // Initialize boats when racers change
   useEffect(() => {
-    setBoatProgress(teams.map(() => 0));
+    setBoatProgress(racers.map(() => 0));
     setWinner(null);
+    setWinners([]);
     setRankings([]);
     setGameState(GAME_STATES.IDLE);
-  }, [teams]);
+  }, [racers]);
 
   // Secret teacher keyboard controls (Keys 1-9 to silently pick winner)
   useEffect(() => {
@@ -83,18 +110,26 @@ export default function BoatRaceGame({
       }
       // 1-9 for secret winner rigging
       const num = parseInt(e.key, 10);
-      if (!isNaN(num) && num >= 1 && num <= teams.length) {
-        const target = teams[num - 1];
+      if (!isNaN(num) && num >= 1 && num <= racers.length) {
+        const target = racers[num - 1];
         if (target) {
           runtimeRef.current.targetWinner = target;
           runtimeRef.current.determinedWinner = target;
+          if (runtimeRef.current.determinedWinners?.length > 0) {
+            runtimeRef.current.determinedWinners = [
+              target,
+              ...runtimeRef.current.determinedWinners.filter((w) => w.id !== target.id)
+            ].slice(0, winnerCount);
+          } else {
+            runtimeRef.current.determinedWinners = [target];
+          }
           gameAudio.playTick();
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, teams]);
+  }, [gameState, racers, winnerCount]);
 
   // Clean up animation on unmount
   useEffect(() => {
@@ -117,11 +152,12 @@ export default function BoatRaceGame({
     setCountdown(3);
     gameAudio.playTick();
 
-    // Determine target winner upfront
+    // Determine target winner(s) upfront based on teacher winnerCount setting
     const mode = secretControl?.mode || 'fair_random';
-    const secretTargetId = secretControl?.targetTeamId;
-    const chosenWinner = pickRaceWinner(teams, secretTargetId, mode) || teams[0];
-    runtimeRef.current.determinedWinner = chosenWinner;
+    const secretTargetId = isIndividual ? secretControl?.targetStudentId : secretControl?.targetTeamId;
+    const chosenWinners = pickRaceWinners(racers, secretTargetId, mode, winnerCount);
+    runtimeRef.current.determinedWinners = chosenWinners;
+    runtimeRef.current.determinedWinner = chosenWinners[0] || racers[0];
     runtimeRef.current.seed = Math.random() * 20;
 
     let count = 3;
@@ -158,9 +194,10 @@ export default function BoatRaceGame({
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
       const currentProgress = [];
-      teams.forEach((team, idx) => {
-        const isWinner = team.id === rt.determinedWinner?.id;
-        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
+      racers.forEach((team, idx) => {
+        const winnerRank = (rt.determinedWinners || []).findIndex((w) => w.id === team.id);
+        const isWinner = winnerRank === 0 || team.id === rt.determinedWinner?.id;
+        const prog = computeRacerProgress(normalizedTime, idx, racers.length, isWinner, rt.seed + idx * 1.5, winnerRank);
         currentProgress.push(prog);
 
         const xPx = (prog / 100) * trackWidth;
@@ -209,9 +246,10 @@ export default function BoatRaceGame({
       const normalizedTime = Math.min(elapsed / rt.duration, 1.0);
 
       const currentProgress = [];
-      teams.forEach((team, idx) => {
-        const isWinner = team.id === rt.determinedWinner?.id;
-        const prog = computeRacerProgress(normalizedTime, idx, teams.length, isWinner, rt.seed + idx * 1.5);
+      racers.forEach((team, idx) => {
+        const winnerRank = (rt.determinedWinners || []).findIndex((w) => w.id === team.id);
+        const isWinner = winnerRank === 0 || team.id === rt.determinedWinner?.id;
+        const prog = computeRacerProgress(normalizedTime, idx, racers.length, isWinner, rt.seed + idx * 1.5, winnerRank);
         currentProgress.push(prog);
 
         const xPx = (prog / 100) * trackWidth;
@@ -243,15 +281,17 @@ export default function BoatRaceGame({
     gameAudio.stopAmbientBGM();
     gameAudio.playFanfare();
 
-    const winTeam = rt.determinedWinner || teams[0];
+    const winList = rt.determinedWinners?.length > 0
+      ? rt.determinedWinners
+      : [rt.determinedWinner || racers[0]].filter(Boolean);
+    const winTeam = winList[0];
     setWinner(winTeam);
+    setWinners(winList);
 
-    // Sort rankings
-    const sorted = [...teams].sort((a, b) => {
-      if (a.id === winTeam.id) return -1;
-      if (b.id === winTeam.id) return 1;
-      return 0;
-    });
+    // Sort rankings (Top winners first in order, then remaining racers)
+    const winnerIds = new Set(winList.map((w) => w.id));
+    const remaining = racers.filter((r) => !winnerIds.has(r.id));
+    const sorted = [...winList, ...remaining];
     setRankings(sorted);
     setGameState(GAME_STATES.FINISHED);
 
@@ -259,8 +299,9 @@ export default function BoatRaceGame({
     if (onRecordResult) {
       onRecordResult('boat-race', {
         winner: winTeam,
+        winners: winList,
         rankings: sorted,
-        mode: 'team'
+        mode: isIndividual ? 'individual' : 'team'
       });
     }
 
@@ -281,14 +322,15 @@ export default function BoatRaceGame({
     rt.startTime = 0;
     rt.elapsedBeforePause = 0;
     gameAudio.stopAmbientBGM();
-    setBoatProgress(teams.map(() => 0));
+    setBoatProgress(racers.map(() => 0));
     setWinner(null);
+    setWinners([]);
     setRankings([]);
     setGameState(GAME_STATES.IDLE);
     gameAudio.playTick();
 
     // Reset boat positions directly
-    teams.forEach((_, idx) => {
+    racers.forEach((_, idx) => {
       if (boatRefs.current[idx]) {
         boatRefs.current[idx].style.transform = 'translate3d(0px, 0px, 0)';
       }
@@ -329,9 +371,23 @@ export default function BoatRaceGame({
                 ĐUA THUYỀN VƯỢT SÓNG
               </h2>
             </div>
-            <p className="text-[11px] text-slate-400">
-              {teams.length} Thuyền Đua • Vượt Sóng Đại Dương • Về Đích Đoạt Cúp
-            </p>
+            <div className="flex items-center gap-2 text-[11px] text-slate-400">
+              <span>{racers.length} Thuyền Đua • Top <strong className="text-amber-300">{winnerCount}</strong> Thắng</span>
+              {onUpdateSettings && students.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onUpdateSettings({ mode: isIndividual ? 'team' : 'individual' })}
+                  className={`px-2 py-0.5 rounded-md font-bold border transition-all ${
+                    isIndividual
+                      ? 'bg-sky-500/20 border-sky-400/50 text-sky-300'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'
+                  }`}
+                  title="Chuyển nhanh giữa Đua Nhóm và Đua Cá Nhân"
+                >
+                  {isIndividual ? `👤 ${students.length} HS` : `👥 ${teams.length} Đội`}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -416,27 +472,38 @@ export default function BoatRaceGame({
         </div>
 
         {/* RACING LANES & BOATS */}
-        <div ref={trackRef} className="absolute top-[48%] bottom-4 left-0 right-0 flex flex-col justify-around px-2 z-20">
+        <div
+          ref={trackRef}
+          className={`absolute left-0 right-0 px-2 z-20 ${
+            racers.length > 8
+              ? 'top-[36%] bottom-2 overflow-y-auto'
+              : 'top-[48%] bottom-4 flex flex-col justify-around'
+          }`}
+        >
           <style>{`
             @keyframes oarStrokeFast {
               0%, 100% { transform: rotate(-26deg); }
               50% { transform: rotate(26deg); }
             }
           `}</style>
-          {teams.map((team, index) => {
+          <div className={racers.length > 8 ? 'flex flex-col gap-1 py-1' : 'contents'}>
+          {racers.map((team, index) => {
             const prog = boatProgress[index] || 0;
-            const isFirst = winner?.id === team.id;
+            const isCompact = racers.length > 8;
+            const isTopWinner = winners.some((w) => w.id === team.id) || winner?.id === team.id;
 
             return (
               <div
                 key={team.id}
-                className="relative w-full h-14 flex items-center border-b border-cyan-400/15"
+                className={`relative w-full flex items-center border-b border-cyan-400/15 ${
+                  isCompact ? 'h-10 shrink-0' : 'h-14'
+                }`}
               >
                 {/* Lane marker badge with Character Avatar */}
                 <div
                   className="absolute left-2 flex items-center gap-1 z-10"
                 >
-                  <CharacterAvatar team={team} index={index} size="sm" />
+                  <CharacterAvatar team={team} index={index} size={isCompact ? 'xs' : 'sm'} />
                 </div>
 
                 {/* 2D CARTOON RACING BOAT SPRITE (Pure GPU translate3d) */}
@@ -448,10 +515,14 @@ export default function BoatRaceGame({
                     transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.79 : 800)}px, 0px, 0)`
                   }}
                 >
-                  {/* Floating Team Badge above boat */}
-                  <div className="absolute -top-7 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
+                  {/* Floating Team/Student Badge */}
+                  <div className={`absolute flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20 ${
+                    isCompact ? 'left-24 top-1.5' : '-top-7 left-2'
+                  }`}>
                     <CharacterAvatar team={team} index={index} size="xs" />
-                    <span className="text-[11px] font-bold text-white">{team.shortName || team.name}</span>
+                    <span className={`${isCompact ? 'text-[10px]' : 'text-[11px]'} font-bold text-white`}>
+                      {isCompact ? `${index + 1}. ${team.shortName || team.name}` : (team.shortName || team.name)}
+                    </span>
                     <span 
                       ref={(el) => (badgeRefs.current[index] = el)}
                       className="text-[10px] font-mono text-cyan-300 font-bold"
@@ -471,8 +542,8 @@ export default function BoatRaceGame({
                   {/* Cartoon Boat Body (SVG Illustration) */}
                   <svg
                     viewBox="0 0 160 70"
-                    className="w-36 h-16 drop-shadow-lg"
-                    style={{ filter: isFirst ? 'drop-shadow(0 0 12px #fef08a)' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))' }}
+                    className={`${isCompact ? 'w-24 h-10' : 'w-36 h-16'} drop-shadow-lg`}
+                    style={{ filter: isTopWinner ? 'drop-shadow(0 0 12px #fef08a)' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))' }}
                   >
                     <defs>
                       <linearGradient id={`hull_${team.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -537,6 +608,7 @@ export default function BoatRaceGame({
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* Waves Overlay at bottom */}
@@ -573,41 +645,48 @@ export default function BoatRaceGame({
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
-                🏆 CHIẾN THẮNG NGOẠN MỤC
+                {winners.length > 1 ? `🏆 TOP ${winners.length} NGƯỜI CHIẾN THẮNG` : '🏆 CHIẾN THẮNG NGOẠN MỤC'}
               </span>
 
               <h2 className="text-2xl font-black text-white mt-1">
-                {winner.name}
+                {winners.length > 1
+                  ? winners.map((w, idx) => `${idx + 1}. ${w.name}`).slice(0, 3).join(' • ') + (winners.length > 3 ? ` (+${winners.length - 3})` : '')
+                  : winner.name}
               </h2>
               <p className="text-xs text-amber-200 mt-1">
-                Đã xuất sắc cán đích đầu tiên trong cuộc đua thuyền vượt sóng!
+                {winners.length > 1
+                  ? `Chúc mừng ${winners.length} người chiến thắng đã xuất sắc cán đích đầu tiên!`
+                  : 'Đã xuất sắc cán đích đầu tiên trong cuộc đua thuyền vượt sóng!'}
               </p>
 
               {/* Podium Rankings Table */}
               <div className="w-full mt-4 bg-slate-950/60 rounded-xl border border-slate-800 p-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-left">
-                  Bảng Xếp Hạng Lượt Đua:
+                  Bảng Xếp Hạng Lượt Đua ({winners.length} người thắng):
                 </h4>
-                <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                  {rankings.map((r, i) => (
-                    <div
-                      key={r.id}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-bold ${i === 0
-                          ? 'bg-amber-500/20 border border-amber-400/50 text-amber-300'
-                          : 'bg-slate-900/60 text-slate-300'
-                        }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black">
-                          {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+                <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                  {rankings.map((r, i) => {
+                    const isWinRank = i < winners.length;
+                    return (
+                      <div
+                        key={r.id}
+                        className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-bold ${isWinRank
+                            ? 'bg-amber-500/20 border border-amber-400/50 text-amber-300'
+                            : 'bg-slate-900/60 text-slate-300'
+                          }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black">
+                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+                          </span>
+                          <span>{r.name}</span>
+                        </div>
+                        <span className={`${isWinRank ? 'text-amber-300' : 'text-cyan-400'} font-mono`}>
+                          {isWinRank ? `THẮNG #${i + 1}` : `Hạng ${i + 1}`}
                         </span>
-                        <span>{r.name}</span>
                       </div>
-                      <span className="text-cyan-400 font-mono">
-                        {i === 0 ? 'VỀ ĐÍCH' : `Hạng ${i + 1}`}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -643,7 +722,7 @@ export default function BoatRaceGame({
 
         {/* Stealth Hidden Winner Control (Bottom-left corner) */}
         <StealthWinnerControl
-          items={teams}
+          items={racers}
           secretControl={secretControl}
           onUpdateSecretControl={onUpdateSecretControl}
           onLiveOverrideWinner={(target) => {

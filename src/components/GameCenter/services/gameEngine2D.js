@@ -55,11 +55,32 @@ export function pickRaceWinner(items = [], targetId = null, mode = 'fair_random'
   return items[idx];
 }
 
+// Pick N unique race winners (respecting secret teacher target for #1)
+export function pickRaceWinners(items = [], targetId = null, mode = 'fair_random', winnerCount = 1) {
+  if (!items || items.length === 0) return [];
+  const count = Math.min(Math.max(1, Number(winnerCount) || 1), items.length);
+  const firstWinner = pickRaceWinner(items, targetId, mode) || items[0];
+  const winners = [firstWinner];
+  const pool = items.filter((it) => it.id !== firstWinner.id);
+
+  while (winners.length < count && pool.length > 0) {
+    const randIdx = Math.floor(Math.random() * pool.length);
+    winners.push(pool.splice(randIdx, 1)[0]);
+  }
+  return winners;
+}
+
 // Compute dynamic progress for racing characters (boats, ducks, rockets)
 // Strictly monotonic forward motion: guaranteed positive velocity (zero jitter/stutter)
-export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed = 1) {
+export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed = 1, winnerRank = -1) {
+  const isTopWinner = isWinner || winnerRank >= 0;
+  const effectiveRank = winnerRank >= 0 ? winnerRank : (isWinner ? 0 : -1);
   if (p <= 0) return 0;
-  if (p >= 1) return isWinner ? 100 : (91 + (racerIndex % 3) * 2.2);
+  if (p >= 1) {
+    if (effectiveRank === 0) return 100;
+    if (effectiveRank > 0) return Math.max(96, 99.2 - effectiveRank * 0.6);
+    return 88 + (racerIndex % 5) * 1.4;
+  }
 
   // 1. Base progress
   const base = p;
@@ -76,11 +97,12 @@ export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed 
   let prog = (base + organicWave) * 100;
 
   // 3. Winner sprint in final 40% (smooth cubic ease-in surge)
-  if (isWinner && p > 0.60) {
+  if (isTopWinner && p > 0.60) {
     const sprintT = (p - 0.60) / 0.40;
-    const sprintBoost = Math.pow(sprintT, 2.2) * 9.5;
+    const rankFactor = Math.max(0.55, 1 - effectiveRank * 0.08);
+    const sprintBoost = Math.pow(sprintT, 2.2) * 9.5 * rankFactor;
     prog += sprintBoost;
-  } else if (!isWinner && p > 0.70) {
+  } else if (!isTopWinner && p > 0.70) {
     const lagT = (p - 0.70) / 0.30;
     const lagDamp = Math.pow(lagT, 2.0) * 4.2;
     prog -= lagDamp;
@@ -88,7 +110,7 @@ export function computeRacerProgress(p, racerIndex, totalRacers, isWinner, seed 
 
   // 4. Clamping
   if (prog < 0) prog = 0;
-  if (!isWinner && prog > 95 && p < 0.98) prog = 95;
+  if (!isTopWinner && prog > 95 && p < 0.98) prog = 95;
   if (prog > 100) prog = 100;
 
   return prog;

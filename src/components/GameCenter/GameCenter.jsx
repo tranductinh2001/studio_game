@@ -129,7 +129,8 @@ export default function GameCenter({ onSwitchTab }) {
         gameMode: config.settings?.gameMode || config.settings?.mode || config.gameMode || 'team'
       },
       onRecordResult: handleRecordResult,
-      onOpenTeacherPanel: () => setIsSecretPanelOpen(true)
+      onOpenTeacherPanel: () => setIsSecretPanelOpen(true),
+      onUpdateSettings: handleUpdateSettings
     };
 
     switch (activeGameId) {

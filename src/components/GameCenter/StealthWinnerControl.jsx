@@ -56,7 +56,7 @@ export default function StealthWinnerControl({
     setIsExpanded(false);
   };
 
-  const displayItems = items.slice(0, 8);
+  const displayItems = items;
 
   return (
     <div
@@ -89,7 +89,7 @@ export default function StealthWinnerControl({
 
       {/* Compact Stealth Micro-Bar (No suspicious labels, zero click sound) */}
       {isExpanded && (
-        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-950/90 backdrop-blur-md border border-slate-700/70 shadow-2xl animate-in fade-in duration-150">
+        <div className="flex flex-wrap items-center gap-1 px-2 py-1.5 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-slate-700/70 shadow-2xl animate-in fade-in duration-150 max-w-[80vw] max-h-40 overflow-y-auto">
           {displayItems.map((item, idx) => {
             const isSelected = isRigged && (activeTargetId === item.id || activeTargetId === item.code);
             return (

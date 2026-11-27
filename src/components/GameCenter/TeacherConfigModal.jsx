@@ -17,11 +17,13 @@ export default function TeacherConfigModal({
   const [teams, setTeams] = useState(config.teams || []);
   const [students, setStudents] = useState(config.students || []);
   const [gameMode, setGameMode] = useState(config.gameMode || 'team');
-  const [settings, setSettings] = useState(config.settings || {
+  const [settings, setSettings] = useState({
     roundDuration: 25,
     soundEnabled: true,
     bgmEnabled: true,
-    gameSpeed: 1.0
+    gameSpeed: 1.0,
+    winnerCount: 1,
+    ...(config.settings || {})
   });
 
   // Team Form editing state
@@ -651,6 +653,40 @@ export default function TeacherConfigModal({
                       <option value="1.5">1.5x (Nhanh)</option>
                       <option value="2.0">2.0x (Cực nhanh)</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Winner Count Setting */}
+                <div className="pt-2 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <div>
+                      <label className="text-amber-300 font-bold block">🏆 Số người thắng mặc định (Top về đích):</label>
+                      <span className="text-[10px] text-slate-400">Áp dụng cho đua thuyền khi chọn Top 1, 2, 3 hoặc nhiều người thắng</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {[1, 2, 3, 5].map((cnt) => (
+                        <button
+                          key={cnt}
+                          type="button"
+                          onClick={() => setSettings({ ...settings, winnerCount: cnt })}
+                          className={`px-2.5 py-1.5 rounded-lg font-black border transition-all ${
+                            (Number(settings.winnerCount) || 1) === cnt
+                              ? 'bg-amber-500 text-slate-950 border-amber-400'
+                              : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-amber-400/50'
+                          }`}
+                        >
+                          {cnt}
+                        </button>
+                      ))}
+                      <input
+                        type="number"
+                        min="1"
+                        max="61"
+                        value={settings.winnerCount ?? 1}
+                        onChange={(e) => setSettings({ ...settings, winnerCount: Math.max(1, Math.min(61, Number(e.target.value) || 1)) })}
+                        className="w-16 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-center font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

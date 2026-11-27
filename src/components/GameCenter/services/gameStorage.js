@@ -275,6 +275,14 @@ export class GameStorageService {
               characterImage: preset.image
             };
           });
+          parsed.settings = {
+            roundDuration: 25,
+            soundEnabled: true,
+            bgmEnabled: true,
+            gameSpeed: 1.0,
+            winnerCount: 1,
+            ...(parsed.settings || {})
+          };
           return parsed;
         }
       }
@@ -293,6 +301,7 @@ export class GameStorageService {
         soundEnabled: true,
         bgmEnabled: true,
         gameSpeed: 1.0,
+        winnerCount: 1,
       },
       secretControl: {
         mode: 'fair_random', // 'fair_random' | 'teacher_rigged' | 'weighted_random'
