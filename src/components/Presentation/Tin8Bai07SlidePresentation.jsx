@@ -135,7 +135,7 @@ function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
       playSound('celebrate');
       try {
         confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
-      } catch (e) {}
+      } catch (e) { }
     } else {
       playSound('click');
     }
@@ -193,15 +193,14 @@ function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
                   const droppedId = e.dataTransfer.getData('text/plain');
                   handlePlaceInSlot(slot.id, droppedId);
                 }}
-                className={`cursor-pointer rounded-2xl p-3 border-2 min-h-[175px] flex flex-col justify-between transition-all ${
-                  isCorrect
-                    ? 'bg-emerald-950/60 border-emerald-400 shadow-lg shadow-emerald-500/20'
-                    : isWrong
+                className={`cursor-pointer rounded-2xl p-3 border-2 min-h-[175px] flex flex-col justify-between transition-all ${isCorrect
+                  ? 'bg-emerald-950/60 border-emerald-400 shadow-lg shadow-emerald-500/20'
+                  : isWrong
                     ? 'bg-rose-950/60 border-rose-500'
                     : selectedCardId
-                    ? 'bg-slate-950/90 border-cyan-400/70 hover:bg-cyan-950/30'
-                    : 'bg-slate-950/80 border-dashed border-slate-700 hover:border-slate-500'
-                }`}
+                      ? 'bg-slate-950/90 border-cyan-400/70 hover:bg-cyan-950/30'
+                      : 'bg-slate-950/80 border-dashed border-slate-700 hover:border-slate-500'
+                  }`}
               >
                 <div className="flex items-center justify-between gap-1.5">
                   <span className="text-[11px] font-black text-cyan-300 uppercase">Ô #{idx + 1}</span>
@@ -248,11 +247,10 @@ function InteractivePuzzleModal({ puzzle, onClose, playSound }) {
                     draggable
                     onDragStart={(e) => e.dataTransfer.setData('text/plain', card.id)}
                     onClick={() => { setSelectedCardId(isSel ? null : card.id); playSound('click'); }}
-                    className={`cursor-pointer rounded-xl p-2 bg-white border-2 transition-all flex flex-col items-center text-center gap-1 ${
-                      isSel
-                        ? 'border-amber-400 ring-4 ring-amber-400/40 scale-[1.03]'
-                        : 'border-slate-300 hover:border-cyan-400'
-                    }`}
+                    className={`cursor-pointer rounded-xl p-2 bg-white border-2 transition-all flex flex-col items-center text-center gap-1 ${isSel
+                      ? 'border-amber-400 ring-4 ring-amber-400/40 scale-[1.03]'
+                      : 'border-slate-300 hover:border-cyan-400'
+                      }`}
                   >
                     <img src={card.img} alt={card.title} className="h-24 sm:h-28 object-contain" />
                     <div className="text-xs font-black text-slate-900 leading-tight">{card.title}</div>
@@ -596,9 +594,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => { setActivityTimerRunning((r) => !r); playSound('click'); }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow transition-all active:scale-95 ${
-              activityTimerRunning ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
-            }`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow transition-all active:scale-95 ${activityTimerRunning ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+              }`}
           >
             {activityTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             <span>{activityTimerRunning ? 'Tạm dừng' : 'Bắt đầu'}</span>
@@ -630,7 +627,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
           TOP COMMAND HEADER (16:9 RESPONSIVE SINGLE-ROW BAR)
          ========================================================================= */}
       <header className="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-cyan-500/30 flex items-center justify-between gap-2 shrink-0 backdrop-blur-md z-30">
-        
+
         {/* Left: Lesson Identification & Teacher Info */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 flex items-center justify-center text-slate-950 font-black shadow-md shadow-cyan-500/30">
@@ -663,15 +660,13 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   playSound('click');
                 }}
                 title={act.desc}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 ${
-                  isActive
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30 font-black'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 ${isActive
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/30 font-black'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
               >
-                <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-black ${
-                  isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-cyan-500/20 text-cyan-300'
-                }`}>
+                <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-black ${isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-cyan-500/20 text-cyan-300'
+                  }`}>
                   {act.tag}
                 </span>
                 <span className={`${isActive ? 'inline' : 'hidden lg:inline'} font-semibold text-[11px]`}>
@@ -916,10 +911,10 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
             {/* Split Screen Grid (Left 5 cols: Data & Steps | Right 7 cols: LARGE SGK Figures) */}
             <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
-              
+
               {/* Left Column (5 cols): Figure 7.1 + Clear 3 Steps */}
               <div className="col-span-12 lg:col-span-5 flex flex-col gap-3 min-h-0">
-                
+
                 {/* Hình 7.1 SGK (Click to Zoom) */}
                 <div
                   onClick={() => setZoomedImage({ src: '/images/tin8_bai7/hinh_7_1_bang_khao_sat.png', title: 'Hình 7.1. Bảng số liệu khảo sát lớp 8A (Vùng chọn B2:C8)' })}
@@ -1024,10 +1019,10 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
             {/* Two Symmetrical Columns (6 cols / 6 cols) */}
             <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
-              
+
               {/* Left Column (6 cols): 3 Steps + Interactive SVG Pie Chart */}
               <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-indigo-950/50 rounded-2xl border border-indigo-500/30 p-4 flex flex-col justify-between shadow-xl">
-                
+
                 {/* 3 Steps */}
                 <div className="space-y-2.5">
                   <span className="text-base sm:text-lg font-black text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -1125,9 +1120,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                         key={idx}
                         onMouseEnter={() => setActivePieSlice(idx)}
                         onMouseLeave={() => setActivePieSlice(null)}
-                        className={`flex items-center justify-between p-1 rounded-lg border transition-all ${
-                          activePieSlice === idx ? 'bg-slate-800 border-white text-white' : 'bg-slate-950 border-slate-800 text-slate-300'
-                        }`}
+                        className={`flex items-center justify-between p-1 rounded-lg border transition-all ${activePieSlice === idx ? 'bg-slate-800 border-white text-white' : 'bg-slate-950 border-slate-800 text-slate-300'
+                          }`}
                       >
                         <div className="flex items-center gap-1.5 truncate">
                           <span style={{ backgroundColor: item.color }} className="w-2.5 h-2.5 rounded-full shrink-0"></span>
@@ -1239,21 +1233,19 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
                   <button
                     onClick={() => { setLuyenTapTab('bai1'); playSound('click'); }}
-                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                      luyenTapTab === 'bai1'
-                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
-                        : 'text-slate-300 hover:text-white'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${luyenTapTab === 'bai1'
+                      ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                      : 'text-slate-300 hover:text-white'
+                      }`}
                   >
                     BÀI TẬP 1 (TGSDThietbiso.xlsx)
                   </button>
                   <button
                     onClick={() => { setLuyenTapTab('bai2'); playSound('click'); }}
-                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                      luyenTapTab === 'bai2'
-                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
-                        : 'text-slate-300 hover:text-white'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${luyenTapTab === 'bai2'
+                      ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                      : 'text-slate-300 hover:text-white'
+                      }`}
                   >
                     BÀI TẬP 2 (Hình 7.9)
                   </button>
@@ -1494,7 +1486,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
 
             {/* Symmetrical Two Columns (6 cols / 6 cols) */}
             <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
-              
+
               {/* Left Column (6 cols): Chủ đề A & B + 3 Tiêu chí + Dặn dò */}
               <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-slate-900/95 via-slate-900 to-amber-950/30 rounded-2xl border border-amber-500/40 p-4 flex flex-col gap-3 shadow-xl min-h-0">
                 {/* 2 Chủ đề tự chọn theo đúng KHBD */}
@@ -1552,18 +1544,16 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                 <div className="grid grid-cols-2 gap-2">
                   <div
                     onClick={() => { setSafetyStep1(!safetyStep1); playSound('click'); }}
-                    className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer text-xs sm:text-sm ${
-                      safetyStep1 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200'
-                    }`}
+                    className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer text-xs sm:text-sm ${safetyStep1 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200'
+                      }`}
                   >
                     <Check className={`w-4 h-4 shrink-0 ${safetyStep1 ? 'text-emerald-400' : 'text-slate-600'}`} />
                     <span>Lưu bài (<strong>Ctrl+S</strong>)</span>
                   </div>
                   <div
                     onClick={() => { setSafetyStep2(!safetyStep2); playSound('click'); }}
-                    className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer text-xs sm:text-sm ${
-                      safetyStep2 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200'
-                    }`}
+                    className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer text-xs sm:text-sm ${safetyStep2 ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200' : 'bg-slate-950 border-slate-800 text-slate-200'
+                      }`}
                   >
                     <Check className={`w-4 h-4 shrink-0 ${safetyStep2 ? 'text-emerald-400' : 'text-slate-600'}`} />
                     <span>Tắt máy (<strong>Start ➔ Shut down</strong>)</span>
@@ -1731,7 +1721,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
           BOTTOM HUD CONTROL STRIP (NAVIGATION & SHORTCUTS)
          ========================================================================= */}
       <footer className="px-4 py-2 bg-slate-950/95 border-t border-slate-800 flex items-center justify-between text-xs shrink-0 z-30">
-        
+
         {/* Left: Previous Button */}
         <button
           onClick={() => {
@@ -1755,9 +1745,8 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
                   setSlideIndex(idx);
                   playSound('click');
                 }}
-                className={`h-2 rounded-full transition-all ${
-                  slideIndex === idx ? 'w-8 bg-cyan-400 shadow-md shadow-cyan-400/50' : 'w-2 bg-slate-700 hover:bg-slate-500'
-                }`}
+                className={`h-2 rounded-full transition-all ${slideIndex === idx ? 'w-8 bg-cyan-400 shadow-md shadow-cyan-400/50' : 'w-2 bg-slate-700 hover:bg-slate-500'
+                  }`}
                 title={`Chuyển tới ${ACTIVITIES[idx]?.tag} (${ACTIVITIES[idx]?.durationLabel})`}
               ></button>
             ))}
@@ -1804,7 +1793,7 @@ export default function Tin8Bai07SlidePresentation({ onSwitchTab, onBackToLibrar
       {isLessonFinished && (
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-200">
           <div className="w-full max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-yellow-400 rounded-3xl p-6 text-center space-y-4 shadow-[0_0_60px_rgba(250,204,21,0.4)] relative">
-            
+
             <button
               onClick={() => setIsLessonFinished(false)}
               className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
