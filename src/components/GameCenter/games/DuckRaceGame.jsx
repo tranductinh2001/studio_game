@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { gameAudio } from '../services/gameAudioSynth';
 import { LESSON_6_QUESTIONS } from '../../../data/lesson6Questions';
-import { GAME_STATES, pickRaceWinner, computeRacerProgress, applyStealthEarlyFinish } from '../services/gameEngine2D';
+import { GAME_STATES, pickRaceWinners, computeRacerProgress, applyStealthEarlyFinish } from '../services/gameEngine2D';
 import QuestionChallengeModal from '../QuestionChallengeModal';
 import StealthWinnerControl from '../StealthWinnerControl';
 import { CharacterAvatar } from '../services/characterAvatars';
@@ -35,6 +35,7 @@ export default function DuckRaceGame({
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [countdown, setCountdown] = useState(3);
   const [winner, setWinner] = useState(null);
+  const [winners, setWinners] = useState([]);
   const [rankings, setRankings] = useState([]);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(LESSON_6_QUESTIONS[0]);
@@ -50,10 +51,24 @@ export default function DuckRaceGame({
   const isIndividual = (settings?.mode || settings?.gameMode) === 'individual';
   const participants = useMemo(() => {
     if (isIndividual && students.length > 0) {
-      return students.slice(0, 8); // Top 8 students for clean river lanes
+      return students.map((stu, idx) => {
+        const teamObj = teams.find((t) => t.id === stu.teamId) || teams[idx % Math.max(1, teams.length)];
+        return {
+          ...stu,
+          number: idx + 1,
+          shortName: stu.name,
+          color: stu.color || teamObj?.color || '#f59e0b',
+          avatar: stu.avatar || teamObj?.avatar || '🦆'
+        };
+      });
     }
     return teams;
   }, [isIndividual, students, teams]);
+
+  const winnerCount = useMemo(() => {
+    const raw = Number(settings?.winnerCount) || 1;
+    return Math.min(Math.max(1, raw), Math.max(1, participants.length));
+  }, [settings?.winnerCount, participants.length]);
 
   // Animation & Runtime Refs
   const runtimeRef = useRef({
@@ -64,6 +79,7 @@ export default function DuckRaceGame({
     duration: 8500, // 8.5s fast exciting race
     targetWinner: null,
     determinedWinner: null,
+    determinedWinners: [],
     isFinished: false,
     seed: Math.random() * 15
   });
@@ -134,8 +150,9 @@ export default function DuckRaceGame({
 
     const mode = secretControl?.mode || 'fair_random';
     const secretTargetId = isIndividual ? secretControl?.targetStudentId : secretControl?.targetTeamId;
-    const chosenWinner = pickRaceWinner(participants, secretTargetId, mode) || participants[0];
-    runtimeRef.current.determinedWinner = chosenWinner;
+    const chosenWinners = pickRaceWinners(participants, secretTargetId, mode, winnerCount);
+    runtimeRef.current.determinedWinners = chosenWinners;
+    runtimeRef.current.determinedWinner = chosenWinners[0] || participants[0];
     runtimeRef.current.seed = Math.random() * 25;
 
     let count = 3;
@@ -173,8 +190,9 @@ export default function DuckRaceGame({
 
       const currentProgress = [];
       participants.forEach((item, idx) => {
-        const isWinner = item.id === rt.determinedWinner?.id;
-        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
+        const winnerRank = (rt.determinedWinners || []).findIndex((w) => w.id === item.id);
+        const isWinner = winnerRank === 0 || item.id === rt.determinedWinner?.id;
+        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1, winnerRank);
         currentProgress.push(prog);
 
         const xPx = (prog / 100) * trackWidth;
@@ -224,8 +242,9 @@ export default function DuckRaceGame({
 
       const currentProgress = [];
       participants.forEach((item, idx) => {
-        const isWinner = item.id === rt.determinedWinner?.id;
-        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1);
+        const winnerRank = (rt.determinedWinners || []).findIndex((w) => w.id === item.id);
+        const isWinner = winnerRank === 0 || item.id === rt.determinedWinner?.id;
+        const prog = computeRacerProgress(normalizedTime, idx, participants.length, isWinner, rt.seed + idx * 2.1, winnerRank);
         currentProgress.push(prog);
 
         const xPx = (prog / 100) * trackWidth;
@@ -257,20 +276,23 @@ export default function DuckRaceGame({
     gameAudio.stopAmbientBGM();
     gameAudio.playFanfare();
 
-    const winItem = rt.determinedWinner || participants[0];
+    const winList = rt.determinedWinners?.length > 0
+      ? rt.determinedWinners
+      : [rt.determinedWinner || participants[0]].filter(Boolean);
+    const winItem = winList[0];
     setWinner(winItem);
+    setWinners(winList);
 
-    const sorted = [...participants].sort((a, b) => {
-      if (a.id === winItem.id) return -1;
-      if (b.id === winItem.id) return 1;
-      return 0;
-    });
+    const winnerIds = new Set(winList.map((w) => w.id));
+    const remaining = participants.filter((p) => !winnerIds.has(p.id));
+    const sorted = [...winList, ...remaining];
     setRankings(sorted);
     setGameState(GAME_STATES.FINISHED);
 
     if (onRecordResult) {
       onRecordResult('duck-race', {
         winner: winItem,
+        winners: winList,
         rankings: sorted,
         mode: isIndividual ? 'individual' : 'team'
       });
@@ -421,30 +443,41 @@ export default function DuckRaceGame({
         </div>
 
         {/* RACING LANES & DUCKS */}
-        <div ref={trackRef} className="absolute top-[18%] bottom-[18%] left-0 right-0 flex flex-col justify-around px-2 z-20">
+        <div
+          ref={trackRef}
+          className={`absolute left-0 right-0 px-2 z-20 ${
+            participants.length > 8
+              ? 'top-[16%] bottom-[12%] overflow-y-auto'
+              : 'top-[18%] bottom-[18%] flex flex-col justify-around'
+          }`}
+        >
           <style>{`
             @keyframes duckWaddlePaddle {
               0%, 100% { transform: translateY(-2px) rotate(-4deg); }
               50% { transform: translateY(3px) rotate(4deg); }
             }
           `}</style>
+          <div className={participants.length > 8 ? 'flex flex-col gap-1 py-1' : 'contents'}>
           {participants.map((item, index) => {
             const prog = duckProgress[index] || 0;
-            const isFirst = winner?.id === item.id;
+            const isCompact = participants.length > 8;
+            const isFirst = winners.some((w) => w.id === item.id) || winner?.id === item.id;
             const accessory = DUCK_ACCESSORIES[index % DUCK_ACCESSORIES.length];
 
             return (
               <div 
                 key={item.id}
-                className="relative w-full h-14 flex items-center border-b border-sky-400/20"
+                className={`relative w-full flex items-center border-b border-sky-400/20 ${
+                  isCompact ? 'h-10 shrink-0' : 'h-14'
+                }`}
               >
                 {/* Lane marker badge with Character Avatar */}
                 <div className="absolute left-2 flex items-center gap-1 z-10">
                   {!isIndividual ? (
-                    <CharacterAvatar team={item} index={index} size="sm" />
+                    <CharacterAvatar team={item} index={index} size={isCompact ? 'xs' : 'sm'} />
                   ) : (
                     <div
-                      className="w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shadow"
+                      className={`${isCompact ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'} rounded-lg font-black flex items-center justify-center shadow`}
                       style={{ backgroundColor: item.color || '#f59e0b', color: '#fff' }}
                     >
                       {item.number || index + 1}
@@ -461,10 +494,12 @@ export default function DuckRaceGame({
                     transform: `translate3d(${(prog / 100) * (trackRef.current ? trackRef.current.clientWidth * 0.78 : 800)}px, 0px, 0)`
                   }}
                 >
-                  {/* Floating Team / Student Badge above duck */}
-                  <div className="absolute -top-7 left-1 flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20">
+                  {/* Floating Team / Student Badge */}
+                  <div className={`absolute flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm whitespace-nowrap z-20 ${
+                    isCompact ? 'left-16 top-1.5' : '-top-7 left-1'
+                  }`}>
                     <span className="text-xs">{item.avatar || accessory.hat}</span>
-                    <span className="text-[11px] font-bold text-white">{item.shortName || item.name}</span>
+                    <span className={`${isCompact ? 'text-[10px]' : 'text-[11px]'} font-bold text-white`}>{item.shortName || item.name}</span>
                     <span 
                       ref={(el) => (badgeRefs.current[index] = el)}
                       className="text-[10px] font-mono text-amber-300 font-bold"
@@ -510,6 +545,7 @@ export default function DuckRaceGame({
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* 3. COUNTDOWN MODAL */}
@@ -539,20 +575,24 @@ export default function DuckRaceGame({
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest mb-1">
-                🦆 VỊT VÀNG SIÊU TỐC VỀ ĐÍCH!
+                {winners.length > 1 ? `🦆 TOP ${winners.length} VỊT VÀNG CHIẾN THẮNG!` : '🦆 VỊT VÀNG SIÊU TỐC VỀ ĐÍCH!'}
               </span>
 
               <h2 className="text-2xl font-black text-white mt-1">
-                {winner.name}
+                {winners.length > 1
+                  ? winners.map((w, idx) => `${idx + 1}. ${w.name}`).slice(0, 3).join(' • ') + (winners.length > 3 ? ` (+${winners.length - 3})` : '')
+                  : winner.name}
               </h2>
               <p className="text-xs text-amber-200 mt-1">
-                Đã quẫy chân té nước siêu tốc và cán đích vinh quang tại cầu gỗ!
+                {winners.length > 1
+                  ? `Chúc mừng ${winners.length} người chiến thắng đã cán đích đầu tiên tại cầu gỗ!`
+                  : 'Đã quẫy chân té nước siêu tốc và cán đích vinh quang tại cầu gỗ!'}
               </p>
 
               {/* Podium Rankings Table */}
               <div className="w-full mt-4 bg-slate-950/60 rounded-xl border border-slate-800 p-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-left">
-                  Bảng Xếp Hạng Vịt Về Đích:
+                  Bảng Xếp Hạng Vịt Về Đích ({winners.length} người thắng):
                 </h4>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
                   {rankings.map((r, i) => (

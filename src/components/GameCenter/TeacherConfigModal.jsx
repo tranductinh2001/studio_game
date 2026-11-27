@@ -65,6 +65,7 @@ export default function TeacherConfigModal({
     });
 
     setStudents([...baseStudents, ...added]);
+    setGameMode('individual');
     setBulkListText('');
     setShowBulkImport(false);
   };
@@ -76,11 +77,13 @@ export default function TeacherConfigModal({
       setTeams(config.teams || []);
       setStudents(config.students || []);
       setGameMode(config.gameMode || config.settings?.mode || 'team');
-      setSettings(config.settings || {
+      setSettings({
         roundDuration: 25,
         soundEnabled: true,
         bgmEnabled: true,
-        gameSpeed: 1.0
+        gameSpeed: 1.0,
+        winnerCount: 1,
+        ...(config.settings || {})
       });
       setPickingCharForTeamId(null);
     }
@@ -114,12 +117,17 @@ export default function TeacherConfigModal({
 
   // Save all changes
   const handleSave = () => {
+    const nextMode = activeTab === 'students' && students.length > 0 ? 'individual' : gameMode;
     onSaveConfig({
       ...config,
       teams,
       students,
-      gameMode,
-      settings
+      gameMode: nextMode,
+      settings: {
+        ...settings,
+        mode: nextMode,
+        gameMode: nextMode
+      }
     });
     onClose();
   };
